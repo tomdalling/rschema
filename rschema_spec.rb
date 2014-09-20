@@ -104,5 +104,15 @@ RSpec.describe RSchema do
     it 'coerces Set => Array' do
       expect(RSchema.coerce(Array, Set.new([1, 2, 3]))).to contain_exactly(1, 2, 3)
     end
+
+    it 'coerces String => DateTime' do
+      expected = DateTime.new(2014, 9, 19, 20, 44, 40)
+      expect(RSchema.coerce(DateTime, '2014-09-19T20:44:40+0000')).to eq(expected)
+    end
+
+    it 'coerces DateTime => String' do
+      dt = DateTime.new(2014, 9, 19, 20, 44, 40, '+2')
+      expect(RSchema.coerce(String, dt)).to eq('2014-09-19T20:44:40+02:00')
+    end
   end
 end
