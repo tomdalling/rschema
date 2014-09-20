@@ -3,8 +3,12 @@ require 'set'
 module RSchema
   InvalidSchemaError = Class.new(StandardError)
   ValidationFailedError = Class.new(StandardError)
-  ErrorDetails = Struct.new(:details)
   WALKERS = []
+
+  ErrorDetails = Struct.new(:details) do
+    def to_s; inspect; end
+    def inspect; details.inspect; end
+  end
 
   def self.schema(&block)
     DSL.instance_exec(&block)
