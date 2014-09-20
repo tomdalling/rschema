@@ -121,7 +121,7 @@ module RSchema
           subschema = (fixed_size ? schema[idx] : schema.first )
           subvalue_walked = RSchema.walk(subschema, subvalue, mapper)
           if subvalue_walked.is_a?(RSchema::ErrorDetails)
-            break RSchema::ErrorDetails({ idx => subvalue_walked.details })
+            break RSchema::ErrorDetails.new({ idx => subvalue_walked.details })
           end
           subvalue_walked
         end
