@@ -8,7 +8,7 @@ RSpec.describe RSchema do
       expect(RSchema.validate(schema, 5)).to be(false)
     end
 
-    it 'validates arrays' do
+    it 'validates variable-length arrays' do
       schema = [String]
       expect(RSchema.validate(schema, ['cat', 'bat'])).to be(true)
       expect(RSchema.validate(schema, [6, 'bat'])).to be(false)
