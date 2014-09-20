@@ -73,11 +73,11 @@ module RSchema
   module CoersionMapper
     def self.prewalk(schema, value)
       if schema == Integer && value.is_a?(String)
-        value.to_i #TODO: this conversion needs to be more robust
+        try_convert(value) { Integer(value) }
       elsif schema == Float && value.is_a?(String)
-        value.to_f #TODO: this conversion needs to be more robust
+        try_convert(value) { Float(value) }
       elsif schema == Symbol && value.is_a?(String)
-        value.to_sym #TODO: this conversion needs to be more robust
+        value.to_sym
       elsif schema == String && value.is_a?(Symbol)
         value.to_s
       elsif schema == Array && value.is_a?(Set)
@@ -91,6 +91,12 @@ module RSchema
 
     def self.postwalk(schema, value)
       value
+    end
+
+    def self.try_convert(x)
+      yield x
+    rescue
+      x
     end
   end
 end
