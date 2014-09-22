@@ -61,10 +61,37 @@ end
 
 module RSchema
   OptionalHashKey = Struct.new(:key)
+  GenericHash = Struct.new(:key_subschema, :value_subschema)
+  GenericSet = Struct.new(:subschema)
+  Predicate = Struct.new(:name, :block)
+  Maybe = Struct.new(:subschema)
+  Enum = Struct.new(:value_set, :subschema)
 
   class DSL
     def self._?(key)
       OptionalHashKey.new(key)
+    end
+
+    def self.hash_of(subschemas_hash)
+      raise InvalidSchemaError unless subschemas_hash.size == 1
+      GenericHash.new(subschemas_hash.keys.first, subschemas_hash.values.first)
+    end
+
+    def self.set_of(subschema)
+      GenericSet.new(subschema)
+    end
+
+    def self.predicate(name = nil, &block)
+      raise InvalidSchemaError unless block
+      Predicate.new(name, block)
+    end
+
+    def self.maybe(subschema)
+      Maybe.new(subschema)
+    end
+
+    def self.enum(possible_values, subschema = nil)
+      Enum.new(Set.new(possible_values), subschema)
     end
   end
 end
@@ -82,7 +109,7 @@ module RSchema
         value.to_s
       elsif schema == Array && value.is_a?(Set)
         value.to_a
-      elsif schema == Set && value.is_a?(Array)
+      elsif (schema == Set || schema.is_a?(GenericSet)) && value.is_a?(Array)
         Set.new(value)
       elsif schema == DateTime && value.is_a?(String)
         DateTime.iso8601(value) || value
@@ -187,7 +214,103 @@ module RSchema
   end
 end
 
+module RSchema
+  module GenericHashWalker
+    def self.walk(generic_hash_schema, value, mapper)
+      if not value.is_a?(Hash)
+        return RSchema::ErrorDetails.new('is not a Hash')
+      end
+
+      value.reduce({}) do |accum, (k, v)|
+        # walk key
+        k_walked = RSchema.walk(generic_hash_schema.key_subschema, k, mapper)
+        if k_walked.is_a?(RSchema::ErrorDetails)
+          break RSchema::ErrorDetails.new({'has invalid key, where'  => k_walked.details})
+        end
+
+        # walk value
+        v_walked = RSchema.walk(generic_hash_schema.value_subschema, v, mapper)
+        if v_walked.is_a?(RSchema::ErrorDetails)
+          break RSchema::ErrorDetails.new({k => v_walked.details})
+        end
+
+        accum[k_walked] = v_walked
+        accum
+      end
+    end
+  end
+end
+
+module RSchema
+  module GenericSetWalker
+    def self.walk(generic_set_schema, value, mapper)
+      if not value.is_a?(Set)
+        return RSchema::ErrorDetails.new('is not a Set')
+      end
+
+      value.reduce(Set.new) do |accum, subvalue|
+        subvalue_walked = RSchema.walk(generic_set_schema.subschema, subvalue, mapper)
+
+        if subvalue_walked.is_a?(RSchema::ErrorDetails)
+          break RSchema::ErrorDetails.new(Set.new([subvalue_walked.details]))
+        end
+
+        accum << subvalue_walked
+        accum
+      end
+    end
+  end
+end
+
+module RSchema
+  module PredicateWalker
+    def self.walk(pred_schema, value, mapper)
+      if pred_schema.block.call(value)
+        value
+      else
+        n = pred_schema.name
+        RSchema::ErrorDetails.new("fails predicate" + (n ? ": #{n}" : ''))
+      end
+    end
+  end
+end
+
+module RSchema
+  module MaybeWalker
+    def self.walk(maybe_schema, value, mapper)
+      if value.nil?
+        value
+      else
+        RSchema.walk(maybe_schema.subschema, value, mapper)
+      end
+    end
+  end
+end
+
+module RSchema
+  module EnumWalker
+    def self.walk(enum_schema, value, mapper)
+      value_walked = if enum_schema.subschema
+        RSchema.walk(enum_schema.subschema, value, mapper)
+      else
+        value
+      end
+
+      if enum_schema.value_set.include?(value_walked)
+        value_walked
+      else
+        RSchema::ErrorDetails.new('is not a valid enum member')
+      end
+    end
+  end
+end
+
 RSchema.register_walker(Class, RSchema::ClassWalker)
 RSchema.register_walker(Array, RSchema::ArrayWalker)
 RSchema.register_walker(Hash, RSchema::HashWalker)
+RSchema.register_walker(RSchema::GenericHash, RSchema::GenericHashWalker)
+RSchema.register_walker(RSchema::GenericSet, RSchema::GenericSetWalker)
+RSchema.register_walker(RSchema::Predicate, RSchema::PredicateWalker)
+RSchema.register_walker(RSchema::Maybe, RSchema::MaybeWalker)
+RSchema.register_walker(RSchema::Enum, RSchema::EnumWalker)
 

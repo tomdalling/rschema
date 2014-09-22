@@ -48,6 +48,36 @@ RSpec.describe RSchema do
       expect(RSchema.validate(schema, optional: 'world')).to be(false)
     end
 
+    it 'validates generic hashes' do
+      schema = RSchema.schema { hash_of Integer => String }
+      expect(RSchema.validate(schema, { 1 => 'a', 2 => 'b'})).to be(true)
+      expect(RSchema.validate(schema, { 1 => 'a', 2 => 3})).to be(false)
+    end
+
+    it 'validates generic sets' do
+      schema = RSchema.schema { set_of Integer }
+      expect(RSchema.validate(schema, Set.new([1,2,3]))).to be(true)
+      expect(RSchema.validate(schema, Set.new(['hello']))).to be(false)
+    end
+
+    it 'validates with predicates' do
+      schema = RSchema.schema {
+        predicate('is even') { |x| x.even? }
+      }
+
+      expect(RSchema.validate(schema, 4)).to be(true)
+      expect(RSchema.validate(schema, 5)).to be(false)
+    end
+
+    it 'validates "maybe"s' do
+      schema = RSchema.schema { maybe Integer }
+
+      expect(RSchema.validate(schema, 5)).to be(true)
+      expect(RSchema.validate(schema, nil)).to be(true)
+
+      expect(RSchema.validate(schema, 'hello')).to be(false)
+    end
+
     it 'handles arbitrary nesting' do
       schema = {
         list_name: String,
@@ -97,8 +127,11 @@ RSpec.describe RSchema do
       expect(RSchema.coerce(String, :hello)).to eq('hello')
     end
 
-    it 'coerces Array => Set' do
+    it 'coerces Array => Set/set_of' do
       expect(RSchema.coerce(Set, [1, 2, 2, 3])).to eq(Set.new([1, 2, 3]))
+
+      set_of_schema = RSchema.schema { set_of Integer }
+      expect(RSchema.coerce(set_of_schema, [1, 2, 2, 3])).to eq(Set.new([1, 2, 3]))
     end
 
     it 'coerces Set => Array' do
@@ -113,6 +146,26 @@ RSpec.describe RSchema do
     it 'coerces DateTime => String' do
       dt = DateTime.new(2014, 9, 19, 20, 44, 40, '+2')
       expect(RSchema.coerce(String, dt)).to eq('2014-09-19T20:44:40+02:00')
+    end
+
+    it 'coerces through "enum"' do
+      schema = RSchema.schema{ enum [:a, :b, :c], Symbol }
+      expect(RSchema.coerce(schema, 'a')).to eq(:a)
+    end
+
+    it 'coerces through "maybe"' do
+      schema = RSchema.schema{ maybe Symbol }
+      expect(RSchema.coerce(schema, 'hello')).to eq(:hello)
+    end
+
+    it 'coerces through "hash_of"' do
+      schema = RSchema.schema{ hash_of Symbol => Symbol }
+      expect(RSchema.coerce(schema, {'hello' => 'there'})).to eq({hello: :there})
+    end
+
+    it 'coerces through "set_of"' do
+      schema = RSchema.schema{ set_of Symbol }
+      expect(RSchema.coerce(schema, Set.new(['a', 'b', 'c']))).to eq(Set.new([:a, :b, :c]))
     end
   end
 end
