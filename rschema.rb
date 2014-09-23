@@ -111,10 +111,6 @@ module RSchema
         value.to_a
       elsif (schema == Set || schema.is_a?(GenericSet)) && value.is_a?(Array)
         Set.new(value)
-      elsif schema == DateTime && value.is_a?(String)
-        DateTime.iso8601(value) || value
-      elsif schema == String && value.is_a?(DateTime)
-        value.iso8601
       else
         value
       end
