@@ -174,7 +174,7 @@ RSchema.coerce(Set, [1, 2, 3]) #=> <Set: {1, 2, 3}>
 
 schema = RSchema.schema {{
   name: String,
-  favourite_foods: set_of(Symbol),
+  favourite_foods: set_of(Symbol)
 }}
 
 value = {
@@ -195,11 +195,9 @@ Extending the DSL
 The RSchema DSL can be extended by adding methods to the `RSchema::DSL` module:
 
 ```ruby
-module RSchema
-  module DSL
-    def self.positive_and_even(type)
-      predicate { |x| x > 0 && x.even? }
-    end
+module RSchema::DSL
+  def self.positive_and_even(type)
+    predicate { |x| x > 0 && x.even? }
   end
 end
 
@@ -250,10 +248,11 @@ module RSchema::DSL
   end
 end
 
-# use the custom schema type
+# use the custom schema type (coercion works too)
 schema = RSchema.schema { coordinate }
 RSchema.validate(schema, [1.0, 2.0]) #=> true
 RSchema.validate(schema, [1, 2]) #=> false (not Floats)
+RSchema.coerce(schema, ["1", "2"]) #=> [1.0, 2.0]
 ```
 
 A walker is an object that responds to the `walk` method. The `walk` method
