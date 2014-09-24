@@ -25,12 +25,12 @@ module RSchema
   end
 
   def self.coerce(schema, value)
-    result = walk(schema, value, CoersionMapper)
+    result = walk(schema, value, CoercionMapper)
     result.is_a?(RSchema::ErrorDetails) ? nil : result
   end
 
   def self.coerce!(schema, value)
-    result = walk(schema, value, CoersionMapper)
+    result = walk(schema, value, CoercionMapper)
     raise(ValidationFailedError, result) if result.is_a?(RSchema::ErrorDetails)
     result
   end
@@ -97,7 +97,7 @@ module RSchema
 end
 
 module RSchema
-  module CoersionMapper
+  module CoercionMapper
     def self.prewalk(schema, value)
       if schema == Integer && value.is_a?(String)
         try_convert(value) { Integer(value) }
