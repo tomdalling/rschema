@@ -67,7 +67,7 @@ module RSchema
   Maybe = Struct.new(:subschema)
   Enum = Struct.new(:value_set, :subschema)
 
-  class DSL
+  module DSL
     def self._?(key)
       OptionalHashKey.new(key)
     end
