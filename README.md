@@ -1,7 +1,7 @@
 # RSchema
 
 Schema-based validation and coercion for Ruby data structures. It has heavily
-inspired (read: stolen) from [Prismatic/schema][] for Clojure. 
+inspired by (read: stolen from) [Prismatic/schema][] for Clojure.
 
 Meet RSchema
 ------------
@@ -25,11 +25,11 @@ RSchema.validate(post_schema, {
   title: "You won't beleive how this developer foo'd her bar",
   tags: [:foos, :bars, :unbeleivable],
   body: '<p>blah blah</p>'
-})
-#=> true
+}) #=> true
 ```
 
-# What is a schema?
+What is a schema?
+-----------------
 
 Schemas are Ruby data structures. The simplest type of schema is just a class:
 
@@ -80,7 +80,7 @@ Array Schemas
 -------------
 
 There are two types of array schemas. When the array schema has a single
-element, it is a variable-length array schemas:
+element, it is a variable-length array schema:
 
 ```ruby
 schema = [Symbol]
@@ -162,10 +162,31 @@ RSchema.validate(enum_schema, :d) #=> false
 Coercion
 --------
 
-RSchema is capable of coercing invalid values into valid one, in some
+RSchema is capable of coercing invalid values into valid ones, in some
 situations. Here are some examples:
 
 ```ruby
+RSchema.coerce(Symbol, "hello") #=> :hello
+RSchema.coerce(String, :hello) #=> "hello"
+RSchema.coerce(Integer, "5") #=> 5
+RSchema.coerce(Integer, "5asdasd") #=> nil
+RSchema.coerce(Set, [1, 2, 3]) #=> <Set: {1, 2, 3}>
+
+schema = RSchema.schema {{
+  name: String,
+  favourite_foods: set_of(Symbol),
+}}
+
+value = {
+  name: 'Peggy',
+  favourite_foods: ['berries', 'cake']
+}
+
+RSchema.coerce(schema, value) #=>
+#   {
+#     name: "Peggy",
+#     favourite_foods: <Set: #{:berries, :cake}>
+#   }
 ```
 
 Extending the DSL
