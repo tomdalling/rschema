@@ -51,9 +51,9 @@ RSchema.validate!(schema, [10, 11, '12']) # !!! raises RSchema::ValidationError 
 And so are hashes:
 
 ```ruby
-schema = {name: String, age: Integer}
-RSchema.validate!(schema, {name: 'Jane', age: 27}) # ok
-RSchema.validate!(schema, {name: 'Johnny'})        # !!! raises RSchema::ValidationError !!!
+schema = { fname: String, age: Integer }
+RSchema.validate!(schema, { fname: 'Jane', age: 27 }) # ok
+RSchema.validate!(schema, { fname: 'Johnny' })        # !!! raises RSchema::ValidationError !!!
 ```
 
 While schemas are just plain old Ruby data structures, RSchema also provides
@@ -61,13 +61,13 @@ an extensible DSL for constructing more complicated schemas:
 
 ```ruby
 schema = RSchema.schema {{
-  name: predicate { |n| n.is_a?(String) && n.size > 0 },
+  fname: predicate { |n| n.is_a?(String) && n.size > 0 },
   favourite_foods: set_of(Symbol),
   children_by_age: hash_of(Integer => String)
 }}
 
 RSchema.validate!(schema, {
-  name: 'Johnny',
+  fname: 'Johnny',
   favourite_foods: Set.new([:bacon, :cheese, :onion]),
   children_by_age: {
     7 => 'Jenny',
@@ -104,19 +104,19 @@ Hash Schemas
 Hash schemas map constant keys to subschema values:
 
 ```ruby
-schema = { name: String }
-RSchema.validate!(schema, { name: 'William' }) # ok
+schema = { fname: String }
+RSchema.validate!(schema, { fname: 'William' }) # ok
 ```
 
 Keys can be optional:
 
 ```ruby
 schema = RSchema.schema {{
-  name: String,
+  :fname => String,
   _?(:age) => Integer
 }}
-RSchema.validate!(schema, { name: 'Lucy', age: 21 }) # ok
-RSchema.validate!(schema, { name: 'Tom' })           # ok
+RSchema.validate!(schema, { fname: 'Lucy', age: 21 }) # ok
+RSchema.validate!(schema, { fname: 'Tom' })           # ok
 ```
 
 There is also another type of hash schema that represents hashes with variable
@@ -154,7 +154,7 @@ enum_schema = RSchema.schema do
   enum([:a, :b, :c])
 end
 RSchema.validate!(enum_schema, :a) # ok
-RSchema.validate!(enum_schema, :d) # !!! raises RSchema::ValidationError !!!
+RSchema.validate!(enum_schema, :z) # !!! raises RSchema::ValidationError !!!
 ```
 
 Coercion
@@ -171,17 +171,17 @@ RSchema.coerce!(Integer, "cat")  # !!! raises RSchema::ValidationError !!!
 RSchema.coerce!(Set, [1, 2, 3])  #=> <Set: {1, 2, 3}>
 
 schema = RSchema.schema {{
-  name: String,
+  fname: String,
   favourite_foods: set_of(Symbol)
 }}
 
 value = {
-  name: 'Peggy',
+  fname: 'Peggy',
   favourite_foods: ['berries', 'cake']
 }
 
 RSchema.coerce!(schema, value)
-  #=> { name: "Peggy", favourite_foods: <Set: #{:berries, :cake}> }
+  #=> { fname: "Peggy", favourite_foods: <Set: #{:berries, :cake}> }
 ```
 
 Extending the DSL
@@ -221,8 +221,8 @@ class CoordinateSchema
     y = RSchema.walk(Float, value[1], mapper)
 
     # look for subschema errors, and propagate them if found
-    return RSchema::ErrorDetails.new({x: x}) if x.is_a?(RSchema::ErrorDetails)
-    return RSchema::ErrorDetails.new({y: y}) if y.is_a?(RSchema::ErrorDetails)
+    return RSchema::ErrorDetails.new({ x: x }) if x.is_a?(RSchema::ErrorDetails)
+    return RSchema::ErrorDetails.new({ y: y }) if y.is_a?(RSchema::ErrorDetails)
 
     # return the valid value
     [x, y]
