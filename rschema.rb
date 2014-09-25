@@ -14,38 +14,29 @@ module RSchema
   end
 
   def self.validation_errors(schema, value)
-    result = walk(schema, value)
-    if result.is_a?(RSchema::ErrorDetails)
-      result
-    else
-      nil
-    end
+    _, error = walk(schema, value)
+    error
   end
 
   def self.validate!(schema, value)
-    result = walk(schema, value)
-    if result.is_a?(RSchema::ErrorDetails)
-      raise(ValidationError, result)
-    else
+    result, error = walk(schema, value)
+    if error.nil?
       result
+    else
+      raise(ValidationError, error)
     end
   end
 
   def self.coerce(schema, value)
-    result = walk(schema, value, CoercionMapper)
-    if result.is_a?(RSchema::ErrorDetails)
-      [nil, result]
-    else
-      [result, nil]
-    end
+    walk(schema, value, CoercionMapper)
   end
 
   def self.coerce!(schema, value)
-    result = walk(schema, value, CoercionMapper)
-    if result.is_a?(RSchema::ErrorDetails)
-      raise(ValidationError, result)
-    else
+    result, error = walk(schema, value, CoercionMapper)
+    if error.nil?
       result
+    else
+      raise(ValidationError, error)
     end
   end
 
@@ -54,7 +45,12 @@ module RSchema
     value = mapper.prewalk(schema, value) if mapper
     value = schema.schema_walk(value, mapper)
     value = mapper.postwalk(schema, value) if mapper
-    value
+
+    if value.is_a?(RSchema::ErrorDetails)
+      [nil, value]
+    else
+      [value, nil]
+    end
   end
 
   module DSL
@@ -125,16 +121,12 @@ module RSchema
 
       value.reduce({}) do |accum, (k, v)|
         # walk key
-        k_walked = RSchema.walk(key_subschema, k, mapper)
-        if k_walked.is_a?(RSchema::ErrorDetails)
-          break RSchema::ErrorDetails.new({'has invalid key, where'  => k_walked.details})
-        end
+        k_walked, error = RSchema.walk(key_subschema, k, mapper)
+        break RSchema::ErrorDetails.new({'has invalid key, where' => error.details}) if error
 
         # walk value
-        v_walked = RSchema.walk(value_subschema, v, mapper)
-        if v_walked.is_a?(RSchema::ErrorDetails)
-          break RSchema::ErrorDetails.new({k => v_walked.details})
-        end
+        v_walked, error = RSchema.walk(value_subschema, v, mapper)
+        break RSchema::ErrorDetails.new({k => error.details}) if error
 
         accum[k_walked] = v_walked
         accum
@@ -144,16 +136,11 @@ module RSchema
 
   GenericSetSchema = Struct.new(:subschema) do
     def schema_walk(value, mapper)
-      if not value.is_a?(Set)
-        return RSchema::ErrorDetails.new('is not a Set')
-      end
+      return RSchema::ErrorDetails.new('is not a Set') if not value.is_a?(Set)
 
       value.reduce(Set.new) do |accum, subvalue|
-        subvalue_walked = RSchema.walk(subschema, subvalue, mapper)
-
-        if subvalue_walked.is_a?(RSchema::ErrorDetails)
-          break RSchema::ErrorDetails.new(Set.new([subvalue_walked.details]))
-        end
+        subvalue_walked, error = RSchema.walk(subschema, subvalue, mapper)
+        break RSchema::ErrorDetails.new(Set.new([error.details])) if error
 
         accum << subvalue_walked
         accum
@@ -176,7 +163,8 @@ module RSchema
       if value.nil?
         value
       else
-        RSchema.walk(subschema, value, mapper)
+        subvalue_walked, error = RSchema.walk(subschema, value, mapper)
+        error || subvalue_walked
       end
     end
   end
@@ -184,7 +172,9 @@ module RSchema
   EnumSchema = Struct.new(:value_set, :subschema) do
     def schema_walk(value, mapper)
       value_walked = if subschema
-        RSchema.walk(subschema, value, mapper)
+        v, error = RSchema.walk(subschema, value, mapper)
+        return error if error
+        v
       else
         value
       end
@@ -218,11 +208,9 @@ class Array
       RSchema::ErrorDetails.new("does not have #{size} elements")
     else
       value.each.with_index.map do |subvalue, idx|
-        subschema = (fixed_size ? self[idx] : first )
-        subvalue_walked = RSchema.walk(subschema, subvalue, mapper)
-        if subvalue_walked.is_a?(RSchema::ErrorDetails)
-          break RSchema::ErrorDetails.new({ idx => subvalue_walked.details })
-        end
+        subschema = (fixed_size ? self[idx] : first)
+        subvalue_walked, error = RSchema.walk(subschema, subvalue, mapper)
+        break RSchema::ErrorDetails.new({ idx => error.details }) if error
         subvalue_walked
       end
     end
@@ -231,10 +219,7 @@ end
 
 class Hash
   def schema_walk(value, mapper)
-    # must be a hash
-    if not value.is_a?(Hash)
-      return RSchema::ErrorDetails.new('is not a Hash')
-    end
+    return RSchema::ErrorDetails.new('is not a Hash') if not value.is_a?(Hash)
 
     # extract details from the schema
     required_keys = Set.new
@@ -262,10 +247,8 @@ class Hash
 
     # walk the subvalues
     value.reduce({}) do |accum, (k, subvalue)|
-      subvalue_walked = RSchema.walk(all_subschemas[k], subvalue, mapper)
-      if subvalue_walked.is_a?(RSchema::ErrorDetails)
-        break RSchema::ErrorDetails.new({ k => subvalue_walked.details })
-      end
+      subvalue_walked, error = RSchema.walk(all_subschemas[k], subvalue, mapper)
+      break RSchema::ErrorDetails.new({ k => error.details }) if error
       accum[k] = subvalue_walked
       accum
     end

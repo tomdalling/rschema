@@ -217,12 +217,12 @@ class CoordinateSchema
     return RSchema::ErrorDetails.new('does not have two elements') unless value.size == 2
 
     # walk the subschemas/subvalues
-    x = RSchema.walk(Float, value[0], mapper)
-    y = RSchema.walk(Float, value[1], mapper)
+    x, x_error = RSchema.walk(Float, value[0], mapper)
+    y, y_error = RSchema.walk(Float, value[1], mapper)
 
     # look for subschema errors, and propagate them if found
-    return RSchema::ErrorDetails.new({ x: x }) if x.is_a?(RSchema::ErrorDetails)
-    return RSchema::ErrorDetails.new({ y: y }) if y.is_a?(RSchema::ErrorDetails)
+    return RSchema::ErrorDetails.new({ x: x_error.details }) if x_error
+    return RSchema::ErrorDetails.new({ y: y_error.details }) if y_error
 
     # return the valid value
     [x, y]
