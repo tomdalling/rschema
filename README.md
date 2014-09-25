@@ -1,7 +1,7 @@
 # RSchema
 
-Schema-based validation and coercion for Ruby data structures. It has heavily
-inspired by (read: stolen from) [Prismatic/schema][] for Clojure.
+Schema-based validation and coercion for Ruby data structures. Heavily inspired
+by (read: stolen from) [Prismatic/schema][] for Clojure.
 
 Meet RSchema
 ------------
@@ -151,7 +151,7 @@ end
 RSchema.validate(maybe_schema, 5) #=> true
 RSchema.validate(maybe_schema, nil) #=> true
 
-#enum
+# enum
 enum_schema = RSchema.schema do
   enum([:a, :b, :c])
 end
@@ -209,18 +209,14 @@ RSchema.validate(schema, -6) #=> false
 Custom Schema Types
 -------------------
 
-Any Ruby object can be a schema, as long as there is a "walker" registered for
-it's type. Here is a schema called `Coordinate`, which is an x/y pair of
-`Float`s in an array:
+Any Ruby object can be a schema, as long as it implements the `schema_walk`
+method.  Here is a schema called `Coordinate`, which is an x/y pair of `Float`s
+in an array:
 
 ```ruby
 # make the schema type class
 class CoordinateSchema
-end
-
-# make a walker
-module CoordinateWalker
-  def self.walk(coordinate_schema, value, mapper)
+  def schema_walk(value, mapper)
     # validate `value`
     return RSchema::ErrorDetails.new('is not an Array') unless value.is_a?(Array)
     return RSchema::ErrorDetails.new('does not have two elements') unless value.size == 2
@@ -238,9 +234,6 @@ module CoordinateWalker
   end
 end
 
-# register the walker for the schema type class
-RSchema.register_walker(CoordinateSchema, CoordinateWalker)
-
 # add some DSL
 module RSchema::DSL
   def self.coordinate
@@ -255,26 +248,25 @@ RSchema.validate(schema, [1, 2]) #=> false (not Floats)
 RSchema.coerce(schema, ["1", "2"]) #=> [1.0, 2.0]
 ```
 
-A walker is an object that responds to the `walk` method. The `walk` method
-receives three arguments:
+The `schema_walk` method receives two arguments:
 
- - `schema`: the schema object
- - `value`: the value that is being validated against `schema`
- - `mapper`: not usually used by the walker, but must be passed to
-   `RSchema.walk`
+ - `value`: the value that is being validated against this schema
+ - `mapper`: not usually used by the schema, but must be passed to
+   `RSchema.walk`.
 
-Walkers have three responsibilities:
+The `schema_walk` method has three responsibilities:
 
- 1. They must validate the given value against the given schema. If the value
-    is invalid, the method must return a `RSchema::ErrorDetails` object. If the
-    value _is_ valid, then the method must return the value after its subvalues
-    have been walked.
+ 1. It must validate the given value. If the value is invalid, the method must
+    return an `RSchema::ErrorDetails` object. If the value is valid, it must
+    return the valid value after walking all subvalues.
 
- 2. They must walk subvalues by calling `RSchema.walk`. In the example above,
-    the walker walks the two elements inside the value array.
+ 2. For composite schemas, it must walk subvalues by calling `RSchema.walk`.
+    The example above walks two subvalues (`value[0]` and `value[1]`) with the
+    `Float` schema.
 
- 3. They must propagate any `RSchema::ErrorDetails` objects returned from
-    walking the subvalues. Walking subvalues with `RSchema.walk` may return
-    an error, in which case the walker must also return an error.
+ 3. It must propagate any `RSchema::ErrorDetails` objects returned from walking
+    the subvalues. Walking subvalues with `RSchema.walk` may return an error,
+    in which case the `rschema_walk` method must also return an error.
 
 [Prismatic/schema]: https://github.com/Prismatic/schema
+
