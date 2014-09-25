@@ -77,22 +77,22 @@ Arrays are composite schemas:</p>
 
 <p>And so are hashes:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span><span class="nb">name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="ss">age</span><span class="p">:</span> <span class="nb">Integer</span><span class="p">}</span>
-<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span><span class="nb">name</span><span class="p">:</span> <span class="s1">'Jane'</span><span class="p">,</span> <span class="ss">age</span><span class="p">:</span> <span class="mi">27</span><span class="p">})</span> <span class="c1"># ok</span>
-<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span><span class="nb">name</span><span class="p">:</span> <span class="s1">'Johnny'</span><span class="p">})</span>        <span class="c1"># !!! raises RSchema::ValidationError !!!</span>
+<div class="highlight highlight-ruby"><pre><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">fname</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="ss">age</span><span class="p">:</span> <span class="nb">Integer</span> <span class="p">}</span>
+<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="ss">fname</span><span class="p">:</span> <span class="s1">'Jane'</span><span class="p">,</span> <span class="ss">age</span><span class="p">:</span> <span class="mi">27</span> <span class="p">})</span> <span class="c1"># ok</span>
+<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="ss">fname</span><span class="p">:</span> <span class="s1">'Johnny'</span> <span class="p">})</span>        <span class="c1"># !!! raises RSchema::ValidationError !!!</span>
 </pre></div>
 
 <p>While schemas are just plain old Ruby data structures, RSchema also provides
 an extensible DSL for constructing more complicated schemas:</p>
 
 <div class="highlight highlight-ruby"><pre><span class="n">schema</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">schema</span> <span class="p">{{</span>
-  <span class="nb">name</span><span class="p">:</span> <span class="n">predicate</span> <span class="p">{</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="n">n</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">n</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="ss">fname</span><span class="p">:</span> <span class="n">predicate</span> <span class="p">{</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="n">n</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">n</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">},</span>
   <span class="ss">favourite_foods</span><span class="p">:</span> <span class="n">set_of</span><span class="p">(</span><span class="no">Symbol</span><span class="p">),</span>
   <span class="ss">children_by_age</span><span class="p">:</span> <span class="n">hash_of</span><span class="p">(</span><span class="nb">Integer</span> <span class="o">=&gt;</span> <span class="nb">String</span><span class="p">)</span>
 <span class="p">}}</span>
 
 <span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span>
-  <span class="nb">name</span><span class="p">:</span> <span class="s1">'Johnny'</span><span class="p">,</span>
+  <span class="ss">fname</span><span class="p">:</span> <span class="s1">'Johnny'</span><span class="p">,</span>
   <span class="ss">favourite_foods</span><span class="p">:</span> <span class="no">Set</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="o">[</span><span class="ss">:bacon</span><span class="p">,</span> <span class="ss">:cheese</span><span class="p">,</span> <span class="ss">:onion</span><span class="o">]</span><span class="p">),</span>
   <span class="ss">children_by_age</span><span class="p">:</span> <span class="p">{</span>
     <span class="mi">7</span> <span class="o">=&gt;</span> <span class="s1">'Jenny'</span><span class="p">,</span>
@@ -126,18 +126,18 @@ element, it is a variable-length array schema:</p>
 
 <p>Hash schemas map constant keys to subschema values:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span> <span class="nb">name</span><span class="p">:</span> <span class="nb">String</span> <span class="p">}</span>
-<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">'William'</span> <span class="p">})</span> <span class="c1"># ok</span>
+<div class="highlight highlight-ruby"><pre><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">fname</span><span class="p">:</span> <span class="nb">String</span> <span class="p">}</span>
+<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="ss">fname</span><span class="p">:</span> <span class="s1">'William'</span> <span class="p">})</span> <span class="c1"># ok</span>
 </pre></div>
 
 <p>Keys can be optional:</p>
 
 <div class="highlight highlight-ruby"><pre><span class="n">schema</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">schema</span> <span class="p">{{</span>
-  <span class="nb">name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+  <span class="ss">:fname</span> <span class="o">=&gt;</span> <span class="nb">String</span><span class="p">,</span>
   <span class="n">_?</span><span class="p">(</span><span class="ss">:age</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nb">Integer</span>
 <span class="p">}}</span>
-<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">'Lucy'</span><span class="p">,</span> <span class="ss">age</span><span class="p">:</span> <span class="mi">21</span> <span class="p">})</span> <span class="c1"># ok</span>
-<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">'Tom'</span> <span class="p">})</span>           <span class="c1"># ok</span>
+<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="ss">fname</span><span class="p">:</span> <span class="s1">'Lucy'</span><span class="p">,</span> <span class="ss">age</span><span class="p">:</span> <span class="mi">21</span> <span class="p">})</span> <span class="c1"># ok</span>
+<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="p">{</span> <span class="ss">fname</span><span class="p">:</span> <span class="s1">'Tom'</span> <span class="p">})</span>           <span class="c1"># ok</span>
 </pre></div>
 
 <p>There is also another type of hash schema that represents hashes with variable
@@ -173,7 +173,7 @@ keys:</p>
   <span class="n">enum</span><span class="p">(</span><span class="o">[</span><span class="ss">:a</span><span class="p">,</span> <span class="ss">:b</span><span class="p">,</span> <span class="ss">:c</span><span class="o">]</span><span class="p">)</span>
 <span class="k">end</span>
 <span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">enum_schema</span><span class="p">,</span> <span class="ss">:a</span><span class="p">)</span> <span class="c1"># ok</span>
-<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">enum_schema</span><span class="p">,</span> <span class="ss">:d</span><span class="p">)</span> <span class="c1"># !!! raises RSchema::ValidationError !!!</span>
+<span class="no">RSchema</span><span class="o">.</span><span class="n">validate!</span><span class="p">(</span><span class="n">enum_schema</span><span class="p">,</span> <span class="ss">:z</span><span class="p">)</span> <span class="c1"># !!! raises RSchema::ValidationError !!!</span>
 </pre></div>
 
 <h2>
@@ -189,17 +189,17 @@ situations. Here are some examples:</p>
 <span class="no">RSchema</span><span class="o">.</span><span class="n">coerce!</span><span class="p">(</span><span class="no">Set</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="o">]</span><span class="p">)</span>  <span class="c1">#=&gt; &lt;Set: {1, 2, 3}&gt;</span>
 
 <span class="n">schema</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">schema</span> <span class="p">{{</span>
-  <span class="nb">name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+  <span class="ss">fname</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
   <span class="ss">favourite_foods</span><span class="p">:</span> <span class="n">set_of</span><span class="p">(</span><span class="no">Symbol</span><span class="p">)</span>
 <span class="p">}}</span>
 
 <span class="n">value</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="nb">name</span><span class="p">:</span> <span class="s1">'Peggy'</span><span class="p">,</span>
+  <span class="ss">fname</span><span class="p">:</span> <span class="s1">'Peggy'</span><span class="p">,</span>
   <span class="ss">favourite_foods</span><span class="p">:</span> <span class="o">[</span><span class="s1">'berries'</span><span class="p">,</span> <span class="s1">'cake'</span><span class="o">]</span>
 <span class="p">}</span>
 
 <span class="no">RSchema</span><span class="o">.</span><span class="n">coerce!</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-  <span class="c1">#=&gt; { name: "Peggy", favourite_foods: &lt;Set: #{:berries, :cake}&gt; }</span>
+  <span class="c1">#=&gt; { fname: "Peggy", favourite_foods: &lt;Set: #{:berries, :cake}&gt; }</span>
 </pre></div>
 
 <h2>
@@ -233,12 +233,12 @@ in an array:</p>
     <span class="k">return</span> <span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">'does not have two elements'</span><span class="p">)</span> <span class="k">unless</span> <span class="n">value</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">2</span>
 
     <span class="c1"># walk the subschemas/subvalues</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="nb">Float</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">mapper</span><span class="p">)</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="nb">Float</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="n">mapper</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">x_error</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="nb">Float</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">mapper</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">,</span> <span class="n">y_error</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="nb">Float</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="n">mapper</span><span class="p">)</span>
 
     <span class="c1"># look for subschema errors, and propagate them if found</span>
-    <span class="k">return</span> <span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="o">.</span><span class="n">new</span><span class="p">({</span><span class="ss">x</span><span class="p">:</span> <span class="n">x</span><span class="p">})</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="p">)</span>
-    <span class="k">return</span> <span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="o">.</span><span class="n">new</span><span class="p">({</span><span class="ss">y</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span> <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="p">)</span>
+    <span class="k">return</span> <span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="o">.</span><span class="n">new</span><span class="p">({</span> <span class="ss">x</span><span class="p">:</span> <span class="n">x_error</span><span class="o">.</span><span class="n">details</span> <span class="p">})</span> <span class="k">if</span> <span class="n">x_error</span>
+    <span class="k">return</span> <span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="o">.</span><span class="n">new</span><span class="p">({</span> <span class="ss">y</span><span class="p">:</span> <span class="n">y_error</span><span class="o">.</span><span class="n">details</span> <span class="p">})</span> <span class="k">if</span> <span class="n">y_error</span>
 
     <span class="c1"># return the valid value</span>
     <span class="o">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">]</span>
