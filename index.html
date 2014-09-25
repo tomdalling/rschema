@@ -21,7 +21,7 @@
       <div class="inner">
         <h1>RSchema</h1>
         <h2>Schema-based validation and coercion for Ruby data structures</h2>
-        <a href="https://github.com/tomdalling/rschema" class="button"><small>View project on</small>GitHub</a>
+        <a href="https://github.com/tomdalling/rschema" class="button"><small>View project on</small> GitHub</a>
       </div>
     </header>
 
@@ -31,8 +31,8 @@
           <h1>
 <a name="rschema" class="anchor" href="#rschema"><span class="octicon octicon-link"></span></a>RSchema</h1>
 
-<p>Schema-based validation and coercion for Ruby data structures. It has heavily
-inspired by (read: stolen from) <a href="https://github.com/Prismatic/schema">Prismatic/schema</a> for Clojure.</p>
+<p>Schema-based validation and coercion for Ruby data structures. Heavily inspired
+by (read: stolen from) <a href="https://github.com/Prismatic/schema">Prismatic/schema</a> for Clojure.</p>
 
 <h2>
 <a name="meet-rschema" class="anchor" href="#meet-rschema"><span class="octicon octicon-link"></span></a>Meet RSchema</h2>
@@ -170,7 +170,7 @@ keys:</p>
 <span class="no">RSchema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">maybe_schema</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">#=&gt; true</span>
 <span class="no">RSchema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">maybe_schema</span><span class="p">,</span> <span class="kp">nil</span><span class="p">)</span> <span class="c1">#=&gt; true</span>
 
-<span class="c1">#enum</span>
+<span class="c1"># enum</span>
 <span class="n">enum_schema</span> <span class="o">=</span> <span class="no">RSchema</span><span class="o">.</span><span class="n">schema</span> <span class="k">do</span>
   <span class="n">enum</span><span class="p">(</span><span class="o">[</span><span class="ss">:a</span><span class="p">,</span> <span class="ss">:b</span><span class="p">,</span> <span class="ss">:c</span><span class="o">]</span><span class="p">)</span>
 <span class="k">end</span>
@@ -226,17 +226,13 @@ situations. Here are some examples:</p>
 <h2>
 <a name="custom-schema-types" class="anchor" href="#custom-schema-types"><span class="octicon octicon-link"></span></a>Custom Schema Types</h2>
 
-<p>Any Ruby object can be a schema, as long as there is a "walker" registered for
-it's type. Here is a schema called <code>Coordinate</code>, which is an x/y pair of
-<code>Float</code>s in an array:</p>
+<p>Any Ruby object can be a schema, as long as it implements the <code>schema_walk</code>
+method.  Here is a schema called <code>Coordinate</code>, which is an x/y pair of <code>Float</code>s
+in an array:</p>
 
 <div class="highlight highlight-ruby"><pre><span class="c1"># make the schema type class</span>
 <span class="k">class</span> <span class="nc">CoordinateSchema</span>
-<span class="k">end</span>
-
-<span class="c1"># make a walker</span>
-<span class="k">module</span> <span class="nn">CoordinateWalker</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">walk</span><span class="p">(</span><span class="n">coordinate_schema</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mapper</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">schema_walk</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">mapper</span><span class="p">)</span>
     <span class="c1"># validate `value`</span>
     <span class="k">return</span> <span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">'is not an Array'</span><span class="p">)</span> <span class="k">unless</span> <span class="n">value</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">Array</span><span class="p">)</span>
     <span class="k">return</span> <span class="no">RSchema</span><span class="o">::</span><span class="no">ErrorDetails</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">'does not have two elements'</span><span class="p">)</span> <span class="k">unless</span> <span class="n">value</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">2</span>
@@ -254,9 +250,6 @@ it's type. Here is a schema called <code>Coordinate</code>, which is an x/y pair
   <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="c1"># register the walker for the schema type class</span>
-<span class="no">RSchema</span><span class="o">.</span><span class="n">register_walker</span><span class="p">(</span><span class="no">CoordinateSchema</span><span class="p">,</span> <span class="no">CoordinateWalker</span><span class="p">)</span>
-
 <span class="c1"># add some DSL</span>
 <span class="k">module</span> <span class="nn">RSchema::DSL</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">coordinate</span>
@@ -271,31 +264,26 @@ it's type. Here is a schema called <code>Coordinate</code>, which is an x/y pair
 <span class="no">RSchema</span><span class="o">.</span><span class="n">coerce</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="o">[</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"2"</span><span class="o">]</span><span class="p">)</span> <span class="c1">#=&gt; [1.0, 2.0]</span>
 </pre></div>
 
-<p>A walker is an object that responds to the <code>walk</code> method. The <code>walk</code> method
-receives three arguments:</p>
+<p>The <code>schema_walk</code> method receives two arguments:</p>
 
 <ul>
 <li>
-<code>schema</code>: the schema object</li>
+<code>value</code>: the value that is being validated against this schema</li>
 <li>
-<code>value</code>: the value that is being validated against <code>schema</code>
-</li>
-<li>
-<code>mapper</code>: not usually used by the walker, but must be passed to
-<code>RSchema.walk</code>
-</li>
-</ul><p>Walkers have three responsibilities:</p>
+<code>mapper</code>: not usually used by the schema, but must be passed to
+<code>RSchema.walk</code>.</li>
+</ul><p>The <code>schema_walk</code> method has three responsibilities:</p>
 
 <ol>
-<li><p>They must validate the given value against the given schema. If the value
-is invalid, the method must return a <code>RSchema::ErrorDetails</code> object. If the
-value <em>is</em> valid, then the method must return the value after its subvalues
-have been walked.</p></li>
-<li><p>They must walk subvalues by calling <code>RSchema.walk</code>. In the example above,
-the walker walks the two elements inside the value array.</p></li>
-<li><p>They must propagate any <code>RSchema::ErrorDetails</code> objects returned from
-walking the subvalues. Walking subvalues with <code>RSchema.walk</code> may return
-an error, in which case the walker must also return an error.</p></li>
+<li><p>It must validate the given value. If the value is invalid, the method must
+return an <code>RSchema::ErrorDetails</code> object. If the value is valid, it must
+return the valid value after walking all subvalues.</p></li>
+<li><p>For composite schemas, it must walk subvalues by calling <code>RSchema.walk</code>.
+The example above walks two subvalues (<code>value[0]</code> and <code>value[1]</code>) with the
+<code>Float</code> schema.</p></li>
+<li><p>It must propagate any <code>RSchema::ErrorDetails</code> objects returned from walking
+the subvalues. Walking subvalues with <code>RSchema.walk</code> may return an error,
+in which case the <code>rschema_walk</code> method must also return an error.</p></li>
 </ol>
         </section>
 
