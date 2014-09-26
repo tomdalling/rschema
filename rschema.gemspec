@@ -3,7 +3,7 @@ $:.unshift lib unless $:.include?(lib)
 require 'rschema/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'RSchema'
+  s.name        = 'rschema'
   s.summary     = 'Schema-based validation and coercion for Ruby data structures'
   s.homepage    = 'http://www.tomdalling.com/rschema'
   s.licenses    = ['MIT']
