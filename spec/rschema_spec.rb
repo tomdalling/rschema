@@ -1,4 +1,4 @@
-require_relative 'rschema'
+require 'rschema'
 
 RSpec.describe RSchema do
   describe '#validate' do
