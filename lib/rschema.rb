@@ -89,6 +89,8 @@ module RSchema
         try_convert(value) { Integer(value) }
       elsif schema == Float && value.is_a?(String)
         try_convert(value) { Float(value) }
+      elsif schema == Float && value.is_a?(Integer)
+        value.to_f
       elsif schema == Symbol && value.is_a?(String)
         value.to_sym
       elsif schema == String && value.is_a?(Symbol)
