@@ -99,6 +99,8 @@ module RSchema
         value.to_a
       elsif (schema == Set || schema.is_a?(GenericSetSchema)) && value.is_a?(Array)
         Set.new(value)
+      elsif(schema.is_a?(Hash) && value.is_a?(Hash))
+        coerce_hash(schema, value)
       else
         value
       end
@@ -112,6 +114,23 @@ module RSchema
       yield x
     rescue
       x
+    end
+
+    def self.coerce_hash(schema, value)
+      symbol_keys = Set.new(schema.keys.select{ |k| k.is_a?(Symbol) }.map(&:to_s))
+      value.reduce({}) do |accum, (k, v)|
+        # convert string keys to symbol keys, if needed
+        if k.is_a?(String) && symbol_keys.include?(k)
+          k = k.to_sym
+        end
+
+        # strip out keys that don't exist in the schema
+        if schema.has_key?(k)
+          accum[k] = v
+        end
+
+        accum
+      end
     end
   end
 

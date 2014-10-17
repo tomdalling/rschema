@@ -138,6 +138,18 @@ RSpec.describe RSchema do
       expect(RSchema.coerce(Array, Set.new([1, 2, 3]))).to eq([[1,2,3], nil])
     end
 
+    it 'coerces Hash string keys to symbols' do
+      expect(RSchema.coerce({one: Integer}, {'one' => 1})).to eq([{one: 1}, nil])
+    end
+
+    it 'strips extraneous Hash keys during coercion' do
+      schema = {one: Integer}
+      value = {one: 1, two: 2}
+      expected_result = [{one: 1}, nil]
+
+      expect(RSchema.coerce(schema, value)).to eq(expected_result)
+    end
+
     it 'coerces through "enum"' do
       schema = RSchema.schema{ enum [:a, :b, :c], Symbol }
       expect(RSchema.coerce(schema, 'a')).to eq([:a, nil])
