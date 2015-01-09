@@ -137,7 +137,7 @@ RSchema provides a few other schema types through its DSL:
 ```ruby
 # predicate
 predicate_schema = RSchema.schema do
-  predicate { |x| x.even? }
+  predicate('even') { |x| x.even? }
 end
 RSchema.validate!(predicate_schema, 4) # ok
 RSchema.validate!(predicate_schema, 5) # !!! raises RSchema::ValidationError !!!
