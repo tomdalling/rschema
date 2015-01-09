@@ -161,7 +161,7 @@ module RSchema
 
       value.reduce(Set.new) do |accum, subvalue|
         subvalue_walked, error = RSchema.walk(subschema, subvalue, mapper)
-        break RSchema::ErrorDetails.new(Set.new([error.details])) if error
+        break RSchema::ErrorDetails.new(Set.new([error.details + ": " + subvalue.to_s])) if error
 
         accum << subvalue_walked
         accum
