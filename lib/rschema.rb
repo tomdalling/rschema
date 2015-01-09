@@ -203,7 +203,7 @@ module RSchema
       if value_set.include?(value_walked)
         value_walked
       else
-        RSchema::ErrorDetails.new('is not a valid enum member')
+        RSchema::ErrorDetails.new("#{value_walked} is not a valid enum member")
       end
     end
   end
