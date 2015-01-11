@@ -161,7 +161,7 @@ module RSchema
 
       value.reduce(Set.new) do |accum, subvalue|
         subvalue_walked, error = RSchema.walk(subschema, subvalue, mapper)
-        break RSchema::ErrorDetails.new(Set.new([error.details])) if error
+        break RSchema::ErrorDetails.new(Set.new([error.details + ": " + subvalue.to_s])) if error
 
         accum << subvalue_walked
         accum
@@ -203,7 +203,7 @@ module RSchema
       if value_set.include?(value_walked)
         value_walked
       else
-        RSchema::ErrorDetails.new('is not a valid enum member')
+        RSchema::ErrorDetails.new("#{value_walked} is not a valid enum member")
       end
     end
   end
