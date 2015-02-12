@@ -228,7 +228,7 @@ class Class
     if value.is_a?(self)
       value
     else
-      RSchema::ErrorDetails.new("is not a #{self}")
+      RSchema::ErrorDetails.new("is not a #{self.name}, is a #{value.class.name}")
     end
   end
 end
