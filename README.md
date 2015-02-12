@@ -135,26 +135,27 @@ Other Schema Types
 RSchema provides a few other schema types through its DSL:
 
 ```ruby
+# boolean
+boolean_schema = RSchema.schema{ boolean }
+RSchema.validate!(boolean_schema, false) # ok
+RSchema.validate!(boolean_schema, nil) # !!! raises RSchema::ValidationError !!!
+
+# maybe
+maybe_schema = RSchema.schema{ maybe(Integer) }
+RSchema.validate!(maybe_schema, 5)   # ok
+RSchema.validate!(maybe_schema, nil) # ok
+
+# enum
+enum_schema = RSchema.schema{ enum([:a, :b, :c]) }
+RSchema.validate!(enum_schema, :a) # ok
+RSchema.validate!(enum_schema, :z) # !!! raises RSchema::ValidationError !!!
+
 # predicate
 predicate_schema = RSchema.schema do
   predicate('even') { |x| x.even? }
 end
 RSchema.validate!(predicate_schema, 4) # ok
 RSchema.validate!(predicate_schema, 5) # !!! raises RSchema::ValidationError !!!
-
-# maybe
-maybe_schema = RSchema.schema do
-  maybe(Integer)
-end
-RSchema.validate!(maybe_schema, 5)   # ok
-RSchema.validate!(maybe_schema, nil) # ok
-
-# enum
-enum_schema = RSchema.schema do
-  enum([:a, :b, :c])
-end
-RSchema.validate!(enum_schema, :a) # ok
-RSchema.validate!(enum_schema, :z) # !!! raises RSchema::ValidationError !!!
 ```
 
 Coercion
