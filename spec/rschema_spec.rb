@@ -69,6 +69,16 @@ RSpec.describe RSchema do
       expect{ RSchema.validate!(schema, 5) }.to raise_error(RSchema::ValidationError)
     end
 
+    it 'validates booleans' do
+      schema = RSchema.schema { boolean }
+
+      expect{ RSchema.validate!(schema, true) }.not_to raise_error
+      expect{ RSchema.validate!(schema, false) }.not_to raise_error
+
+      expect{ RSchema.validate!(schema, nil) }.to raise_error
+      expect{ RSchema.validate!(schema, 5) }.to raise_error
+    end
+
     it 'validates "maybe"s' do
       schema = RSchema.schema { maybe Integer }
 

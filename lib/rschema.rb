@@ -81,6 +81,10 @@ module RSchema
       raise InvalidSchemaError unless possible_values && possible_values.size > 0
       EnumSchema.new(Set.new(possible_values), subschema)
     end
+
+    def self.boolean
+      BooleanSchema
+    end
   end
 
   module CoercionMapper
@@ -204,6 +208,16 @@ module RSchema
         value_walked
       else
         RSchema::ErrorDetails.new("#{value_walked} is not a valid enum member")
+      end
+    end
+  end
+
+  module BooleanSchema
+    def self.schema_walk(value, mapper)
+      if value.is_a?(TrueClass) || value.is_a?(FalseClass)
+        value
+      else
+        RSchema::ErrorDetails.new('is not a boolean')
       end
     end
   end
