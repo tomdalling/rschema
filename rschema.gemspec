@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.licenses    = ['MIT']
   s.description = <<-GEM_DESC
     Schema-based validation and coercion for Ruby data structures. Heavily inspired
-    by (read: stolen from) [Prismatic/schema][] for Clojure.
+    by (read: stolen from) Prismatic/schema for Clojure.
   GEM_DESC
 
   s.version = RSchema::VERSION
