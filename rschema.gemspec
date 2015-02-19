@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.files = Dir['lib/**/*'] + %w{LICENSE.txt README.md}
   s.add_development_dependency 'rspec', '~> 3.0'
   s.add_development_dependency 'rake', '~> 10.0'
-  s.add_development_dependency 'pry'
+  s.add_development_dependency 'gem-release', '~> 0.7'
+  s.add_development_dependency 'pry', '~> 0'
   s.require_paths = ['lib']
 end
