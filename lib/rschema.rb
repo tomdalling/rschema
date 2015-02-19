@@ -38,6 +38,10 @@ module RSchema
     end
   end
 
+  def self.validate(schema, value)
+    validation_error(schema, value).nil?
+  end
+
   def self.coerce(schema, value)
     walk(schema, value, CoercionMapper)
   end

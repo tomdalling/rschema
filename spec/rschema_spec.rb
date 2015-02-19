@@ -138,6 +138,13 @@ RSpec.describe RSchema do
     end
   end
 
+  describe '#validate' do
+    it 'returns a boolean indicating whether validation succeeded' do
+      expect(RSchema.validate(Float, 5.0)).to be(true)
+      expect(RSchema.validate(Float, 'hello')).to be(false)
+    end
+  end
+
   describe '#coerce' do
     it 'coerces String => Integer' do
       expect(RSchema.coerce(Integer, '5')).to eq([5, nil])
