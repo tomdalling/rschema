@@ -120,6 +120,24 @@ RSpec.describe RSchema do
     end
   end
 
+  describe '#validation_error' do
+    it 'returns nil if the value passes validation' do
+      error = RSchema.validation_error(Float, 5.0)
+      expect(error).to be_nil
+    end
+
+    it 'returns a RSchema::ErrorDetails object if there are errors' do
+      schema = { floats: [Float] }
+      value = { floats: [1.0, 'wrong', 3.0] }
+      error = RSchema.validation_error(schema,value)
+
+      expect(error).to be_a(RSchema::ErrorDetails)
+      expect(error.failing_value).to eq('wrong')
+      expect(error.reason).to be_a(String)
+      expect(error.key_path).to eq([:floats, 1])
+    end
+  end
+
   describe '#coerce' do
     it 'coerces String => Integer' do
       expect(RSchema.coerce(Integer, '5')).to eq([5, nil])

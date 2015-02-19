@@ -4,16 +4,27 @@ module RSchema
   InvalidSchemaError = Class.new(StandardError)
   ValidationError = Class.new(StandardError)
   OptionalHashKey = Struct.new(:key)
-  ErrorDetails = Struct.new(:details) do
-    def to_s; inspect; end
-    def inspect; details.inspect; end
+  ErrorDetails = Struct.new(:failing_value, :reason, :key_path) do
+    def initialize(failing_value, reason, key_path = [])
+      super(failing_value, reason, key_path)
+    end
+
+    def to_s
+      prefix = (key_path.empty? ?  'The root value' : "The value at #{key_path.inspect}")
+      "#{prefix} #{reason}: #{failing_value.inspect}"
+    end
+
+    def extend_key_path(key)
+      key_path.unshift(key)
+      self
+    end
   end
 
   def self.schema(&block)
     DSL.instance_exec(&block)
   end
 
-  def self.validation_errors(schema, value)
+  def self.validation_error(schema, value)
     _, error = walk(schema, value)
     error
   end
@@ -141,17 +152,17 @@ module RSchema
   GenericHashSchema = Struct.new(:key_subschema, :value_subschema) do
     def schema_walk(value, mapper)
       if not value.is_a?(Hash)
-        return RSchema::ErrorDetails.new('is not a Hash')
+        return RSchema::ErrorDetails.new(value, 'is not a Hash')
       end
 
       value.reduce({}) do |accum, (k, v)|
         # walk key
         k_walked, error = RSchema.walk(key_subschema, k, mapper)
-        break RSchema::ErrorDetails.new({'has invalid key, where' => error.details}) if error
+        break error.extend_key_path('.keys') if error
 
         # walk value
         v_walked, error = RSchema.walk(value_subschema, v, mapper)
-        break RSchema::ErrorDetails.new({k => error.details}) if error
+        break error.extend_key_path(k) if error
 
         accum[k_walked] = v_walked
         accum
@@ -161,11 +172,11 @@ module RSchema
 
   GenericSetSchema = Struct.new(:subschema) do
     def schema_walk(value, mapper)
-      return RSchema::ErrorDetails.new('is not a Set') if not value.is_a?(Set)
+      return RSchema::ErrorDetails.new(value, 'is not a Set') if not value.is_a?(Set)
 
       value.reduce(Set.new) do |accum, subvalue|
         subvalue_walked, error = RSchema.walk(subschema, subvalue, mapper)
-        break RSchema::ErrorDetails.new(Set.new([error.details + ": " + subvalue.to_s])) if error
+        break error.extend_key_path('.values') if error
 
         accum << subvalue_walked
         accum
@@ -178,7 +189,7 @@ module RSchema
       if block.call(value)
         value
       else
-        RSchema::ErrorDetails.new('fails predicate' + (name ? ": #{name}" : ''))
+        RSchema::ErrorDetails.new(value, 'fails predicate' + (name ? ": #{name}" : ''))
       end
     end
   end
@@ -207,7 +218,7 @@ module RSchema
       if value_set.include?(value_walked)
         value_walked
       else
-        RSchema::ErrorDetails.new("#{value_walked} is not a valid enum member")
+        RSchema::ErrorDetails.new(value_walked, "#{value_walked} is not a valid enum member")
       end
     end
   end
@@ -217,7 +228,7 @@ module RSchema
       if value.is_a?(TrueClass) || value.is_a?(FalseClass)
         value
       else
-        RSchema::ErrorDetails.new('is not a boolean')
+        RSchema::ErrorDetails.new(value, 'is not a boolean')
       end
     end
   end
@@ -228,7 +239,7 @@ class Class
     if value.is_a?(self)
       value
     else
-      RSchema::ErrorDetails.new("is not a #{self.name}, is a #{value.class.name}")
+      RSchema::ErrorDetails.new(value, "is not a #{self.name}, is a #{value.class.name}")
     end
   end
 end
@@ -238,14 +249,14 @@ class Array
     fixed_size = (size != 1)
 
     if not value.is_a?(Array)
-      RSchema::ErrorDetails.new("is not an Array")
+      RSchema::ErrorDetails.new(value, 'is not an Array')
     elsif fixed_size && value.size != size
-      RSchema::ErrorDetails.new("does not have #{size} elements")
+      RSchema::ErrorDetails.new(value, "does not have #{size} elements")
     else
       value.each.with_index.map do |subvalue, idx|
         subschema = (fixed_size ? self[idx] : first)
         subvalue_walked, error = RSchema.walk(subschema, subvalue, mapper)
-        break RSchema::ErrorDetails.new({ idx => error.details }) if error
+        break error.extend_key_path(idx) if error
         subvalue_walked
       end
     end
@@ -254,7 +265,7 @@ end
 
 class Hash
   def schema_walk(value, mapper)
-    return RSchema::ErrorDetails.new('is not a Hash') if not value.is_a?(Hash)
+    return RSchema::ErrorDetails.new(value, 'is not a Hash') if not value.is_a?(Hash)
 
     # extract details from the schema
     required_keys = Set.new
@@ -271,19 +282,19 @@ class Hash
     # check for extra keys that shouldn't be there
     extraneous = value.keys.reject{ |k| all_subschemas.has_key?(k) }
     if extraneous.size > 0
-      return RSchema::ErrorDetails.new({"has extraneous keys" => extraneous})
+      return RSchema::ErrorDetails.new(value, "has extraneous keys: #{extraneous.inspect}")
     end
 
     # check for required keys that are missing
     missing_requireds = required_keys.reject{ |k| value.has_key?(k) }
     if missing_requireds.size > 0
-      return RSchema::ErrorDetails.new({"is missing required keys" => missing_requireds})
+      return RSchema::ErrorDetails.new(value, "is missing required keys: #{missing_requireds.inspect}")
     end
 
     # walk the subvalues
     value.reduce({}) do |accum, (k, subvalue)|
       subvalue_walked, error = RSchema.walk(all_subschemas[k], subvalue, mapper)
-      break RSchema::ErrorDetails.new({ k => error.details }) if error
+      break error.extend_key_path(k) if error
       accum[k] = subvalue_walked
       accum
     end
