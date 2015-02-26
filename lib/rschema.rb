@@ -144,7 +144,7 @@ module RSchema
         end
 
         # strip out keys that don't exist in the schema
-        if schema.has_key?(k)
+        if schema.has_key?(k) || schema.has_key?(OptionalHashKey.new(k))
           accum[k] = v
         end
 

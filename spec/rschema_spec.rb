@@ -185,6 +185,17 @@ RSpec.describe RSchema do
       expect(RSchema.coerce(schema, value)).to eq(expected_result)
     end
 
+    it 'doesnt strip optional Hash keys during coercion' do
+      schema = RSchema.schema{{
+        required: Integer,
+        _?(:optional) => Integer,
+      }}
+      value = {required: 1, optional: 2, extra: 3}
+      expected_result = [{required: 1, optional: 2}, nil]
+
+      expect(RSchema.coerce(schema, value)).to eq(expected_result)
+    end
+
     it 'coerces through "enum"' do
       schema = RSchema.schema{ enum [:a, :b, :c], Symbol }
       expect(RSchema.coerce(schema, 'a')).to eq([:a, nil])
