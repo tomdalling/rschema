@@ -1,5 +1,12 @@
 require 'rschema'
 
+module TestDSL
+  extend RSchema::DSL::Base
+  def self.even_integer
+    predicate { |x| x.is_a?(Integer) && x.even? }
+  end
+end
+
 RSpec.describe RSchema do
   describe '#validate' do
     it 'validates scalars' do
@@ -118,6 +125,13 @@ RSpec.describe RSchema do
       expect{ RSchema.validate!(schema, good_value) }.not_to raise_error
       expect{ RSchema.validate!(schema, bad_value) }.to raise_error(RSchema::ValidationError)
     end
+
+    it 'can use a custom DSL' do
+      schema = RSchema.schema(TestDSL) { even_integer }
+      expect(RSchema.validate(schema, 6)).to be(true)
+      expect(RSchema.validate(schema, 7)).to be(false)
+    end
+
   end
 
   describe '#validation_error' do

@@ -21,11 +21,11 @@ Schemas can be used to validate data. That is, they can check whether
 data is in the correct shape:
 
 ```ruby
-RSchema.validate!(post_schema, {
+RSchema.validate(post_schema, {
   title: "You won't beleive how this developer foo'd her bar",
   tags: [:foos, :bars, :unbeleivable],
   body: '<p>blah blah</p>'
-}) # ok
+}) #=> true
 ```
 
 What is a schema?
@@ -35,8 +35,8 @@ Schemas are Ruby data structures. The simplest type of schema is just a class:
 
 ```ruby
 schema = Integer
-RSchema.validate!(schema, 5)       # ok
-RSchema.validate!(schema, 'hello') # !!! raises RSchema::ValidationError !!!
+RSchema.validate(schema, 5) #=> true
+RSchema.validate(schema, 'hello') #=> false
 ```
 
 Then there are composite schemas, which are schemas composed of subschemas.
@@ -44,16 +44,16 @@ Arrays are composite schemas:
 
 ```ruby
 schema = [Integer]
-RSchema.validate!(schema, [10, 11, 12])   # ok
-RSchema.validate!(schema, [10, 11, '12']) # !!! raises RSchema::ValidationError !!!
+RSchema.validate(schema, [10, 11, 12]) #=> true
+RSchema.validate(schema, [10, 11, '12']) #=> false
 ```
 
 And so are hashes:
 
 ```ruby
 schema = { fname: String, age: Integer }
-RSchema.validate!(schema, { fname: 'Jane', age: 27 }) # ok
-RSchema.validate!(schema, { fname: 'Johnny' })        # !!! raises RSchema::ValidationError !!!
+RSchema.validate(schema, { fname: 'Jane', age: 27 }) #=> true
+RSchema.validate(schema, { fname: 'Johnny' }) #=> false
 ```
 
 While schemas are just plain old Ruby data structures, RSchema also provides
@@ -66,14 +66,67 @@ schema = RSchema.schema {{
   children_by_age: hash_of(Integer => String)
 }}
 
-RSchema.validate!(schema, {
+RSchema.validate(schema, {
   fname: 'Johnny',
   favourite_foods: Set.new([:bacon, :cheese, :onion]),
   children_by_age: {
     7 => 'Jenny',
     5 => 'Simon'
   }
-}) # ok
+}) #=> true
+```
+
+When Validation Fails
+---------------------
+
+Using `RSchema.validate`, it is often difficult to tell exactly which values
+are failing validation.
+
+```ruby
+schema = RSchema.schema do
+  [
+    {
+      name: String,
+      hair: enum([:red, :brown, :blonde, :black])
+    }
+  ]
+end
+
+value = [
+  { name: 'Dane', hair: :black },
+  { name: 'Tom', hair: :brown },
+  { name: 'Effie', hair: :blond },
+  { name: 'Chris', hair: :red },
+]
+
+RSchema.validate(schema, value) #=> false
+```
+
+To see exactly where validation fails, we can look at an
+`RSchema::ErrorDetails` object.
+
+The `validate!` method throws an exception when validation fails, and the
+exception contains the `RSchema::ErrorDetails` object.
+
+```ruby
+RSchema.validate!(schema, value) # throws exception:
+#=> RSchema::ValidationError: The value at [2, :hair] is not a valid enum member: :blond
+```
+
+The error above says that the value `:blond`, which exists at location
+`value[2][:hair]`, is not a valid enum member. Looking back at the schema, we
+see that there is a typo, and it should be `:blonde` instead of `:blond`.
+
+To get an `RSchema::ErrorDetails` object _without_ using exceptions, we can use
+the `RSchema.validation_error` method.
+
+```ruby
+error_details = RSchema.validation_error(schema, value)
+
+error_details.failing_value #=> :blond
+error_details.reason #=> "is not a valid enum member"
+error_details.key_path #=> [2, :hair]
+error_details.to_s #=> "The value at [2, :hair] is not a valid enum member: :blond"
 ```
 
 Array Schemas
@@ -84,18 +137,18 @@ element, it is a variable-length array schema:
 
 ```ruby
 schema = [Symbol]
-RSchema.validate!(schema, [:a, :b, :c]) # ok
-RSchema.validate!(schema, [:a])         # ok
-RSchema.validate!(schema, [])           # ok
+RSchema.validate(schema, [:a, :b, :c]) #=> true
+RSchema.validate(schema, [:a]) #=> true
+RSchema.validate(schema, []) #=> true
 ```
 
 Otherwise, it is a fixed-length array schema
 
 ```ruby
 schema = [Integer, String]
-RSchema.validate!(schema, [10, 'hello'])          # ok
-RSchema.validate!(schema, [10, 'hello', 'world']) # !!! raises RSchema::ValidationError !!!
-RSchema.validate!(schema, [10])                   # !!! raises RSchema::ValidationError !!!
+RSchema.validate(schema, [10, 'hello']) #=> true
+RSchema.validate(schema, [10, 'hello', 'world']) #=> false
+RSchema.validate(schema, [10]) #=> false
 ```
 
 Hash Schemas
@@ -105,7 +158,7 @@ Hash schemas map constant keys to subschema values:
 
 ```ruby
 schema = { fname: String }
-RSchema.validate!(schema, { fname: 'William' }) # ok
+RSchema.validate(schema, { fname: 'William' }) #=> true
 ```
 
 Keys can be optional:
@@ -115,8 +168,8 @@ schema = RSchema.schema {{
   :fname => String,
   _?(:age) => Integer
 }}
-RSchema.validate!(schema, { fname: 'Lucy', age: 21 }) # ok
-RSchema.validate!(schema, { fname: 'Tom' })           # ok
+RSchema.validate(schema, { fname: 'Lucy', age: 21 }) #=> true
+RSchema.validate(schema, { fname: 'Tom' }) #=> true
 ```
 
 There is also another type of hash schema that represents hashes with variable
@@ -124,9 +177,9 @@ keys:
 
 ```ruby
 schema = RSchema.schema { hash_of(String => Integer) }
-RSchema.validate!(schema, { 'hello' => 1, 'world' => 2 }) # ok
-RSchema.validate!(schema, { 'hello' => 1 })               # ok
-RSchema.validate!(schema, {})                             # ok
+RSchema.validate(schema, { 'hello' => 1, 'world' => 2 }) #=> true
+RSchema.validate(schema, { 'hello' => 1 }) #=> true
+RSchema.validate(schema, {}) #=> true
 ```
 
 Other Schema Types
@@ -137,25 +190,25 @@ RSchema provides a few other schema types through its DSL:
 ```ruby
 # boolean
 boolean_schema = RSchema.schema{ boolean }
-RSchema.validate!(boolean_schema, false) # ok
-RSchema.validate!(boolean_schema, nil) # !!! raises RSchema::ValidationError !!!
+RSchema.validate(boolean_schema, false) #=> true
+RSchema.validate(boolean_schema, nil) #=> false
 
 # maybe
 maybe_schema = RSchema.schema{ maybe(Integer) }
-RSchema.validate!(maybe_schema, 5)   # ok
-RSchema.validate!(maybe_schema, nil) # ok
+RSchema.validate(maybe_schema, 5) #=> true
+RSchema.validate(maybe_schema, nil) #=> true
 
 # enum
 enum_schema = RSchema.schema{ enum([:a, :b, :c]) }
-RSchema.validate!(enum_schema, :a) # ok
-RSchema.validate!(enum_schema, :z) # !!! raises RSchema::ValidationError !!!
+RSchema.validate(enum_schema, :a) #=> true
+RSchema.validate(enum_schema, :z) #=> false
 
 # predicate
 predicate_schema = RSchema.schema do
   predicate('even') { |x| x.even? }
 end
-RSchema.validate!(predicate_schema, 4) # ok
-RSchema.validate!(predicate_schema, 5) # !!! raises RSchema::ValidationError !!!
+RSchema.validate(predicate_schema, 4) #=> true
+RSchema.validate(predicate_schema, 5) #=> false
 ```
 
 Coercion
@@ -188,18 +241,23 @@ RSchema.coerce!(schema, value)
 Extending the DSL
 -----------------
 
-The RSchema DSL can be extended by adding methods to the `RSchema::DSL` module:
+You can create new, custom DSLs that extend the default DSL like so:
 
 ```ruby
-module RSchema::DSL
+module MyCustomDSL
+  extend RSchema::DSL::Base
   def self.positive_and_even(type)
     predicate { |x| x > 0 && x.even? }
   end
 end
+```
 
-schema = RSchema.schema { positive_and_even }
-RSchema.validate!(schema, 6)  # ok
-RSchema.validate!(schema, -6) # !!! raises RSchema::ValidationError !!!
+Pass the custom DSL to `RSchema.schema` to use it:
+
+```ruby
+schema = RSchema.schema(MyCustomDSL) { positive_and_even }
+RSchema.validate(schema, 6)  #=> true
+RSchema.validate(schema, -6) #=> false
 ```
 
 Custom Schema Types
@@ -214,16 +272,16 @@ in an array:
 class CoordinateSchema
   def schema_walk(value, mapper)
     # validate `value`
-    return RSchema::ErrorDetails.new('is not an Array') unless value.is_a?(Array)
-    return RSchema::ErrorDetails.new('does not have two elements') unless value.size == 2
+    return RSchema::ErrorDetails.new(value, 'is not an Array') unless value.is_a?(Array)
+    return RSchema::ErrorDetails.new(value, 'does not have two elements') unless value.size == 2
 
     # walk the subschemas/subvalues
     x, x_error = RSchema.walk(Float, value[0], mapper)
     y, y_error = RSchema.walk(Float, value[1], mapper)
 
     # look for subschema errors, and propagate them if found
-    return RSchema::ErrorDetails.new({ x: x_error.details }) if x_error
-    return RSchema::ErrorDetails.new({ y: y_error.details }) if y_error
+    return x_error.extend_key_path(:x) if x_error
+    return y_error.extend_key_path(:y) if y_error
 
     # return the valid value
     [x, y]
@@ -239,9 +297,9 @@ end
 
 # use the custom schema type (coercion works too)
 schema = RSchema.schema { coordinate }
-RSchema.validate!(schema, [1.0, 2.0]) # ok
-RSchema.validate!(schema, [1, 2])     # !!! raises RSchema::ValidationError !!!
-RSchema.coerce!(schema, ["1", "2"])   #=> [1.0, 2.0]
+RSchema.validate(schema, [1.0, 2.0]) #=> true
+RSchema.validate(schema, [1, 2]) #=> false
+RSchema.coerce!(schema, ["1", "2"]) #=> [1.0, 2.0]
 ```
 
 The `schema_walk` method receives two arguments:
@@ -262,7 +320,9 @@ The `schema_walk` method has three responsibilities:
 
  3. It must propagate any `RSchema::ErrorDetails` objects returned from walking
     the subvalues. Walking subvalues with `RSchema.walk` may return an error,
-    in which case the `rschema_walk` method must also return an error.
+    in which case the `rschema_walk` method must also return an error. Use the
+    method `RSchema::ErrorDetails#extend_key_path` in this situation, to
+    include additional information in the error before returning it.
 
 [Prismatic/schema]: https://github.com/Prismatic/schema
 

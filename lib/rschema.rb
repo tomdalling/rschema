@@ -20,8 +20,8 @@ module RSchema
     end
   end
 
-  def self.schema(&block)
-    DSL.instance_exec(&block)
+  def self.schema(dsl=RSchema::DSL, &block)
+    dsl.instance_exec(&block)
   end
 
   def self.validation_error(schema, value)
@@ -69,37 +69,40 @@ module RSchema
   end
 
   module DSL
-    def self._?(key)
-      OptionalHashKey.new(key)
-    end
+    module Base
+      def _?(key)
+        OptionalHashKey.new(key)
+      end
 
-    def self.hash_of(subschemas_hash)
-      raise InvalidSchemaError unless subschemas_hash.size == 1
-      GenericHashSchema.new(subschemas_hash.keys.first, subschemas_hash.values.first)
-    end
+      def hash_of(subschemas_hash)
+        raise InvalidSchemaError unless subschemas_hash.size == 1
+        GenericHashSchema.new(subschemas_hash.keys.first, subschemas_hash.values.first)
+      end
 
-    def self.set_of(subschema)
-      GenericSetSchema.new(subschema)
-    end
+      def set_of(subschema)
+        GenericSetSchema.new(subschema)
+      end
 
-    def self.predicate(name = nil, &block)
-      raise InvalidSchemaError unless block
-      PredicateSchema.new(name, block)
-    end
+      def predicate(name = nil, &block)
+        raise InvalidSchemaError unless block
+        PredicateSchema.new(name, block)
+      end
 
-    def self.maybe(subschema)
-      raise InvalidSchemaError unless subschema
-      MaybeSchema.new(subschema)
-    end
+      def maybe(subschema)
+        raise InvalidSchemaError unless subschema
+        MaybeSchema.new(subschema)
+      end
 
-    def self.enum(possible_values, subschema = nil)
-      raise InvalidSchemaError unless possible_values && possible_values.size > 0
-      EnumSchema.new(Set.new(possible_values), subschema)
-    end
+      def enum(possible_values, subschema = nil)
+        raise InvalidSchemaError unless possible_values && possible_values.size > 0
+        EnumSchema.new(Set.new(possible_values), subschema)
+      end
 
-    def self.boolean
-      BooleanSchema
+      def boolean
+        BooleanSchema
+      end
     end
+    extend Base
   end
 
   module CoercionMapper
