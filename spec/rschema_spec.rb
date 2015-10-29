@@ -86,6 +86,13 @@ RSpec.describe RSchema do
       expect{ RSchema.validate!(schema, 5) }.to raise_error
     end
 
+    it 'validates anything' do
+      schema = RSchema.schema { any }
+      expect{ RSchema.validate!(schema, true) }.not_to raise_error
+      expect{ RSchema.validate!(schema, false) }.not_to raise_error
+      expect{ RSchema.validate!(schema, nil) }.not_to raise_error
+    end
+
     it 'validates "maybe"s' do
       schema = RSchema.schema { maybe Integer }
 

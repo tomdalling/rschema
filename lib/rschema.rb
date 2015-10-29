@@ -101,6 +101,10 @@ module RSchema
       def boolean
         BooleanSchema
       end
+
+      def any
+        AnySchema
+      end
     end
     extend Base
   end
@@ -237,6 +241,12 @@ module RSchema
       else
         RSchema::ErrorDetails.new(value, 'is not a boolean')
       end
+    end
+  end
+
+  module AnySchema
+    def self.schema_walk(value, mapper)
+      value
     end
   end
 end
