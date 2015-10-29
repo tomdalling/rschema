@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.0](https://github.com/tomdal1ing/rschema/compare/v1.1.1...v1.2.0) -- 2015-08-27
+Added:
+- The `any` schema, which matches literally any value.
+- The `optional` method to the schema DSL. It functions identically to the `_?` method
+  for specifying optional hash keys, except it's a bit more verbose.
+
 ## [1.1.1](https://github.com/tomdalling/rschema/compare/v1.1.0...v1.1.1) -- 2015-08-27
 Fixed:
 - Specified minimum Ruby version in gemspec
