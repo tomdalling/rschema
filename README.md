@@ -12,7 +12,7 @@ Schemas are generally just plain old hashes, arrays, and classes.
 ```ruby
 post_schema = {
   title: String,
-  tags: [Symbol],
+  tags: Array[Symbol],
   body: String
 }
 ```
@@ -43,7 +43,7 @@ Then there are composite schemas, which are schemas composed of subschemas.
 Arrays are composite schemas:
 
 ```ruby
-schema = [Integer]
+schema = Array[Integer]
 RSchema.validate(schema, [10, 11, 12]) #=> true
 RSchema.validate(schema, [10, 11, '12']) #=> false
 ```
@@ -84,12 +84,10 @@ are failing validation.
 
 ```ruby
 schema = RSchema.schema do
-  [
-    {
-      name: String,
-      hair: enum([:red, :brown, :blonde, :black])
-    }
-  ]
+  Array[{
+    name: String,
+    hair: enum([:red, :brown, :blonde, :black])
+  }]
 end
 
 value = [
@@ -136,7 +134,7 @@ There are two types of array schemas. When the array schema has a single
 element, it is a variable-length array schema:
 
 ```ruby
-schema = [Symbol]
+schema = Array[Symbol]
 RSchema.validate(schema, [:a, :b, :c]) #=> true
 RSchema.validate(schema, [:a]) #=> true
 RSchema.validate(schema, []) #=> true
@@ -145,7 +143,7 @@ RSchema.validate(schema, []) #=> true
 Otherwise, it is a fixed-length array schema
 
 ```ruby
-schema = [Integer, String]
+schema = Array[Integer, String]
 RSchema.validate(schema, [10, 'hello']) #=> true
 RSchema.validate(schema, [10, 'hello', 'world']) #=> false
 RSchema.validate(schema, [10]) #=> false
