@@ -189,11 +189,18 @@ RSchema provides a few other schema types through its DSL:
 # boolean
 boolean_schema = RSchema.schema{ boolean }
 RSchema.validate(boolean_schema, false) #=> true
-RSchema.validate(boolean_schema, nil) #=> false
+RSchema.validate(boolean_schema, nil)   #=> false
+
+# any
+any_schema = RSchema.schema{ any }
+RSchema.validate(any_schema, "Hi")  #=> true
+RSchema.validate(any_schema, true)  #=> true
+RSchema.validate(any_schema, false) #=> true
+RSchema.validate(any_schema, nil)   #=> true
 
 # maybe
 maybe_schema = RSchema.schema{ maybe(Integer) }
-RSchema.validate(maybe_schema, 5) #=> true
+RSchema.validate(maybe_schema, 5)   #=> true
 RSchema.validate(maybe_schema, nil) #=> true
 
 # enum
