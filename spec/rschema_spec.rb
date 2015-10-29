@@ -46,11 +46,13 @@ RSpec.describe RSchema do
     it 'validates optional hash keys' do
       schema = RSchema.schema {{
         required: String,
-        _?(:optional) => String,
+        _?(:optional1) => String,
+        optional(:optional2) => String,
       }}
 
       expect{ RSchema.validate!(schema, required: 'hello') }.not_to raise_error
-      expect{ RSchema.validate!(schema, required: 'hello', optional: 'world') }.not_to raise_error
+      expect{ RSchema.validate!(schema, required: 'hello', optional1: 'world') }.not_to raise_error
+      expect{ RSchema.validate!(schema, required: 'hello', optional2: 'world') }.not_to raise_error
 
       expect{ RSchema.validate!(schema, optional: 'world') }.to raise_error(RSchema::ValidationError)
     end

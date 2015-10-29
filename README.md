@@ -164,7 +164,7 @@ Keys can be optional:
 ```ruby
 schema = RSchema.schema {{
   :fname => String,
-  _?(:age) => Integer
+  optional(:age) => Integer
 }}
 RSchema.validate(schema, { fname: 'Lucy', age: 21 }) #=> true
 RSchema.validate(schema, { fname: 'Tom' }) #=> true

@@ -70,9 +70,10 @@ module RSchema
 
   module DSL
     module Base
-      def _?(key)
+      def optional(key)
         OptionalHashKey.new(key)
       end
+      alias_method :_?, :optional
 
       def hash_of(subschemas_hash)
         raise InvalidSchemaError unless subschemas_hash.size == 1
