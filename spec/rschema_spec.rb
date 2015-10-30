@@ -95,6 +95,13 @@ RSpec.describe RSchema do
       expect{ RSchema.validate!(schema, nil) }.not_to raise_error
     end
 
+    it 'validates eithers' do
+      schema = RSchema.schema { either(String, Integer) }
+      expect{ RSchema.validate!(schema, 'hi') }.not_to raise_error
+      expect{ RSchema.validate!(schema, 5555) }.not_to raise_error
+      expect{ RSchema.validate!(schema, true) }.to raise_error(RSchema::ValidationError)
+    end
+
     it 'validates "maybe"s' do
       schema = RSchema.schema { maybe Integer }
 

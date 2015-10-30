@@ -198,6 +198,13 @@ RSchema.validate(any_schema, true)  #=> true
 RSchema.validate(any_schema, false) #=> true
 RSchema.validate(any_schema, nil)   #=> true
 
+# either
+either_schema = RSchema.schema{ either(String, Integer, Float) }
+RSchema.validate(either_schema, 'hi') #=> true
+RSchema.validate(either_schema, 5555) #=> true
+RSchema.validate(either_schema, 77.1) #=> true
+RSchema.validate(either_schema, nil)  #=> false
+
 # maybe
 maybe_schema = RSchema.schema{ maybe(Integer) }
 RSchema.validate(maybe_schema, 5)   #=> true

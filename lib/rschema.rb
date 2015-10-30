@@ -106,6 +106,13 @@ module RSchema
       def any
         AnySchema
       end
+
+      def either(*subschemas)
+        unless subschemas.size > 1
+          raise InvalidSchemaError, 'EitherSchema requires two or more alternatives'
+        end
+        EitherSchema.new(subschemas)
+      end
     end
     extend Base
   end
@@ -232,6 +239,16 @@ module RSchema
       else
         RSchema::ErrorDetails.new(value_walked, "is not a valid enum member")
       end
+    end
+
+  EitherSchema = Struct.new(:alternatives) do
+    def schema_walk(value, mapper)
+      alternatives.each do |subschema|
+        v, error = RSchema.walk(subschema, value, mapper)
+        return v if error.nil?
+      end
+
+      RSchema::ErrorDetails.new(value, "matches none of #{alternatives.inspect}")
     end
   end
 
