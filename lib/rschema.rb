@@ -187,6 +187,10 @@ module RSchema
         accum
       end
     end
+
+    def inspect
+      "hash_of(#{key_subschema.inspect} => #{value_subschema.inspect})"
+    end
   end
 
   GenericSetSchema = Struct.new(:subschema) do
@@ -201,6 +205,10 @@ module RSchema
         accum
       end
     end
+
+    def inspect
+      "set_of(#{subschema.inspect})"
+    end
   end
 
   PredicateSchema = Struct.new(:name, :block) do
@@ -210,6 +218,10 @@ module RSchema
       else
         RSchema::ErrorDetails.new(value, 'fails predicate' + (name ? ": #{name}" : ''))
       end
+    end
+
+    def inspect
+      'predicate' + (name ? "(#{name.inspect})" : '')
     end
   end
 
@@ -221,6 +233,10 @@ module RSchema
         subvalue_walked, error = RSchema.walk(subschema, value, mapper)
         error || subvalue_walked
       end
+    end
+
+    def inspect
+      "maybe(#{subschema.inspect})"
     end
   end
 
@@ -241,6 +257,13 @@ module RSchema
       end
     end
 
+    def inspect
+      "enum(#{value_set.inspect}" +
+        (subschema ? ", #{subschema.inspect}" : '') +
+        ')'
+    end
+  end
+
   EitherSchema = Struct.new(:alternatives) do
     def schema_walk(value, mapper)
       alternatives.each do |subschema|
@@ -249,6 +272,10 @@ module RSchema
       end
 
       RSchema::ErrorDetails.new(value, "matches none of #{alternatives.inspect}")
+    end
+
+    def inspect
+      "either(#{alternatives.map(&:inspect).join(', ')})"
     end
   end
 
@@ -260,11 +287,19 @@ module RSchema
         RSchema::ErrorDetails.new(value, 'is not a boolean')
       end
     end
+
+    def self.inspect
+      'boolean'
+    end
   end
 
   module AnySchema
     def self.schema_walk(value, mapper)
       value
+    end
+
+    def self.inspect
+      'any'
     end
   end
 end

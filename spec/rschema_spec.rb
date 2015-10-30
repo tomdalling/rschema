@@ -246,4 +246,50 @@ RSpec.describe RSchema do
       expect(RSchema.coerce(schema, Set.new(['a', 'b', 'c']))).to eq([Set.new([:a, :b, :c]), nil])
     end
   end
+
+  describe 'programmer-friendly inspect strings' do
+    it 'GenericHashSchema' do
+      schema = RSchema::GenericHashSchema.new(String, Integer)
+      expect(schema.inspect).to eq('hash_of(String => Integer)')
+    end
+
+    it 'GenericSetSchema' do
+      schema = RSchema::GenericSetSchema.new(Symbol)
+      expect(schema.inspect).to eq('set_of(Symbol)')
+    end
+
+    it 'PredicateSchema' do
+      nameless_schema = RSchema::PredicateSchema.new
+      expect(nameless_schema.inspect).to eq('predicate')
+
+      named_schema = RSchema::PredicateSchema.new('even')
+      expect(named_schema.inspect).to eq('predicate("even")')
+    end
+
+    it 'MaybeSchema' do
+      schema = RSchema::MaybeSchema.new(String)
+      expect(schema.inspect).to eq('maybe(String)')
+    end
+
+    it 'EnumSchema' do
+      with_subschema = RSchema::EnumSchema.new([:a, :b, :c], Symbol)
+      expect(with_subschema.inspect).to eq('enum([:a, :b, :c], Symbol)')
+
+      without_subschema = RSchema::EnumSchema.new([:d, :e, :f])
+      expect(without_subschema.inspect).to eq('enum([:d, :e, :f])')
+    end
+
+    it 'EitherSchema' do
+      schema = RSchema::EitherSchema.new([String, Integer])
+      expect(schema.inspect).to eq('either(String, Integer)')
+    end
+
+    it 'BooleanSchema' do
+      expect(RSchema::BooleanSchema.inspect).to eq('boolean')
+    end
+
+    it 'AnySchema' do
+      expect(RSchema::AnySchema.inspect).to eq('any')
+    end
+  end
 end
