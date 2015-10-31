@@ -1,0 +1,19 @@
+#!/bin/bash
+set -ue
+
+NEW_VERSION="${1:-}"
+
+if [[ -z "$NEW_VERSION" ]] ; then
+    cat <<END_OF_STRING
+
+    Bumps the version, performs a commit, tags the commit, pushes the commit to
+    github.
+
+        Usage: $0 <major|minor|patch>
+
+END_OF_STRING
+
+    exit 1
+fi
+
+bundle exec gem bump --tag --push --version "$NEW_VERSION"
