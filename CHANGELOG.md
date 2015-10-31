@@ -2,7 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.0](https://github.com/tomdal1ing/rschema/compare/v1.1.1...v1.2.0) -- 2015-08-27
+## [1.3.0](https://github.com/tomdal1ing/rschema/compare/v1.2.0...v1.3.0) -- 2015-10-31
+Added:
+- The `either` schema, which will match any one of a given list of schemas.
+- Nicer `inspect` strings for (most) schema types
+
+## [1.2.0](https://github.com/tomdal1ing/rschema/compare/v1.1.1...v1.2.0) -- 2015-10-29
 Added:
 - The `any` schema, which matches literally any value.
 - The `optional` method to the schema DSL. It functions identically to the `_?` method
