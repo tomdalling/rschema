@@ -1,4 +1,4 @@
-require 'rschema'
+require 'spec_helper'
 
 module TestDSL
   extend RSchema::DSL::Base
