@@ -19,6 +19,7 @@ RSpec.describe RSchema do
       schema = [String]
       expect{ RSchema.validate!(schema, ['cat', 'bat']) }.not_to raise_error
       expect{ RSchema.validate!(schema, [6, 'bat']) }.to raise_error(RSchema::ValidationError)
+      expect{ RSchema.validate!(schema, 'hi') }.to raise_error(RSchema::ValidationError)
     end
 
     it 'validates fixed-length arrays' do
@@ -61,6 +62,7 @@ RSpec.describe RSchema do
       schema = RSchema.schema { hash_of Integer => String }
       expect{ RSchema.validate!(schema, { 1 => 'a', 2 => 'b'}) }.not_to raise_error
       expect{ RSchema.validate!(schema, { 1 => 'a', 2 => 3}) }.to raise_error(RSchema::ValidationError)
+      expect{ RSchema.validate!(schema, 'hi') }.to raise_error(RSchema::ValidationError)
     end
 
     it 'validates generic sets' do
@@ -76,6 +78,19 @@ RSpec.describe RSchema do
 
       expect{ RSchema.validate!(schema, 4) }.not_to raise_error
       expect{ RSchema.validate!(schema, 5) }.to raise_error(RSchema::ValidationError)
+    end
+
+    it 'validates enums' do
+      # without a subschema
+      with_subschema = RSchema.schema { enum([:a, :b, :c]) }
+      no_subschema = RSchema.schema { enum([:a, :b, :c], Symbol) }
+
+      [with_subschema, no_subschema].each do |schema|
+        expect{ RSchema.validate!(schema, :a) }.not_to raise_error
+        expect{ RSchema.validate!(schema, :b) }.not_to raise_error
+        expect{ RSchema.validate!(schema, :c) }.not_to raise_error
+        expect{ RSchema.validate!(schema, :d) }.to raise_error(RSchema::ValidationError)
+      end
     end
 
     it 'validates booleans' do
@@ -100,6 +115,8 @@ RSpec.describe RSchema do
       expect{ RSchema.validate!(schema, 'hi') }.not_to raise_error
       expect{ RSchema.validate!(schema, 5555) }.not_to raise_error
       expect{ RSchema.validate!(schema, true) }.to raise_error(RSchema::ValidationError)
+
+      expect{ RSchema.schema{ either(String) } }.to raise_error(RSchema::InvalidSchemaError)
     end
 
     it 'validates "maybe"s' do
@@ -184,6 +201,13 @@ RSpec.describe RSchema do
       expect(RSchema.coerce(Float, '1.23')).to eq([1.23, nil])
     end
 
+    it 'coerces Integer => Float' do
+      value, error = RSchema.coerce(Float, 5)
+      expect(value).to be_a(Float)
+      expect(value).to eq(5)
+      expect(error).to be_nil
+    end
+
     it 'coerces String => Symbol' do
       expect(RSchema.coerce(Symbol, 'hello')).to eq([:hello, nil])
     end
@@ -244,6 +268,26 @@ RSpec.describe RSchema do
     it 'coerces through "set_of"' do
       schema = RSchema.schema{ set_of Symbol }
       expect(RSchema.coerce(schema, Set.new(['a', 'b', 'c']))).to eq([Set.new([:a, :b, :c]), nil])
+    end
+  end
+
+  describe '#coerce!' do
+    it 'returns the coerced value on success' do
+      expect(RSchema.coerce!(Integer, '5')).to eq(5)
+    end
+
+    it 'raises an exception on failure' do
+      expect{ RSchema.coerce!(Integer, 'hi') }.to raise_error(RSchema::ValidationError)
+    end
+  end
+
+  describe RSchema::ErrorDetails do
+    it 'has a programmer-friendly `to_s` string' do
+      e = RSchema::ErrorDetails.new(5, 'is evil')
+      expect(e.to_s).to eq('The root value is evil: 5')
+
+      e = e.extend_key_path(:key)
+      expect(e.to_s).to eq('The value at [:key] is evil: 5')
     end
   end
 
