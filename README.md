@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/tomdalling/rschema.svg?branch=master)](https://travis-ci.org/tomdalling/rschema)
+[![Test Coverage](https://codeclimate.com/github/tomdalling/rschema/badges/coverage.svg)](https://codeclimate.com/github/tomdalling/rschema/coverage)
+
 # RSchema
 
 Schema-based validation and coercion for Ruby data structures. Heavily inspired
