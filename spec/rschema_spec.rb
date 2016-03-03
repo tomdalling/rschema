@@ -212,6 +212,14 @@ RSpec.describe RSchema do
       expect(RSchema.coerce(Symbol, 'hello')).to eq([:hello, nil])
     end
 
+    it 'coerces String => Boolean when true' do
+      expect(RSchema.coerce(RSchema::BooleanSchema, 'true')).to eq([true, nil])
+    end
+
+    it 'coerces String => Boolean when false' do
+      expect(RSchema.coerce(RSchema::BooleanSchema, 'false')).to eq([false, nil])
+    end
+
     it 'coerces Symbol => String' do
       expect(RSchema.coerce(String, :hello)).to eq(['hello', nil])
     end

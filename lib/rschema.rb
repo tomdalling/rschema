@@ -135,6 +135,10 @@ module RSchema
         Set.new(value)
       elsif(schema.is_a?(Hash) && value.is_a?(Hash))
         coerce_hash(schema, value)
+      elsif schema == BooleanSchema && value.is_a?(String) && value == 'true'
+        true
+      elsif schema == BooleanSchema && value.is_a?(String) && value == 'false'
+        false
       else
         value
       end
