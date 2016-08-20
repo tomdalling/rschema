@@ -1,13 +1,4 @@
-Releasing A New Version
------------------------
-
-1. Add a new section to `CHANGELOG.md` and commit those changes
-2. Bump version with `sh/bump_version <VERSION>`
-3. Check that the new version is correct
-4. Release with `sh/release`
-
-
-Future Features
+Feature Roadmap
 ---------------
 
  - Returning multiple validation errors.
@@ -58,3 +49,19 @@ Future Features
    the string `"1"` to be coerced to `true` for a `BooleanSchema`. In a
    different context, however, it may be preferable for all strings to result
    in a validation error instead.
+
+ - Symbolic errors.
+
+   Error messages are currently hard-coded in English, which makes them
+   difficult to translate. It would be better if error messages were symbols
+   that could be easily fed into i18n.
+
+
+Gem Release Procedure
+---------------------
+
+1. Add a new section to `CHANGELOG.md` and commit those changes
+2. Bump version with `sh/bump_version <VERSION>`
+3. Check that the new version is correct
+4. Release with `sh/release`
+
