@@ -1,18 +1,18 @@
 RSpec.describe RSchema do
   it 'provides schema-based validation' do
-    schema = RSchema.define{ _Integer }
+    int_schema = RSchema.define { _Integer }
 
-    valid_result = schema.call(5)
+    valid_result = int_schema.call(5)
     expect(valid_result).to be_valid
 
-    invalid_result = schema.call('hello')
+    invalid_result = int_schema.call('hello')
     expect(invalid_result).not_to be_valid
   end
 
   it 'provides error details' do
-    schema = RSchema.define { array_of(_Symbol) }
+    symbol_array_schema = RSchema.define { Array(_Symbol) }
 
-    result = schema.call([:a, :b, 'see'])
+    result = symbol_array_schema.call([:a, :b, 'see'])
     expect(result).not_to be_valid
     expect(result.error).to be_a(Hash)
     expect(result.error).to have_key(2)
@@ -25,12 +25,68 @@ RSpec.describe RSchema do
   end
 
   it 'provides coercion' do
-    schema = RSchema.define { array_of(_Symbol) }
-    coercer = RSchema::HTTPCoercer.wrap(schema)
+    symbol_array_schema = RSchema.define { Array(_Symbol) }
+    coercer = RSchema::HTTPCoercer.wrap(symbol_array_schema)
 
     result = coercer.call(['a', :b, 'c'])
 
     expect(result).to be_valid
     expect(result.value).to eq([:a, :b, :c])
+  end
+
+  context 'supports complicated, nested schemas' do
+    let(:user_schema) do
+      RSchema.define do
+        Hash(
+          name: _String,
+          optional(:age) => _Integer,
+          email: maybe(_String),
+          role: enum(:journalist, :editor, :administrator),
+          enabled: Boolean(),
+          rating: either(_Integer, _Float),
+          alternate_names: Array(_String),
+          gps_coordinates: Array(_Float, _Float),
+          favourite_even_number: chain(_Integer, predicate(){ |x| x.even? }),
+          whatever: anything,
+          cakes_by_date: VariableHash(_Date => _String),
+        )
+      end
+    end
+
+    let(:valid_user) do
+      {
+        name: 'Tom',
+        email: nil,
+        role: :administrator,
+        enabled: true,
+        rating: 5.2,
+        alternate_names: ['Thomas', 'Dowl'],
+        gps_coordinates: [123.456, 876.654],
+        favourite_even_number: 12,
+        whatever: "this could be literally any value",
+        cakes_by_date: {
+          Date.new(2014, 06, 22) => 'Black Forest Cake',
+          Date.new(2015, 06, 22) => 'Mud Cake',
+          Date.new(2016, 06, 22) => 'Passionfruit Cheesecake',
+        },
+      }
+    end
+
+    it 'handles valid values' do
+      result = user_schema.call(valid_user)
+      expect(result).to be_valid
+    end
+
+    it 'handles invalid values' do
+      invalid_user = valid_user.merge(gps_coordinates: [123.45, 'wrong!'])
+
+      result = user_schema.call(invalid_user)
+
+      expect(result).not_to be_valid
+      expect(result.error[:gps_coordinates][1]).to have_attributes({
+        value: 'wrong!',
+        symbolic_name: 'rschema/type/invalid',
+      })
+    end
   end
 end
