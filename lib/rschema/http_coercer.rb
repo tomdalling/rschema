@@ -1,0 +1,56 @@
+module RSchema
+  module HTTPCoercer
+    def self.wrap(schema)
+      coercer_klass = begin
+        case schema
+        when Schemas::Type then TYPE_COERCERS[schema.type]
+        end
+      end
+
+      wrapped_schema = schema.with_wrapped_subschemas(self)
+      coercer_klass ? coercer_klass.new(wrapped_schema) : wrapped_schema
+    end
+
+    class Coercer
+      attr_reader :subschema
+
+      def initialize(subschema)
+        @subschema = subschema
+      end
+
+      def call(value, options=RSchema::Options.default)
+        @subschema.call(coerce(value), options)
+      rescue CoercionFailed
+        return Result.failure(Error.new(
+          schema: self,
+          value: value,
+          symbolic_name: "rschema/http_coercer/#{self.class.name}/failure",
+        ))
+      end
+
+      def with_wrapped_subschemas(wrapper)
+        self.class.new(wrapper.wrap(subschema))
+      end
+
+      def invalid!
+        raise CoercionFailed
+      end
+
+      class CoercionFailed < StandardError; end
+    end
+
+    class SymbolCoercer < Coercer
+      def coerce(value)
+        case value
+        when Symbol then value
+        when String then value.to_sym
+        else invalid!
+        end
+      end
+    end
+
+    TYPE_COERCERS = {
+      Symbol => SymbolCoercer,
+    }
+  end
+end
