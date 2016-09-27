@@ -21,6 +21,7 @@ module RSchema
           value_result = @value_schema.call(value, options)
           if value_result.invalid?
             error[key] = value_result.error
+            break
           end
 
           result[key_result.value] = value_result.value
