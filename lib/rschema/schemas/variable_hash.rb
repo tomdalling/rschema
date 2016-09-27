@@ -11,20 +11,20 @@ module RSchema
         result = {}
         error = {}
 
-        value.each do |key, value|
+        value.each do |key, subvalue|
           key_result = @key_schema.call(key, options)
           if key_result.invalid?
             error[key] = key_result.error
             break
           end
 
-          value_result = @value_schema.call(value, options)
-          if value_result.invalid?
-            error[key] = value_result.error
+          subvalue_result = @value_schema.call(subvalue, options)
+          if subvalue_result.invalid?
+            error[key] = subvalue_result.error
             break
           end
 
-          result[key_result.value] = value_result.value
+          result[key_result.value] = subvalue_result.value
         end
 
         if error.empty?
