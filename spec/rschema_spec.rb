@@ -46,7 +46,7 @@ RSpec.describe RSchema do
           rating: either(_Integer, _Float),
           alternate_names: Array(_String),
           gps_coordinates: Array(_Float, _Float),
-          favourite_even_number: chain(_Integer, predicate(){ |x| x.even? }),
+          favourite_even_number: chain(_Integer, predicate(&:even?)),
           whatever: anything,
           cakes_by_date: VariableHash(_Date => _String),
         )
@@ -65,9 +65,9 @@ RSpec.describe RSchema do
         favourite_even_number: 12,
         whatever: "this could be literally any value",
         cakes_by_date: {
-          Date.new(2014, 06, 22) => 'Black Forest Cake',
-          Date.new(2015, 06, 22) => 'Mud Cake',
-          Date.new(2016, 06, 22) => 'Passionfruit Cheesecake',
+          Date.new(2014, 6, 22) => 'Black Forest Cake',
+          Date.new(2015, 7, 23) => 'Mud Cake',
+          Date.new(2016, 8, 24) => 'Passionfruit Cheesecake',
         },
       }
     end
