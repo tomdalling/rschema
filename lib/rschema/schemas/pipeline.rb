@@ -1,6 +1,6 @@
 module RSchema
   module Schemas
-    class Chain
+    class Pipeline
       attr_reader :subschemas
 
       def initialize(subschemas)

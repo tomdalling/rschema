@@ -53,8 +53,8 @@ module RSchema
       Schemas::Predicate.new(block)
     end
 
-    def chain(*subschemas)
-      Schemas::Chain.new(subschemas)
+    def pipeline(*subschemas)
+      Schemas::Pipeline.new(subschemas)
     end
 
     def anything

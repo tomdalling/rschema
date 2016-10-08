@@ -6,7 +6,7 @@ require 'rschema/schemas/maybe'
 require 'rschema/schemas/enum'
 require 'rschema/schemas/boolean'
 require 'rschema/schemas/sum'
-require 'rschema/schemas/chain'
+require 'rschema/schemas/pipeline'
 require 'rschema/schemas/anything'
 require 'rschema/schemas/predicate'
 require 'rschema/schemas/variable_hash'
@@ -18,8 +18,8 @@ require 'rschema/http_coercer'
 
 module RSchema
   def self.define(&block)
-    @dsl ||= DefaultDSL.new
-    @dsl.instance_eval(&block)
+    @default_dsl ||= DefaultDSL.new
+    @default_dsl.instance_eval(&block)
   end
 
   class DefaultDSL

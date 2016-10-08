@@ -1,4 +1,4 @@
-RSpec.describe RSchema::Schemas::Chain do
+RSpec.describe RSchema::Schemas::Pipeline do
   subject { described_class.new([first_subschema, last_subschema]) }
   let(:first_subschema) { double }
   let(:last_subschema) { double }
