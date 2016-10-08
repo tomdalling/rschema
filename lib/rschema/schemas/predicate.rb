@@ -1,12 +1,14 @@
 module RSchema
   module Schemas
     class Predicate
-      def initialize(validation_proc)
-        @validation_proc = validation_proc
+      attr_reader :block
+
+      def initialize(block)
+        @block = block
       end
 
       def call(value, options=Options.default)
-        if @validation_proc.call(value)
+        if block.call(value)
           Result.success(value)
         else
           Result.failure(Error.new(

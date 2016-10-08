@@ -1,9 +1,9 @@
 module RSchema
   module DSL
-    def Type(type)
+    def type(type)
       Schemas::Type.new(type)
     end
-    alias_method :_, :Type
+    alias_method :_, :type
 
     def Array(*subchemas)
       if subchemas.count == 1
@@ -27,14 +27,17 @@ module RSchema
       Schemas::FixedHash.new(attributes)
     end
 
-    def VariableHash(subschemas)
-      #TODO: check that it only has one key/value pair
-      key_schema, value_schema = subschemas.first
-      Schemas::VariableHash.new(key_schema, value_schema)
-    end
-
     def optional(key)
       OptionalWrapper.new(key)
+    end
+
+    def VariableHash(subschemas)
+      unless subschemas.is_a?(Hash) && subschemas.size == 1
+        raise ArgumentError, 'argument must be a Hash of size 1'
+      end
+
+      key_schema, value_schema = subschemas.first
+      Schemas::VariableHash.new(key_schema, value_schema)
     end
 
     def maybe(subschema)
@@ -65,7 +68,7 @@ module RSchema
       type = sym.to_s
       if type.start_with?('_') && args.empty? && block.nil?
         constant = Object.const_get(type[1..-1])
-        Type(constant)
+        type(constant)
       else
         super
       end
