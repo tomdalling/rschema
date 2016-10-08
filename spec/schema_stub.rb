@@ -3,7 +3,7 @@ class SchemaStub
     @validity_checker = validity_checker
   end
 
-  def call(value, options)
+  def call(value, options=nil)
     if valid?(value)
       RSchema::Result.success(value)
     else
@@ -11,16 +11,8 @@ class SchemaStub
     end
   end
 
-  def with_wrapped_subschemas
+  def with_wrapped_subschemas(wrapper)
     self
-  end
-
-  def valid?(value)
-    if @validity_checker
-      @validity_checker.call(value)
-    else
-      value == :valid
-    end
   end
 
   def error
@@ -30,4 +22,15 @@ class SchemaStub
       symbolic_name: 'mock_error',
     )
   end
+
+  private
+
+    def valid?(value)
+      if @validity_checker
+        @validity_checker.call(value)
+      else
+        value == :valid
+      end
+    end
+
 end
