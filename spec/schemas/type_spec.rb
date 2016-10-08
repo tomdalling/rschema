@@ -1,16 +1,14 @@
-require 'rschema/schemas/type'
-
 RSpec.describe RSchema::Schemas::Type do
   subject(:schema) { described_class.new(Enumerable) }
 
-  specify 'successful validation' do
+  it 'gives a valid result with the value.is_a?(type)' do
     result = schema.call([])
 
     expect(result).to be_valid
     expect(result.value).to eq([])
   end
 
-  specify 'failed validation' do
+  it 'gives an invalid result when not value.is_a?(type)' do
     result = schema.call(5)
 
     expect(result).not_to be_valid

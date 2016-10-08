@@ -1,7 +1,8 @@
 module RSchema
   module Schemas
-
     class Maybe
+      attr_reader :subschema
+
       def initialize(subschema)
         @subschema = subschema
       end
@@ -13,7 +14,10 @@ module RSchema
           @subschema.call(value, options)
         end
       end
-    end
 
+      def with_wrapped_subschemas(wrapper)
+        self.class.new(wrapper.wrap(subschema))
+      end
+    end
   end
 end

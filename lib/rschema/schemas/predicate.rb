@@ -16,6 +16,10 @@ module RSchema
           ))
         end
       end
+
+      def with_wrapped_subschemas(wrapper)
+        self
+      end
     end
   end
 end

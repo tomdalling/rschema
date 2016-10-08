@@ -2,8 +2,6 @@ module RSchema
   module Schemas
 
     class FixedHash
-      Attribute = Struct.new(:key, :value_schema, :optional)
-
       attr_reader :attributes
 
       def initialize(attributes)
@@ -20,6 +18,20 @@ module RSchema
           Result.failure(failure_error(subresults))
         else
           Result.success(success_value(subresults))
+        end
+      end
+
+      def with_wrapped_subschemas(wrapper)
+        wrapped_attributes = attributes.map do |attr|
+          attr.with_wrapped_value_schema(wrapper)
+        end
+
+        self.class.new(wrapped_attributes)
+      end
+
+      Attribute = Struct.new(:key, :value_schema, :optional) do
+        def with_wrapped_value_schema(wrapper)
+          self.class.new(key, wrapper.wrap(value_schema), optional)
         end
       end
 

@@ -73,4 +73,13 @@ RSpec.describe RSchema::Schemas::FixedHash do
       expect(result.error.keys).to eq([:name])
     end
   end
+
+  specify '#with_wrapped_subschemas' do
+    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    name_attr = wrapped.attributes.find{ |attr| attr.key == :name }
+
+    expect(wrapped.attributes.map(&:value_schema)).to all(be_a MockWrapper)
+    expect(name_attr.value_schema.wrapped_subschema).to be(name_schema)
+  end
 end
+

@@ -1,7 +1,7 @@
 RSpec.describe RSchema::Schemas::FixedLengthArray do
-  let(:subschema1) { MockSchema.new }
-  let(:subschema2) { MockSchema.new }
-  subject { described_class.new([subschema1, subschema2]) }
+  subject { described_class.new([first_subschema, last_subschema]) }
+  let(:first_subschema) { MockSchema.new }
+  let(:last_subschema) { MockSchema.new }
 
   specify 'successful validation' do
     result = subject.call([:valid, :valid])
@@ -38,8 +38,8 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
 
       expect(result).not_to be_valid
       expect(result.error).to eq({
-        0 => subschema1.error,
-        1 => subschema2.error,
+        0 => first_subschema.error,
+        1 => last_subschema.error,
       })
     end
 
@@ -48,7 +48,16 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
 
       result = subject.call([:wrong, :wrong_again], options)
 
-      expect(result.error).to eq({ 0 => subschema1.error })
+      expect(result.error).to eq({ 0 => first_subschema.error })
     end
   end
+
+  specify '#with_wrapped_subschemas' do
+    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    subschemas = wrapped.subschemas
+
+    expect(subschemas).to all(be_a MockWrapper)
+    expect(subschemas.map(&:wrapped_subschema)).to eq([first_subschema, last_subschema])
+  end
 end
+

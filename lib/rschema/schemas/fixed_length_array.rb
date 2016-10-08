@@ -32,6 +32,13 @@ module RSchema
         end
       end
 
+      def with_wrapped_subschemas(wrapper)
+        wrapped_subschemas = subschemas.map{ |ss| wrapper.wrap(ss) }
+        self.class.new(wrapped_subschemas)
+      end
+
+      private
+
       def apply_subschemas(array_value, options)
         validate_value = []
         errors = {}
