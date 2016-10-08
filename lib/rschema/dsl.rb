@@ -46,7 +46,7 @@ module RSchema
     end
 
     def either(*subschemas)
-      Schemas::Alternation.new(subschemas)
+      Schemas::Sum.new(subschemas)
     end
 
     def predicate(&block)

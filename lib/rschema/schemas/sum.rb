@@ -1,6 +1,6 @@
 module RSchema
   module Schemas
-    class Alternation
+    class Sum
       attr_reader :subschemas
 
       def initialize(subschemas)

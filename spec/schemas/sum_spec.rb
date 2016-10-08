@@ -1,4 +1,4 @@
-RSpec.describe RSchema::Schemas::Alternation do
+RSpec.describe RSchema::Schemas::Sum do
   subject { described_class.new([even_schema, positive_schema]) }
   let(:even_schema) { MockSchema.new(&:even?) }
   let(:positive_schema) { MockSchema.new(&:positive?) }
