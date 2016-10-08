@@ -1,4 +1,4 @@
-class MockWrapper
+class WrapperStub
   def self.wrap(schema)
     new(schema)
   end

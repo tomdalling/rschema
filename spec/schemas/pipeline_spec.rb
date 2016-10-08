@@ -41,10 +41,10 @@ RSpec.describe RSchema::Schemas::Pipeline do
   end
 
   specify '#with_wrapped_subschemas' do
-    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    wrapped = subject.with_wrapped_subschemas(WrapperStub)
 
     expect(wrapped).not_to be(subject)
-    expect(wrapped.subschemas).to all(be_a MockWrapper)
+    expect(wrapped.subschemas).to all(be_a WrapperStub)
     expect(wrapped.subschemas.map(&:wrapped_subschema)).to eq([first_subschema, last_subschema])
   end
 end

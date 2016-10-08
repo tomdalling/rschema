@@ -1,6 +1,6 @@
 RSpec.describe RSchema::Schemas::VariableLengthArray do
   subject { described_class.new(subschema) }
-  let(:subschema) { MockSchema.new }
+  let(:subschema) { SchemaStub.new }
 
   it_behaves_like 'a schema'
 
@@ -44,11 +44,11 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
   end
 
   specify '#with_wrapped_subschemas' do
-    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    wrapped = subject.with_wrapped_subschemas(WrapperStub)
 
     expect(wrapped).not_to be(subject)
     expect(wrapped).to be_a(described_class)
-    expect(wrapped.element_schema).to be_a(MockWrapper)
+    expect(wrapped.element_schema).to be_a(WrapperStub)
     expect(wrapped.element_schema.wrapped_subschema).to be(subschema)
   end
 end

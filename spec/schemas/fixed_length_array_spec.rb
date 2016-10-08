@@ -1,7 +1,7 @@
 RSpec.describe RSchema::Schemas::FixedLengthArray do
   subject { described_class.new([first_subschema, last_subschema]) }
-  let(:first_subschema) { MockSchema.new }
-  let(:last_subschema) { MockSchema.new }
+  let(:first_subschema) { SchemaStub.new }
+  let(:last_subschema) { SchemaStub.new }
 
   it_behaves_like 'a schema'
 
@@ -55,10 +55,10 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
   end
 
   specify '#with_wrapped_subschemas' do
-    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    wrapped = subject.with_wrapped_subschemas(WrapperStub)
     subschemas = wrapped.subschemas
 
-    expect(subschemas).to all(be_a MockWrapper)
+    expect(subschemas).to all(be_a WrapperStub)
     expect(subschemas.map(&:wrapped_subschema)).to eq([first_subschema, last_subschema])
   end
 end

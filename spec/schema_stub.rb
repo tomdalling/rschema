@@ -1,4 +1,4 @@
-class MockSchema
+class SchemaStub
   def initialize(&validity_checker)
     @validity_checker = validity_checker
   end

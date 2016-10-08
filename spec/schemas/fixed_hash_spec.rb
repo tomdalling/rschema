@@ -1,9 +1,9 @@
 RSpec.describe RSchema::Schemas::FixedHash do
   subject { described_class.new([name_attr, age_attr]) }
   let(:name_attr) { described_class::Attribute.new(:name, name_schema, false) }
-  let(:name_schema) { MockSchema.new{ |value| value.is_a?(String) } }
+  let(:name_schema) { SchemaStub.new{ |value| value.is_a?(String) } }
   let(:age_attr) { described_class::Attribute.new(:age, age_schema, true) }
-  let(:age_schema) { MockSchema.new{ |value| value.is_a?(Integer) && value.positive? } }
+  let(:age_schema) { SchemaStub.new{ |value| value.is_a?(Integer) && value.positive? } }
 
   it_behaves_like 'a schema'
 
@@ -77,10 +77,10 @@ RSpec.describe RSchema::Schemas::FixedHash do
   end
 
   specify '#with_wrapped_subschemas' do
-    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    wrapped = subject.with_wrapped_subschemas(WrapperStub)
     name_attr = wrapped.attributes.find{ |attr| attr.key == :name }
 
-    expect(wrapped.attributes.map(&:value_schema)).to all(be_a MockWrapper)
+    expect(wrapped.attributes.map(&:value_schema)).to all(be_a WrapperStub)
     expect(name_attr.value_schema.wrapped_subschema).to be(name_schema)
   end
 end

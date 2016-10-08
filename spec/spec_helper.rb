@@ -20,8 +20,8 @@ end
 
 require 'rschema'
 require 'pry'
-require 'mock_schema'
-require 'mock_wrapper'
+require 'schema_stub'
+require 'wrapper_stub'
 
 RSpec.shared_examples 'a schema' do
   it 'responds to #call' do

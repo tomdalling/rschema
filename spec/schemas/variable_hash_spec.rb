@@ -1,7 +1,7 @@
 RSpec.describe RSchema::Schemas::VariableHash do
   subject { described_class.new(key_schema, value_schema) }
-  let(:key_schema) { MockSchema.new { |x| x.is_a?(Symbol) } }
-  let(:value_schema) { MockSchema.new }
+  let(:key_schema) { SchemaStub.new { |x| x.is_a?(Symbol) } }
+  let(:value_schema) { SchemaStub.new }
 
   it_behaves_like 'a schema'
 
@@ -96,11 +96,11 @@ RSpec.describe RSchema::Schemas::VariableHash do
   end
 
   specify '#with_wrapped_subschemas' do
-    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    wrapped = subject.with_wrapped_subschemas(WrapperStub)
 
-    expect(wrapped.key_schema).to be_a(MockWrapper)
+    expect(wrapped.key_schema).to be_a(WrapperStub)
     expect(wrapped.key_schema.wrapped_subschema).to be(key_schema)
-    expect(wrapped.value_schema).to be_a(MockWrapper)
+    expect(wrapped.value_schema).to be_a(WrapperStub)
     expect(wrapped.value_schema.wrapped_subschema).to be(value_schema)
   end
 end

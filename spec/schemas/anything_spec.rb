@@ -12,7 +12,7 @@ RSpec.describe RSchema::Schemas::Anything do
   end
 
   specify '#with_wrapped_subschemas' do
-    wrapped = subject.with_wrapped_subschemas(MockWrapper)
+    wrapped = subject.with_wrapped_subschemas(WrapperStub)
     expect(wrapped).to be(subject)
   end
 end
