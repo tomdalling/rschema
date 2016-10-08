@@ -88,5 +88,14 @@ RSpec.describe RSchema do
         symbolic_name: 'rschema/type/invalid',
       })
     end
+
+    it 'handles coercion' do
+      user_coercer = RSchema::HTTPCoercer.wrap(user_schema)
+
+      result = user_coercer.call(valid_user)
+
+      expect(result).to be_valid
+      expect(result.value).to eq(valid_user)
+    end
   end
 end

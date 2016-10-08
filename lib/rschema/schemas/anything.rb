@@ -8,6 +8,10 @@ module RSchema
       def call(value, options=Options.default)
         Result.success(value)
       end
+
+      def with_wrapped_subschemas(wrapper)
+        self
+      end
     end
   end
 end
