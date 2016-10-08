@@ -22,3 +22,16 @@ require 'rschema'
 require 'pry'
 require 'mock_schema'
 require 'mock_wrapper'
+
+RSpec.shared_examples 'a schema' do
+  it 'responds to #call' do
+    expect(subject).to respond_to(:call)
+    expect(subject.method(:call).arity).to eq(-2)
+  end
+
+  it 'responds to #with_wrapped_subschemas' do
+    expect(subject).to respond_to(:with_wrapped_subschemas)
+    expect(subject.method(:with_wrapped_subschemas).arity).to eq(1)
+  end
+end
+

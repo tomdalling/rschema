@@ -3,6 +3,8 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
   let(:first_subschema) { MockSchema.new }
   let(:last_subschema) { MockSchema.new }
 
+  it_behaves_like 'a schema'
+
   specify 'successful validation' do
     result = subject.call([:valid, :valid])
 

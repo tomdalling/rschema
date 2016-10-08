@@ -2,6 +2,8 @@ RSpec.describe RSchema::Schemas::Maybe do
   subject { described_class.new(subschema) }
   let(:subschema) { MockSchema.new }
 
+  it_behaves_like 'a schema'
+
   context 'successful validation' do
     it 'allows nil' do
       expect(subject.call(nil)).to be_valid

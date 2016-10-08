@@ -4,6 +4,8 @@ RSpec.describe RSchema::Schemas::Pipeline do
   let(:last_subschema) { double }
   let(:options) { RSchema::Options.default }
 
+  it_behaves_like 'a schema'
+
   it 'gives a valid result if _all_ subschemas give a valid result' do
     expect(first_subschema).to receive(:call).and_return(RSchema::Result.success(nil))
     expect(last_subschema).to receive(:call).and_return(RSchema::Result.success(nil))

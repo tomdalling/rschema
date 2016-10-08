@@ -3,6 +3,8 @@ RSpec.describe RSchema::Schemas::Sum do
   let(:even_schema) { MockSchema.new(&:even?) }
   let(:positive_schema) { MockSchema.new(&:positive?) }
 
+  it_behaves_like 'a schema'
+
   it 'passes validation if _any_ subschema is valid' do
     expect(subject.call(-6)).to be_valid
     expect(subject.call(5)).to be_valid

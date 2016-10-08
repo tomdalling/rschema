@@ -5,6 +5,8 @@ RSpec.describe RSchema::Schemas::FixedHash do
   let(:age_attr) { described_class::Attribute.new(:age, age_schema, true) }
   let(:age_schema) { MockSchema.new{ |value| value.is_a?(Integer) && value.positive? } }
 
+  it_behaves_like 'a schema'
+
   context 'successful validation' do
     specify 'with optional attrs present' do
       result = subject.call(name: 'Tom', age: 7)

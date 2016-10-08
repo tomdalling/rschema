@@ -1,6 +1,8 @@
 RSpec.describe RSchema::Schemas::Boolean do
   subject { described_class.instance }
 
+  it_behaves_like 'a schema'
+
   specify 'successful validation' do
     expect(subject.call(true)).to be_valid
     expect(subject.call(false)).to be_valid

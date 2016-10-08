@@ -1,6 +1,8 @@
 RSpec.describe RSchema::Schemas::Type do
   subject(:schema) { described_class.new(Enumerable) }
 
+  it_behaves_like 'a schema'
+
   it 'gives a valid result with the value.is_a?(type)' do
     result = schema.call([])
 

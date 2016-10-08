@@ -1,6 +1,8 @@
 RSpec.describe RSchema::Schemas::Enum do
   subject { described_class.new([:a, :b, :c]) }
 
+  it_behaves_like 'a schema'
+
   specify 'successful validation' do
     result = subject.call(:b)
 

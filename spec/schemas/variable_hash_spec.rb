@@ -3,6 +3,8 @@ RSpec.describe RSchema::Schemas::VariableHash do
   let(:key_schema) { MockSchema.new { |x| x.is_a?(Symbol) } }
   let(:value_schema) { MockSchema.new }
 
+  it_behaves_like 'a schema'
+
   context 'valid result' do
     it 'allows empty hashes' do
       result = subject.call({})

@@ -1,6 +1,8 @@
 RSpec.describe RSchema::Schemas::Anything do
   subject{ described_class.instance }
 
+  it_behaves_like 'a schema'
+
   it 'always succeeds' do
     value = double
     result = subject.call(value)

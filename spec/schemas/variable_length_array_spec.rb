@@ -2,6 +2,8 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
   subject { described_class.new(subschema) }
   let(:subschema) { MockSchema.new }
 
+  it_behaves_like 'a schema'
+
   specify 'successful validation' do
     result = subject.call([:valid, :valid, :valid])
 
