@@ -91,11 +91,12 @@ RSpec.describe RSchema do
 
     it 'handles coercion' do
       user_coercer = RSchema::HTTPCoercer.wrap(user_schema)
+      input = valid_user.merge(rating: '6.7')
 
-      result = user_coercer.call(valid_user)
+      result = user_coercer.call(input)
 
       expect(result).to be_valid
-      expect(result.value).to eq(valid_user)
+      expect(result.value[:rating]).to eq(6.7)
     end
   end
 end

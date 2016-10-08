@@ -49,8 +49,26 @@ module RSchema
       end
     end
 
+    class IntegerCoercer < Coercer
+      def coerce(value)
+        Integer(value)
+      rescue ArgumentError
+        invalid!
+      end
+    end
+
+    class FloatCoercer < Coercer
+      def coerce(value)
+        Float(value)
+      rescue ArgumentError
+        invalid!
+      end
+    end
+
     TYPE_COERCERS = {
       Symbol => SymbolCoercer,
+      Integer => IntegerCoercer,
+      Float => FloatCoercer,
     }
   end
 end
