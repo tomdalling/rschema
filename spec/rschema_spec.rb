@@ -1,5 +1,5 @@
 RSpec.describe RSchema do
-  example 'RSchema provides schema-based validation' do
+  example 'RSchema provides schema-based validation of arbitrary data structures' do
     int_schema = RSchema.define { _Integer }
 
     valid_result = int_schema.call(5)
@@ -10,23 +10,21 @@ RSpec.describe RSchema do
   end
 
   example 'RSchema provides details when values are not valid' do
-    symbol_array_schema = RSchema.define { Array(_Symbol) }
+    array_of_symbols = RSchema.define { Array(_Symbol) }
 
-    result = symbol_array_schema.call([:a, :b, 'see'])
+    result = array_of_symbols.call([:a, :b, 'see'])
     expect(result).not_to be_valid
-    expect(result.error).to be_a(Hash)
-    expect(result.error).to have_key(2)
 
     error = result.error[2]
     expect(error).to be_a(RSchema::Error)
-    expect(error.schema).to be_a(RSchema::Schemas::Type)
-    expect(error.value).to eq('see')
+    expect(error.schema.type).to be(Symbol)
     expect(error.symbolic_name).to eq('rschema/type/invalid')
+    expect(error.value).to eq('see')
   end
 
   example 'RSchema provides coercion' do
-    symbol_array_schema = RSchema.define { Array(_Symbol) }
-    coercer = RSchema::HTTPCoercer.wrap(symbol_array_schema)
+    array_of_symbols = RSchema.define { Array(_Symbol) }
+    coercer = RSchema::HTTPCoercer.wrap(array_of_symbols)
 
     result = coercer.call(['a', :b, 'c'])
 
