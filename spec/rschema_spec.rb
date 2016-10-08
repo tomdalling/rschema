@@ -9,7 +9,7 @@ RSpec.describe RSchema do
     expect(invalid_result).not_to be_valid
   end
 
-  example 'RSchema provides error details' do
+  example 'RSchema provides details when values are not valid' do
     symbol_array_schema = RSchema.define { Array(_Symbol) }
 
     result = symbol_array_schema.call([:a, :b, 'see'])
