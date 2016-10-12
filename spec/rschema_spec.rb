@@ -45,6 +45,7 @@ RSpec.describe RSchema do
           alternate_names: Array(_String),
           gps_coordinates: Array(_Float, _Float),
           favourite_even_number: pipeline(_Integer, predicate(&:even?)),
+          animals: Set(_Symbol),
           whatever: anything,
           cakes_by_date: VariableHash(_Date => _String),
         )
@@ -62,6 +63,7 @@ RSpec.describe RSchema do
         gps_coordinates: [123.456, 876.654],
         favourite_even_number: 12,
         whatever: "this could be literally any value",
+        animals: Set.new([:dog, :cat]),
         cakes_by_date: {
           Date.new(2014, 6, 22) => 'Black Forest Cake',
           Date.new(2015, 7, 23) => 'Mud Cake',

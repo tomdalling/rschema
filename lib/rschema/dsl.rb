@@ -27,6 +27,10 @@ module RSchema
       Schemas::FixedHash.new(attributes)
     end
 
+    def Set(subschema)
+      Schemas::Set.new(subschema)
+    end
+
     def optional(key)
       OptionalWrapper.new(key)
     end

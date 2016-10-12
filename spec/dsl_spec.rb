@@ -45,6 +45,15 @@ RSpec.describe RSchema::DSL do
     expect(schema).to be(RSchema::Schemas::Boolean.instance)
   end
 
+  specify '#Set' do
+    subschema = double
+
+    schema = subject.Set(subschema)
+
+    expect(schema).to be_a(RSchema::Schemas::Set)
+    expect(schema.subschema).to be(subschema)
+  end
+
   specify '#Hash' do
     name_schema = double
     age_schema = double
