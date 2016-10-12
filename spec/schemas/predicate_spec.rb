@@ -15,7 +15,7 @@ RSpec.describe RSchema::Schemas::Predicate do
     expect(result.error).to have_attributes(
       schema: subject,
       value: 5,
-      symbolic_name: 'rschema/predicate/false',
+      symbolic_name: 'false',
     )
   end
 

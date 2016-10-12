@@ -29,7 +29,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: 5,
-        symbolic_name: 'rschema/fixed_hash/not_a_hash',
+        symbolic_name: 'not_a_hash',
       )
     end
 
@@ -48,7 +48,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: {},
-        symbolic_name: 'rschema/fixed_hash/missing_attributes',
+        symbolic_name: 'missing_attributes',
         vars: [:name],
       )
     end
@@ -60,7 +60,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: { name: 'Tom', unspecified_key: 123 },
-        symbolic_name: 'rschema/fixed_hash/extraneous_attributes',
+        symbolic_name: 'extraneous_attributes',
         vars: [:unspecified_key],
       )
     end

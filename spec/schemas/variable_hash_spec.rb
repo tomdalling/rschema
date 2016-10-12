@@ -27,7 +27,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: 5,
-        symbolic_name: 'rschema/variable_hash/not_a_hash',
+        symbolic_name: 'not_a_hash',
       )
     end
 
@@ -38,7 +38,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: { 5 => :valid },
-        symbolic_name: 'rschema/variable_hash/contents_invalid',
+        symbolic_name: 'contents_invalid',
         vars: {
           key_errors: { 5 => key_schema.error },
           value_errors: {},
@@ -53,7 +53,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: { hello: :wrong },
-        symbolic_name: 'rschema/variable_hash/contents_invalid',
+        symbolic_name: 'contents_invalid',
         vars: {
           key_errors: {},
           value_errors: { hello: value_schema.error },
@@ -68,7 +68,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: { hello: :wrong, 5 => :valid },
-        symbolic_name: 'rschema/variable_hash/contents_invalid',
+        symbolic_name: 'contents_invalid',
         vars: {
           key_errors: { 5 => key_schema.error },
           value_errors: { hello: value_schema.error },
@@ -86,7 +86,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
       expect(result.error).to have_attributes(
         schema: subject,
         value: { hello: :wrong, 5 => :valid },
-        symbolic_name: 'rschema/variable_hash/contents_invalid',
+        symbolic_name: 'contents_invalid',
         vars: {
           key_errors: {}, # this would contain errors without the `fail_fast` option
           value_errors: { hello: value_schema.error},

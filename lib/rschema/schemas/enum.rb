@@ -14,7 +14,7 @@ module RSchema
           Result.failure(Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'rschema/enum/not_a_member',
+            symbolic_name: 'not_a_member',
           ))
         end
       end

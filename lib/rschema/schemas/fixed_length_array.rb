@@ -10,7 +10,7 @@ module RSchema
       def call(value, options=RSchema::Options.default)
         unless value.kind_of?(Array)
           return Result.failure(Error.new(
-            symbolic_name: 'rschema/fixed_length_array/not_an_array',
+            symbolic_name: 'not_an_array',
             schema: self,
             value: value,
           ))
@@ -18,7 +18,7 @@ module RSchema
 
         unless value.size == @subschemas.size
           return Result.failure(Error.new(
-            symbolic_name: 'rschema/fixed_length_array/incorrect_size',
+            symbolic_name: 'incorrect_size',
             schema: self,
             value: value,
           ))

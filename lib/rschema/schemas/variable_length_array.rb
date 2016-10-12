@@ -19,7 +19,7 @@ module RSchema
           Result.failure(Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'rschema/array_of/not_an_array',
+            symbolic_name: 'not_an_array',
           ))
         end
       end

@@ -17,7 +17,7 @@ RSpec.describe RSchema::Schemas::Type do
     expect(result.error).to have_attributes(
       schema: schema,
       value: 5,
-      symbolic_name: 'rschema/type/invalid',
+      symbolic_name: 'wrong_type',
     )
   end
 

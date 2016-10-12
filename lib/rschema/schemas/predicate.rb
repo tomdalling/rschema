@@ -14,7 +14,7 @@ module RSchema
           Result.failure(Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'rschema/predicate/false',
+            symbolic_name: 'false',
           ))
         end
       end

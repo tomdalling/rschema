@@ -22,7 +22,7 @@ module RSchema
         Result.failure(Error.new(
           schema: self,
           value: value,
-          symbolic_name: 'rschema/alternation/all_invalid',
+          symbolic_name: 'all_invalid',
           vars: suberrors,
         ))
       end

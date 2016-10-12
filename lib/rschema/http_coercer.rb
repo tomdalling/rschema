@@ -24,7 +24,7 @@ module RSchema
         return Result.failure(Error.new(
           schema: self,
           value: value,
-          symbolic_name: "rschema/http_coercer/#{self.class.name}/failure",
+          symbolic_name: "coercion_failure",
         ))
       end
 

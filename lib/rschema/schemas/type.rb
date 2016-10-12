@@ -14,7 +14,7 @@ module RSchema
           Result.failure(Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'rschema/type/invalid',
+            symbolic_name: 'wrong_type',
           ))
         end
       end

@@ -20,7 +20,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
       expect(result.error).to have_attributes(
         schema: subject,
         value: 6,
-        symbolic_name: 'rschema/fixed_length_array/not_an_array',
+        symbolic_name: 'not_an_array',
       )
     end
 
@@ -31,7 +31,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
       expect(result.error).to have_attributes(
         schema: subject,
         value: [],
-        symbolic_name: 'rschema/fixed_length_array/incorrect_size',
+        symbolic_name: 'incorrect_size',
       )
     end
 

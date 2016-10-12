@@ -15,7 +15,7 @@ RSpec.describe RSchema::Schemas::Boolean do
     expect(result.error).to have_attributes(
       schema: subject,
       value: nil,
-      symbolic_name: 'rschema/boolean/invalid',
+      symbolic_name: 'not_a_boolean',
     )
   end
 

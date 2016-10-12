@@ -48,7 +48,7 @@ module RSchema
         Result.failure(Error.new(
           schema: self,
           value: value,
-          symbolic_name: 'rschema/fixed_hash/missing_attributes',
+          symbolic_name: 'missing_attributes',
           vars: missing_keys(value),
         ))
       end
@@ -62,7 +62,7 @@ module RSchema
         Result.failure(Error.new(
           schema: self,
           value: value,
-          symbolic_name: 'rschema/fixed_hash/extraneous_attributes',
+          symbolic_name: 'extraneous_attributes',
           vars: extraneous_keys(value),
         ))
       end
@@ -104,7 +104,7 @@ module RSchema
           Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'rschema/fixed_hash/not_a_hash',
+            symbolic_name: 'not_a_hash',
           )
         )
       end

@@ -18,7 +18,7 @@ RSpec.describe RSchema::Schemas::Sum do
     expect(result.error).to have_attributes(
       schema: subject,
       value: -5,
-      symbolic_name: 'rschema/alternation/all_invalid',
+      symbolic_name: 'all_invalid',
       vars: [even_schema.error, positive_schema.error],
     )
   end
