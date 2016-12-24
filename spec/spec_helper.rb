@@ -1,4 +1,5 @@
 require 'simplecov'
+Bundler.require
 SimpleCov.start
 
 RSpec.configure do |config|
@@ -22,7 +23,6 @@ RSpec.configure do |config|
 end
 
 require 'rschema'
-require 'pry'
 require 'schema_stub'
 require 'wrapper_stub'
 

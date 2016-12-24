@@ -1,5 +1,5 @@
 RSpec.describe RSchema do
-  example 'RSchema provides schema-based validation of arbitrary data structures' do
+  it 'provides schema-based validation of arbitrary data structures' do
     int_schema = RSchema.define { _Integer }
 
     valid_result = int_schema.call(5)
@@ -9,7 +9,7 @@ RSpec.describe RSchema do
     expect(invalid_result).not_to be_valid
   end
 
-  example 'RSchema provides details when values are not valid' do
+  it 'provides details when values are not valid' do
     array_of_symbols = RSchema.define { Array(_Symbol) }
 
     result = array_of_symbols.call([:a, :b, 'see'])
@@ -22,11 +22,12 @@ RSpec.describe RSchema do
     expect(error.value).to eq('see')
   end
 
-  example 'RSchema provides coercion' do
+  it 'provides coercion' do
     array_of_symbols = RSchema.define { Array(_Symbol) }
     coercer = RSchema::HTTPCoercer.wrap(array_of_symbols)
+    options = RSchema::Options.default
 
-    result = coercer.call(['a', :b, 'c'])
+    result = coercer.call(['a', :b, 'c'], options)
 
     expect(result).to be_valid
     expect(result.value).to eq([:a, :b, :c])

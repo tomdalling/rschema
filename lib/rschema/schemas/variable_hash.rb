@@ -64,6 +64,8 @@ module RSchema
             value: value,
             symbolic_name: 'contents_invalid',
             vars: {
+              # TODO: these need to be moved out of :vars.
+              #       they should be suberrors in an error hash.
               key_errors: key_errors,
               value_errors: value_errors,
             }
