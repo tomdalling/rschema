@@ -4,6 +4,8 @@ module RSchema
       coercer_klass = begin
         case schema
         when Schemas::Type then TYPE_COERCERS[schema.type]
+        when Schemas::Boolean then BoolCoercer
+        when Schemas::FixedHash then FixedHashCoercer
         end
       end
 
@@ -24,7 +26,7 @@ module RSchema
         return Result.failure(Error.new(
           schema: self,
           value: value,
-          symbolic_name: "coercion_failure",
+          symbolic_name: :coercion_failure,
         ))
       end
 
@@ -37,6 +39,26 @@ module RSchema
       end
 
       class CoercionFailed < StandardError; end
+    end
+
+    class TimeCoercer < Coercer
+      def coerce(value)
+        case value
+        when Time then value
+        when String then Time.iso8601(value) rescue invalid!
+        else invalid!
+        end
+      end
+    end
+
+    class DateCoercer < Coercer
+      def coerce(value)
+        case value
+        when Date then value
+        when String then Date.iso8601(value) rescue invalid!
+        else invalid!
+        end
+      end
     end
 
     class SymbolCoercer < Coercer
@@ -65,10 +87,60 @@ module RSchema
       end
     end
 
+    class BoolCoercer < Coercer
+      TRUTHY_STRINGS = ['1', 'true']
+      FALSEY_STRINGS = ['0', 'false']
+
+      def coerce(value)
+        case
+        when value.equal?(true) then true
+        when value.equal?(false) then false
+        when TRUTHY_STRINGS.include?(value.downcase) then true
+        when FALSEY_STRINGS.include?(value.downcase) then false
+        else invalid!
+        end
+      end
+    end
+
+    class FixedHashCoercer < Coercer
+      def coerce(value)
+        symbolize_keys(value)
+      end
+
+      def symbolize_keys(hash)
+        keys = keys_to_symbolize(hash)
+        if keys.any?
+          hash.dup.tap do |new_hash|
+            keys.each { |k| new_hash[k.to_sym] = new_hash.delete(k) }
+          end
+        else
+          hash
+        end
+      end
+
+      def keys_to_symbolize(hash)
+        # these could be cached if we know for sure that the subschema is immutable
+        symbol_keys = subschema.attributes
+          .map(&:key)
+          .select{ |k| k.is_a?(Symbol) }
+          .map(&:to_s)
+
+        string_keys = subschema.attributes
+          .map(&:key)
+          .select{ |k| k.is_a?(String) }
+
+        hash.keys.select do |k|
+          k.is_a?(String) && symbol_keys.include?(k) && !string_keys.include?(k)
+        end
+      end
+    end
+
     TYPE_COERCERS = {
       Symbol => SymbolCoercer,
       Integer => IntegerCoercer,
       Float => FloatCoercer,
+      Time => TimeCoercer,
+      Date => DateCoercer,
     }
   end
 end
