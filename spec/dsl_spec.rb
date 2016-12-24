@@ -10,11 +10,25 @@ RSpec.describe RSchema::DSL do
       expect(schema.type).to be(Integer)
     end
 
-    specify 'underscore shorthand' do
-      schema = subject._Integer
+    describe 'underscore shorthand' do
+      specify 'existing class' do
+        schema = subject._Integer
 
-      expect(schema).to be_a(RSchema::Schemas::Type)
-      expect(schema.type).to be(Integer)
+        expect(schema).to be_a(RSchema::Schemas::Type)
+        expect(schema.type).to be(Integer)
+      end
+
+      specify 'non-existant class' do
+        expect {
+          subject._WakaWaka
+        }.to raise_error(NameError, 'uninitialized constant WakaWaka')
+      end
+
+      specify 'without underscore' do
+        expect {
+          subject.waka_waka
+        }.to raise_error(NoMethodError, /undefined method `waka_waka'/)
+      end
     end
   end
 
