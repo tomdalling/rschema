@@ -40,7 +40,7 @@ RSpec.describe RSchema do
           name: _String,
           optional(:age) => _Integer,
           email: maybe(_String),
-          role: enum(:journalist, :editor, :administrator),
+          role: enum([:journalist, :editor, :administrator]),
           enabled: Boolean(),
           rating: either(_Integer, _Float),
           alternate_names: Array(_String),

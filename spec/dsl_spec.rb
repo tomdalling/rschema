@@ -118,10 +118,12 @@ RSpec.describe RSchema::DSL do
   end
 
   specify '#enum' do
-    schema = subject.enum(1, 2, 3)
+    subschema = subject._Integer
+    schema = subject.enum([1, 2, 3], subschema)
 
     expect(schema).to be_a(RSchema::Schemas::Enum)
     expect(schema.members).to contain_exactly(1, 2, 3)
+    expect(schema.subschema).to be(subschema)
   end
 
   specify '#either' do

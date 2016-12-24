@@ -10,6 +10,7 @@ RSpec.describe RSchema::HTTPCoercer do
         optional(:time) => _Time,
         optional(:date) => _Date,
         optional('string key') => _Integer,
+        optional(:enum) => enum([:a, :b, :c]),
       )
     end
   end
@@ -27,6 +28,11 @@ RSpec.describe RSchema::HTTPCoercer do
   it 'coerces strings to Symbol' do
     result = subject.call(symbol: 'waka')
     expect(result.value).to eq(symbol: :waka)
+  end
+
+  it 'coerces through Enum schemas' do
+    result = subject.call(enum: 'a')
+    expect(result.value).to eq(enum: :a)
   end
 
   describe 'Time coercion' do
