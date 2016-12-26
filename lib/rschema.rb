@@ -19,8 +19,15 @@ require 'rschema/http_coercer'
 
 module RSchema
   def self.define(&block)
+    default_dsl.instance_eval(&block)
+  end
+
+  def self.define_hash(&block)
+    default_dsl.Hash(define(&block))
+  end
+
+  def self.default_dsl
     @default_dsl ||= DefaultDSL.new
-    @default_dsl.instance_eval(&block)
   end
 
   class DefaultDSL

@@ -25,12 +25,19 @@ RSpec.describe RSchema do
   it 'provides coercion' do
     array_of_symbols = RSchema.define { Array(_Symbol) }
     coercer = RSchema::HTTPCoercer.wrap(array_of_symbols)
-    options = RSchema::Options.default
 
-    result = coercer.call(['a', :b, 'c'], options)
+    result = coercer.call(['a', :b, 'c'])
 
     expect(result).to be_valid
     expect(result.value).to eq([:a, :b, :c])
+  end
+
+  specify '#define_hash' do
+    schema = RSchema.define_hash{{ name: _String }}
+
+    result = schema.call({ name: 'Tom' })
+
+    expect(result).to be_valid
   end
 
   context 'Complicated, nested schemas and values' do
