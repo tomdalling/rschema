@@ -160,7 +160,8 @@ Error objects contain a lot of information, which can be used to generate
 error messages for developers or users.
 
 ```ruby
-error = result[2][:hair]
+error = result.error[2][:hair]
+error.class #=> RSchema::Error
 
 error.value #=> :blond
 error.symbolic_name #=> :not_a_member
@@ -191,7 +192,7 @@ create them, using an underscore prefix:
 ```ruby
 schema1 = RSchema.define { _Integer }
 # is exactly the same as
-schema = RSchema.define { type(Integer) }
+schema2 = RSchema.define { type(Integer) }
 ```
 
 Because type schemas use `is_a?`, they handle subclasses, and can also be used
@@ -200,7 +201,7 @@ to check for `include`d modules like `Enumerable`:
 ```ruby
 schema = RSchema.define { _Enumerable }
 schema.call([1, 2, 3]).valid? #=> true
-schema.call({ a: 1, b: 2}).valid? #=> true
+schema.call({ a: 1, b: 2 }).valid? #=> true
 ```
 
 Array Schemas
@@ -328,7 +329,7 @@ predicate_schema.call(5).valid? #=> false
 Coercion
 --------
 
-RSchema provides coercers, which attempt to convert invalid into valid data,
+RSchema provides coercers, which attempt to convert invalid data into valid data,
 according to a schema.
 
 Take HTTP params as an example. Web forms often contain database IDs, which
