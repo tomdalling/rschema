@@ -328,28 +328,37 @@ predicate_schema.call(5).valid? #=> false
 Coercion
 --------
 
-RSchema is capable of coercing invalid values into valid ones, in some
-situations. Here are some examples:
+RSchema provides coercers, which attempt to convert invalid into valid data,
+according to a schema.
+
+Take HTTP params as an example. Web forms often contain database IDs, which
+are integers, but are submitted as strings by the browser. Param hash keys
+are often expected to be `Symbol`s, but are also strings. The `HTTPCoercer`
+can automatically convert these strings into the appropriate type, based on a
+schema.
 
 ```ruby
-RSchema.coerce!(Symbol, "hello") #=> :hello
-RSchema.coerce!(String, :hello)  #=> "hello"
-RSchema.coerce!(Integer, "5")    #=> 5
-RSchema.coerce!(Integer, "cat")  # !!! raises RSchema::ValidationError !!!
-RSchema.coerce!(Set, [1, 2, 3])  #=> <Set: {1, 2, 3}>
-
-schema = RSchema.define {{
-  fname: String,
-  favourite_foods: set_of(Symbol)
-}}
-
-value = {
-  fname: 'Peggy',
-  favourite_foods: ['berries', 'cake']
+# Input keys and values are all strings.
+input_params = {
+  'whatever_id' => '5',
+  'amount' => '123.45',
 }
 
-RSchema.coerce!(schema, value)
-  #=> { fname: "Peggy", favourite_foods: <Set: #{:berries, :cake}> }
+# The schema expects symbol keys, an integer value, and a float value.
+param_schema = RSchema.define_hash {{
+  whatever_id: _Integer,
+  amount: _Float,
+}}
+
+# The schema is wrapped in a HTTPCoercer.
+coercer = RSchema::HTTPCoercer.wrap(param_schema)
+
+# Use the coercer like a normal schema object.
+result = coercer.call(input_params)
+
+# The result object contains the coerced value
+result.valid? #=> true
+result.value #=> { :whatever_id => 5, :amount => 123.45 }
 ```
 
 Extending the DSL
