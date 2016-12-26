@@ -324,6 +324,17 @@ predicate_schema = RSchema.define do
 end
 predicate_schema.call(4).valid? #=> true
 predicate_schema.call(5).valid? #=> false
+
+# pipeline
+pipeline_schema = RSchema.define do
+  pipeline(
+    either(_Integer, _Float),
+    predicate { |x| x.positive? },
+  )
+end
+pipeline_schema.call(123).valid? #=> true
+pipeline_schema.call(5.1).valid? #=> true
+pipeline_schema.call(-24).valid? #=> false
 ```
 
 Coercion
@@ -362,27 +373,74 @@ result.valid? #=> true
 result.value #=> { :whatever_id => 5, :amount => 123.45 }
 ```
 
-Extending the DSL
+Extending The DSL
 -----------------
 
-You can create new, custom DSLs that extend the default DSL like so:
+To add methods to the default DSL, first create a module:
 
 ```ruby
-module MyCustomDSL
-  extend RSchema::DSL::Base
-  def self.positive_and_even(type)
-    predicate { |x| x > 0 && x.even? }
+module MyCustomMethods
+  def palendrome
+    pipeline(
+      _String,
+      predicate { |s| s == s.reverse },
+    )
   end
 end
 ```
 
-Pass the custom DSL to `RSchema.define` to use it:
+Include your module into `RSchema::DefaultDSL`:
 
 ```ruby
-schema = RSchema.define(MyCustomDSL) { positive_and_even }
-RSchema.validate(schema, 6)  #=> true
-RSchema.validate(schema, -6) #=> false
+RSchema::DefaultDSL.include(MyCustomMethods)
 ```
+
+And your methods will be available via `RSchema.define`:
+
+```ruby
+schema = RSchema.define { palendrome }
+
+schema.call('racecar').valid? #=> true
+schema.call('ferrari').valid? #=> false
+```
+
+This is the preferred way for other gems to extend RSchema with new kinds
+of schema classes.
+
+
+Creating Your Own DSL
+---------------------
+
+The default DSL is designed to be extended (i.e. modified) by external gems/code.
+If you want a DSL that isn't affected by external factors, you can create one
+yourself.
+
+Create a new class, and include `RSchema::DSL` to get all the standard DSL
+methods that come built-in to RSchema. Define your own custom methods on this
+class.
+
+```ruby
+class MyCustomDSL
+  include RSchema::DSL
+
+  def palendrome
+    pipeline(
+      _String,
+      predicate { |s| s == s.reverse },
+    )
+  end
+end
+```
+
+Then simply use `instance_eval` to make use of your custom DSL.
+
+```ruby
+schema = MyCustomDSL.new.instance_eval { palendrome }
+schema.call('racecar').valid? #=> true
+```
+
+See the implementation of `RSchema.define` for reference.
+
 
 Custom Schema Types
 -------------------
