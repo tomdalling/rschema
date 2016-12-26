@@ -204,11 +204,10 @@ schema.call([1, 2, 3]).valid? #=> true
 schema.call({ a: 1, b: 2 }).valid? #=> true
 ```
 
-Array Schemas
--------------
+Variable-length Array Schemas
+-----------------------------
 
 There are two types of array schemas.
-
 The first type are `VariableLengthArray` schemas, where every element in the
 array conforms to a single subschema:
 
@@ -220,6 +219,9 @@ schema.call([:a, :b, :c]).valid? #=> true
 schema.call([:a]).valid? #=> true
 schema.call([]).valid? #=> true
 ```
+
+Fixed-length Array Schemas
+--------------------------
 
 There are also `FixedLengthArray` schemas, where the array must have a specific
 length, and each element of the array has a separate subschema:
@@ -233,19 +235,19 @@ schema.call([10, 'hello', 'world']).valid? #=> false
 schema.call([10]).valid? #=> false
 ```
 
-Hash Schemas
-------------
+Fixed Hash Schemas
+------------------
 
 There are also two kinds of hash schemas.
 
-`FixedHash` schemas describes hashes where they keys are known:
+`FixedHash` schemas describes hashes where they keys are known constants:
 
 ```ruby
 schema = RSchema.define do
-  Hash(name: _String)
+  Hash(name: _String, age: _Integer)
 end
 
-schema.call({ name: 'George' }).valid? #=> true
+schema.call({ name: 'George', age: 2 }).valid? #=> true
 ```
 
 Keys can be optional:
@@ -272,9 +274,11 @@ schema = RSchema.define_hash {{
 }}
 ```
 
-The other kind of hash schemas are `VariableHash` schemas. `VariableHash`
-schemas are for hashes where the keys are _not_ fixed. They contain
-one subschema for keys, and another subschema for values.
+Variable Hash Schemas
+---------------------
+
+`VariableHash` schemas are for hashes where the keys are _not_ known constants.
+They contain one subschema for keys, and another subschema for values.
 
 ```ruby
 schema = RSchema.define { VariableHash(_Symbol => _Integer) }
@@ -289,17 +293,17 @@ Other Schema Types
 RSchema provides a few other schema types through its DSL:
 
 ```ruby
-# boolean
+# boolean (only true or false)
 boolean_schema = RSchema.define { Boolean() }
 boolean_schema.call(true).valid?  #=> true
 boolean_schema.call(false).valid? #=> true
 boolean_schema.call(nil).valid?   #=> false
 
-# anything
+# anything (literally any value)
 anything_schema = RSchema.define { anything }
 anything_schema.call('Hi').valid?  #=> true
 anything_schema.call(true).valid?  #=> true
-anything_schema.call(false).valid? #=> true
+anything_schema.call(1234).valid?  #=> true
 anything_schema.call(nil).valid?   #=> true
 
 # either (sum types)
@@ -308,24 +312,24 @@ either_schema.call('hi').valid? #=> true
 either_schema.call(5555).valid? #=> true
 either_schema.call(77.1).valid? #=> true
 
-# maybe (allow nil)
+# maybe (allows nil)
 maybe_schema = RSchema.define { maybe(_Integer) }
 maybe_schema.call(5).valid?   #=> true
 maybe_schema.call(nil).valid? #=> true
 
-# enum
+# enum (a set of valid values)
 enum_schema = RSchema.define { enum([:a, :b, :c]) }
 enum_schema.call(:a).valid? #=> true
 enum_schema.call(:z).valid? #=> false
 
-# predicate
+# predicate (block returns true for valid values)
 predicate_schema = RSchema.define do
   predicate { |x| x.even? }
 end
 predicate_schema.call(4).valid? #=> true
 predicate_schema.call(5).valid? #=> false
 
-# pipeline
+# pipeline (apply multiple schemas to a single value, in order)
 pipeline_schema = RSchema.define do
   pipeline(
     either(_Integer, _Float),
@@ -337,11 +341,12 @@ pipeline_schema.call(5.1).valid? #=> true
 pipeline_schema.call(-24).valid? #=> false
 ```
 
+
 Coercion
 --------
 
-RSchema provides coercers, which attempt to convert invalid data into valid data,
-according to a schema.
+Coercers convert invalid data into valid data where possible, according to a
+schema.
 
 Take HTTP params as an example. Web forms often contain database IDs, which
 are integers, but are submitted as strings by the browser. Param hash keys
@@ -389,7 +394,7 @@ module MyCustomMethods
 end
 ```
 
-Include your module into `RSchema::DefaultDSL`:
+Then include your module into `RSchema::DefaultDSL`:
 
 ```ruby
 RSchema::DefaultDSL.include(MyCustomMethods)
@@ -416,8 +421,8 @@ If you want a DSL that isn't affected by external factors, you can create one
 yourself.
 
 Create a new class, and include `RSchema::DSL` to get all the standard DSL
-methods that come built-in to RSchema. Define your own custom methods on this
-class.
+methods that come built-in to RSchema. You can define your own custom methods
+on this class.
 
 ```ruby
 class MyCustomDSL
@@ -444,6 +449,8 @@ See the implementation of `RSchema.define` for reference.
 
 Custom Schema Types
 -------------------
+
+TODO: rewrite this section
 
 Any Ruby object can be a schema, as long as it implements the `schema_walk`
 method.  Here is a schema called `Coordinate`, which is an x/y pair of `Float`s
