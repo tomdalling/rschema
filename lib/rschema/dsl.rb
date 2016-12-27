@@ -48,8 +48,8 @@ module RSchema
       Schemas::Maybe.new(subschema)
     end
 
-    def enum(valid_values, subschema=Schemas::Type.new(Symbol))
-      Schemas::Enum.new(valid_values, subschema)
+    def enum(valid_values, subschema=nil)
+      Schemas::Enum.new(valid_values, subschema || type(valid_values.first.class))
     end
 
     def either(*subschemas)
