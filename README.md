@@ -450,68 +450,103 @@ See the implementation of `RSchema.define` for reference.
 Custom Schema Types
 -------------------
 
-TODO: rewrite this section
+Schemas are objects that conform to a certain interface (i.e. a duck type).
+To create your own schema types, you just need to implement this interface.
 
-Any Ruby object can be a schema, as long as it implements the `schema_walk`
-method.  Here is a schema called `Coordinate`, which is an x/y pair of `Float`s
-in an array:
+Below is a custom schema for pairs – arrays with two elements.
+This is already possible using existing schemas (e.g. `Array(_String, _String)`),
+and is only shown here for the purpose of demonstration.
 
 ```ruby
-# make the schema type class
-class CoordinateSchema
-  def schema_walk(value, mapper)
-    # validate `value`
-    return RSchema::ErrorDetails.new(value, 'is not an Array') unless value.is_a?(Array)
-    return RSchema::ErrorDetails.new(value, 'does not have two elements') unless value.size == 2
-
-    # walk the subschemas/subvalues
-    x, x_error = RSchema.walk(Float, value[0], mapper)
-    y, y_error = RSchema.walk(Float, value[1], mapper)
-
-    # look for subschema errors, and propagate them if found
-    return x_error.extend_key_path(:x) if x_error
-    return y_error.extend_key_path(:y) if y_error
-
-    # return the valid value
-    [x, y]
+class PairSchema
+  def initialize(subschema)
+    @subschema = subschema
   end
-end
 
-# add some DSL
-module RSchema::DSL
-  def self.coordinate
-    CoordinateSchema.new
+  def call(pair, options=RSchema::Options.default)
+    return not_an_array_failure(pair) unless pair.is_a?(Array)
+    return not_a_pair_failure(pair) unless pair.size == 2
+
+    subresults = pair.map { |x| @subschema.call(x, options) }
+
+    if subresults.all?(&:valid?)
+      RSchema::Result.success(subresults.map(&:value).to_a)
+    else
+      RSchema::Result.failure(subschema_error(subresults))
+    end
   end
-end
 
-# use the custom schema type (coercion works too)
-schema = RSchema.define { coordinate }
-RSchema.validate(schema, [1.0, 2.0]) #=> true
-RSchema.validate(schema, [1, 2]) #=> false
-RSchema.coerce!(schema, ["1", "2"]) #=> [1.0, 2.0]
+  def with_wrapped_subschemas(wrapper)
+    PairSchema.new(wrapper.wrap(@subschema))
+  end
+
+  private
+
+    def not_an_array_failure(pair)
+      RSchema::Result.failure(
+        RSchema::Error.new(
+          symbolic_name: :not_an_array,
+          schema: self,
+          value: pair,
+        )
+      )
+    end
+
+    def not_a_pair_failure(pair)
+      RSchema::Result.failure(
+        RSchema::Error.new(
+          symbolic_name: :not_a_pair,
+          schema: self,
+          value: pair,
+          vars: {
+            expected_size: 2,
+            actual_size: pair.size,
+          }
+        )
+      )
+    end
+
+    def subschema_error(subresults)
+      subresults
+        .each_with_index
+        .select { |(result, idx)| result.invalid? }
+        .map(&:reverse)
+        .to_h
+    end
+end
 ```
 
-The `schema_walk` method receives two arguments:
+Add your new schema class to the default DSL:
 
- - `value`: the value that is being validated against this schema
- - `mapper`: not usually used by the schema, but must be passed to
-   `RSchema.walk`.
+```ruby
+module PairSchemaDSL
+  def pair(subschema)
+    PairSchema.new(subschema)
+  end
+end
 
-The `schema_walk` method has three responsibilities:
+RSchema::DefaultDSL.include(PairSchemaDSL)
+```
 
- 1. It must validate the given value. If the value is invalid, the method must
-    return an `RSchema::ErrorDetails` object. If the value is valid, it must
-    return the valid value after walking all subvalues.
+Then your schema is accessible from `RSchema.define`:
 
- 2. For composite schemas, it must walk subvalues by calling `RSchema.walk`.
-    The example above walks two subvalues (`value[0]` and `value[1]`) with the
-    `Float` schema.
+```ruby
+gps_coordinate_schema = RSchema.define { pair(_Float) }
+gps_coordinate_schema.call([1.2, 3.4]).valid? #=> true
+```
 
- 3. It must propagate any `RSchema::ErrorDetails` objects returned from walking
-    the subvalues. Walking subvalues with `RSchema.walk` may return an error,
-    in which case the `rschema_walk` method must also return an error. Use the
-    method `RSchema::ErrorDetails#extend_key_path` in this situation, to
-    include additional information in the error before returning it.
+Coercion should work, as long as `#with_wrapped_subschemas` was implemented
+correctly.
+
+```ruby
+coercer = RSchema::HTTPCoercer.wrap(gps_coordinate_schema)
+result = coercer.call(['1', '2'])
+result.valid? #=> true
+result.value #=> [1.0, 2.0]
+```
+
+TODO: need to explain how to implement `#call` and `#with_wrapped_subschemas`
+
 
 [Prismatic/schema]: https://github.com/Prismatic/schema
 
