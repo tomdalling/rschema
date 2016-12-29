@@ -231,8 +231,8 @@ schema = RSchema.define{ Array(_Integer, _String) }
 schema.class #=> RSchema::Schemas::FixedLengthArray
 
 schema.call([10, 'hello']).valid? #=> true
-schema.call([10, 'hello', 'world']).valid? #=> false
-schema.call([10]).valid? #=> false
+schema.call([22, 'world']).valid? #=> true
+schema.call(['heyoo', 33]).valid? #=> false
 ```
 
 Fixed Hash Schemas
@@ -250,7 +250,7 @@ end
 schema.call({ name: 'George', age: 2 }).valid? #=> true
 ```
 
-Keys can be optional:
+Elements can be optional:
 
 ```ruby
 schema = RSchema.define do
@@ -378,6 +378,8 @@ result.valid? #=> true
 result.value #=> { :whatever_id => 5, :amount => 123.45 }
 ```
 
+TODO: explain how to create custom coercers
+
 Extending The DSL
 -----------------
 
@@ -453,7 +455,7 @@ Custom Schema Types
 Schemas are objects that conform to a certain interface (i.e. a duck type).
 To create your own schema types, you just need to implement this interface.
 
-Below is a custom schema for pairs – arrays with two elements.
+Below is a custom schema for pairs – arrays with two elements of the same type.
 This is already possible using existing schemas (e.g. `Array(_String, _String)`),
 and is only shown here for the purpose of demonstration.
 
@@ -516,6 +518,8 @@ class PairSchema
 end
 ```
 
+TODO: need to explain how to implement `#call` and `#with_wrapped_subschemas`
+
 Add your new schema class to the default DSL:
 
 ```ruby
@@ -544,8 +548,6 @@ result = coercer.call(['1', '2'])
 result.valid? #=> true
 result.value #=> [1.0, 2.0]
 ```
-
-TODO: need to explain how to implement `#call` and `#with_wrapped_subschemas`
 
 
 [Prismatic/schema]: https://github.com/Prismatic/schema
