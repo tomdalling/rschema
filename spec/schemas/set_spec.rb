@@ -29,7 +29,7 @@ RSpec.describe RSchema::Schemas::Set do
       expect(result.error).to have_attributes(
         schema: subject,
         value: 5,
-        symbolic_name: 'not_a_set',
+        symbolic_name: :not_a_set,
       )
     end
 
@@ -42,7 +42,7 @@ RSpec.describe RSchema::Schemas::Set do
       expect(result.error).to have_attributes(
         schema: subject,
         value: Set.new([5]),
-        symbolic_name: 'contents_invalid',
+        symbolic_name: :contents_invalid,
         vars: [subschema.error],
       )
     end

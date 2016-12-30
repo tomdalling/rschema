@@ -19,7 +19,7 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
       expect(result.error).to have_attributes(
         schema: subject,
         value: 5,
-        symbolic_name: 'not_an_array',
+        symbolic_name: :not_an_array,
       )
     end
 

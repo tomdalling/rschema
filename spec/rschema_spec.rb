@@ -18,7 +18,7 @@ RSpec.describe RSchema do
     error = result.error[2]
     expect(error).to be_a(RSchema::Error)
     expect(error.schema.type).to be(Symbol)
-    expect(error.symbolic_name).to eq('wrong_type')
+    expect(error.symbolic_name).to eq(:wrong_type)
     expect(error.value).to eq('see')
   end
 
@@ -93,7 +93,7 @@ RSpec.describe RSchema do
       expect(result).not_to be_valid
       expect(result.error[:gps_coordinates][1]).to have_attributes({
         value: 'wrong!',
-        symbolic_name: 'wrong_type',
+        symbolic_name: :wrong_type,
       })
     end
 

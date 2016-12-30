@@ -19,7 +19,7 @@ class SchemaStub
     @error ||= RSchema::Error.new(
       schema: self,
       value: :mock_value,
-      symbolic_name: 'mock_error',
+      symbolic_name: :mock_error,
     )
   end
 

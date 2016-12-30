@@ -32,7 +32,7 @@ module RSchema
           Result.failure(Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'contents_invalid',
+            symbolic_name: :contents_invalid,
             vars: result_errors,
           ))
         end
@@ -47,7 +47,7 @@ module RSchema
         def not_a_set_result(value)
           Result.failure(Error.new(
             schema: self,
-            symbolic_name: 'not_a_set',
+            symbolic_name: :not_a_set,
             value: value,
           ))
         end

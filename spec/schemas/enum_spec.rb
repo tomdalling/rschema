@@ -21,7 +21,7 @@ RSpec.describe RSchema::Schemas::Enum do
       expect(result.error).to have_attributes(
         schema: subject,
         value: :z,
-        symbolic_name: 'not_a_member',
+        symbolic_name: :not_a_member,
       )
     end
 

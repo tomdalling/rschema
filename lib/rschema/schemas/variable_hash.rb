@@ -54,7 +54,7 @@ module RSchema
           Result.failure(Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'not_a_hash',
+            symbolic_name: :not_a_hash,
           ))
         end
 
@@ -62,7 +62,7 @@ module RSchema
           Error.new(
             schema: self,
             value: value,
-            symbolic_name: 'contents_invalid',
+            symbolic_name: :contents_invalid,
             vars: {
               # TODO: these need to be moved out of :vars.
               #       they should be suberrors in an error hash.
