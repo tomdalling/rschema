@@ -20,22 +20,47 @@ RSpec.describe RSchema::HTTPCoercer do
     expect(result.value).to eq(int: 5)
   end
 
-  it 'coerces strings to Float' do
-    result = subject.call(float: '5.6')
-    expect(result.value).to eq(float: 5.6)
-  end
-
-  it 'coerces strings to Symbol' do
-    result = subject.call(symbol: 'waka')
-    expect(result.value).to eq(symbol: :waka)
-  end
-
   it 'coerces through Enum schemas' do
     result = subject.call(enum: 'a')
     expect(result.value).to eq(enum: :a)
   end
 
+  describe 'Float coercion' do
+    it 'coerces strings to Float' do
+      result = subject.call(float: '5.6')
+      expect(result.value).to eq(float: 5.6)
+    end
+
+    it 'fails for invalid strings' do
+      result = subject.call(float: 'abc')
+      expect(result).to be_invalid
+    end
+  end
+
+  describe 'Symbol coercion' do
+    it 'allows Symbols to pass though' do
+      result = subject.call(symbol: :hello)
+      expect(result.value).to eq(symbol: :hello)
+    end
+
+    it 'converts strings to Symbols' do
+      result = subject.call(symbol: 'waka')
+      expect(result.value).to eq(symbol: :waka)
+    end
+
+    it 'rejects all other types' do
+      result = subject.call(symbol: 5)
+      expect(result.error[:symbol].symbolic_name).to eq(:coercion_failure)
+    end
+  end
+
   describe 'Time coercion' do
+    it 'allows Time values to pass through' do
+      time = Time.new(2016, 12, 24, 18, 37, 43, '+11:00')
+      result = subject.call(time: time)
+      expect(result.value[:time]).to be(time)
+    end
+
     it 'coerces iso8601 strings to Time' do
       result = subject.call(time: '2016-12-24T18:37:43+11:00')
       expect(result.value).to eq(time: Time.new(2016, 12, 24, 18, 37, 43, '+11:00'))
@@ -43,6 +68,11 @@ RSpec.describe RSchema::HTTPCoercer do
 
     it 'rejects non-iso8601 strings' do
       result = subject.call(time: '23rd July 2016')
+      expect(result.error[:time].symbolic_name).to eq(:coercion_failure)
+    end
+
+    it 'rejects all other types' do
+      result = subject.call(time: 5)
       expect(result.error[:time].symbolic_name).to eq(:coercion_failure)
     end
   end
@@ -55,6 +85,11 @@ RSpec.describe RSchema::HTTPCoercer do
 
     it 'rejects non-iso8601 strings' do
       result = subject.call(date: '2016')
+      expect(result.error[:date].symbolic_name).to eq(:coercion_failure)
+    end
+
+    it 'rejects all other types' do
+      result = subject.call(date: 5)
       expect(result.error[:date].symbolic_name).to eq(:coercion_failure)
     end
   end
@@ -88,9 +123,26 @@ RSpec.describe RSchema::HTTPCoercer do
       end
     end
 
+    it 'allows true and false to pass through' do
+      expect(subject.call(bool: true)).to be_valid
+      expect(subject.call(bool: false)).to be_valid
+    end
+
     it 'will not coerce unrecognised values' do
       result = subject.call(bool: 'wakawaka')
       expect(result).to be_invalid
     end
+  end
+
+  it 'creates a wrappable schema' do
+    # This is kind of a problem. Coercers expect their subschemas to be a
+    # particular type. If their subschema gets wrapped, the type changes, and
+    # the coercer is unable to use the subschema during coercion, resulting in
+    # crashes. You must be very careful when wrapping schemas that have already
+    # been wrapped.
+
+    wrapped = WrapperStub.wrap(subject, :recursive)
+    expect(wrapped.wrapped_subschema).to be_a(RSchema::HTTPCoercer::FixedHashCoercer)
+    expect(wrapped.wrapped_subschema.subschema).to be_a(WrapperStub)
   end
 end
