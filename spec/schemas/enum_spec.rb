@@ -26,7 +26,7 @@ RSpec.describe RSchema::Schemas::Enum do
     end
 
     specify 'due to subschema failure' do
-      result = subschema.call('waka')
+      result = subject.call('waka')
 
       expect(result).not_to be_valid
       expect(result.error).to be(subschema.error)
