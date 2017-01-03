@@ -29,6 +29,10 @@ module RSchema
         self.class.new(wrapped_attributes)
       end
 
+      def [](attr_key)
+        attributes.find{ |attr| attr.key == attr_key }
+      end
+
       Attribute = Struct.new(:key, :value_schema, :optional) do
         def with_wrapped_value_schema(wrapper)
           self.class.new(key, wrapper.wrap(value_schema), optional)

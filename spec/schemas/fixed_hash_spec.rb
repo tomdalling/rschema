@@ -83,5 +83,9 @@ RSpec.describe RSchema::Schemas::FixedHash do
     expect(wrapped.attributes.map(&:value_schema)).to all(be_a WrapperStub)
     expect(name_attr.value_schema.wrapped_subschema).to be(name_schema)
   end
+
+  it 'returns attribute objects via the subscript operator' do
+    expect(subject[:name]).to be(name_attr)
+  end
 end
 
