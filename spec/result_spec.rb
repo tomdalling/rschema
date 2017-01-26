@@ -3,6 +3,6 @@ RSpec.describe RSchema::Result do
     result = RSchema::Result.failure('wawawa')
     expect {
       result.value
-    }.to raise_error(RSchema::Result::Invalid)
+    }.to raise_error(RSchema::Result::InvalidError)
   end
 end

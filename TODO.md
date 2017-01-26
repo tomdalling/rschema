@@ -5,10 +5,6 @@ Feature Roadmap
 
    Almost done. TODO: Hash schemas have problems reporting errors for keys.
 
- - Monadic coercion.
-
-   Done. Schema return values are wrapped in an `RSchema::Result` object.
-
  - Schema compilation.
 
    Basically done. Schemas are all custom objects. The last thing left to do is

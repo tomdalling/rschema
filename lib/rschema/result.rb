@@ -26,7 +26,7 @@ module RSchema
       if valid?
         @value
       else
-        raise Invalid
+        raise InvalidError
       end
     end
 
@@ -34,6 +34,6 @@ module RSchema
       @error
     end
 
-    class Invalid < StandardError; end
+    class InvalidError < StandardError; end
   end
 end

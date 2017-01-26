@@ -1,5 +1,7 @@
 module RSchema
   module HTTPCoercer
+    class CanNotBeWrappedError < StandardError; end
+
     def self.wrap(schema)
       coercer_klass = begin
         case schema
@@ -22,7 +24,7 @@ module RSchema
 
       def call(value, options=RSchema::Options.default)
         @subschema.call(coerce(value), options)
-      rescue CoercionFailed
+      rescue CoercionFailedError
         return Result.failure(Error.new(
           schema: self,
           value: value,
@@ -31,14 +33,18 @@ module RSchema
       end
 
       def with_wrapped_subschemas(wrapper)
-        self.class.new(wrapper.wrap(subschema))
+        raise CanNotBeWrappedError, <<~EOS
+          This schema has already been wrapped by RSchema::HTTPCoercer.
+          Wrapping the schema again will most likely result in a schema that
+          crashes when it is called.
+        EOS
       end
 
       def invalid!
-        raise CoercionFailed
+        raise CoercionFailedError
       end
 
-      class CoercionFailed < StandardError; end
+      class CoercionFailedError < StandardError; end
     end
 
     class TimeCoercer < Coercer
@@ -88,15 +94,19 @@ module RSchema
     end
 
     class BoolCoercer < Coercer
-      TRUTHY_STRINGS = ['1', 'true']
-      FALSEY_STRINGS = ['0', 'false']
+      TRUTHY_STRINGS = ['on', '1', 'true']
+      FALSEY_STRINGS = ['off', '0', 'false']
 
       def coerce(value)
-        case
-        when value.equal?(true) then true
-        when value.equal?(false) then false
-        when TRUTHY_STRINGS.include?(value.downcase) then true
-        when FALSEY_STRINGS.include?(value.downcase) then false
+        case value
+        when true, false then value
+        when nil then false
+        when String
+          case
+          when TRUTHY_STRINGS.include?(value.downcase) then true
+          when FALSEY_STRINGS.include?(value.downcase) then false
+          else invalid!
+          end
         else invalid!
         end
       end
@@ -104,7 +114,7 @@ module RSchema
 
     class FixedHashCoercer < Coercer
       def coerce(value)
-        symbolize_keys(value)
+        default_bools_to_false(symbolize_keys(value))
       end
 
       def symbolize_keys(hash)
@@ -131,6 +141,27 @@ module RSchema
 
         hash.keys.select do |k|
           k.is_a?(String) && symbol_keys.include?(k) && !string_keys.include?(k)
+        end
+      end
+
+      def default_bools_to_false(hash)
+        # The HTTP standard says that when a form is submitted, all unchecked
+        # check boxes will _not_ be sent to the server. That is, they will not
+        # be present at all in the params hash.
+        #
+        # This method coerces these missing values into `false`.
+
+        # some of this could be cached if we know for sure that the subschema is immutable
+        keys_to_default = subschema.attributes
+          .select { |attr| attr.value_schema.is_a?(BoolCoercer) }
+          .map(&:key)
+          .reject { |key| hash.has_key?(key) }
+
+        if keys_to_default.any?
+          defaults = keys_to_default.map{ |k| [k, false] }.to_h
+          hash.merge(defaults)
+        else
+          hash # no coercion necessary
         end
       end
     end

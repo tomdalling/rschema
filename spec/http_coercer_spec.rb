@@ -6,7 +6,7 @@ RSpec.describe RSchema::HTTPCoercer do
         optional(:int) => _Integer,
         optional(:float) => _Float,
         optional(:symbol) => _Symbol,
-        optional(:bool) => Boolean(),
+        #optional(:bool) => Boolean(),
         optional(:time) => _Time,
         optional(:date) => _Date,
         optional('string key') => _Integer,
@@ -109,40 +109,52 @@ RSpec.describe RSchema::HTTPCoercer do
   #TODO: check what values browsers actually send for checkboxes.
   #      this is probably totally wrong
   describe 'Boolean coercion' do
+    subject(:bool_subject) { described_class.wrap(bool_schema) }
+    let(:bool_schema) { RSchema.define_hash {{ bool: Boolean() }} }
+
     it 'coerces magic strings to true' do
-      ['1', 'True'].each do |truthy|
-        result = subject.call(bool: truthy)
+      ['1', 'True', 'On'].each do |truthy|
+        result = bool_subject.call(bool: truthy)
         expect(result.value).to eq(bool: true)
       end
     end
 
     it 'coerces magic strings to false' do
-      ['0', 'False'].each do |falsey|
-        result = subject.call(bool: falsey)
+      ['0', 'False', 'Off'].each do |falsey|
+        result = bool_subject.call(bool: falsey)
         expect(result.value).to eq(bool: false)
       end
     end
 
+    it 'coerces nil to false' do
+      result = bool_subject.call(bool: nil)
+      expect(result.value).to eq(bool: false)
+    end
+
+    it 'defaults to false when the value is missing within a hash' do
+      result = bool_subject.call({})
+      expect(result.value).to eq(bool: false)
+    end
+
     it 'allows true and false to pass through' do
-      expect(subject.call(bool: true)).to be_valid
-      expect(subject.call(bool: false)).to be_valid
+      expect(bool_subject.call(bool: true)).to be_valid
+      expect(bool_subject.call(bool: false)).to be_valid
     end
 
     it 'will not coerce unrecognised values' do
-      result = subject.call(bool: 'wakawaka')
+      result = bool_subject.call(bool: 'wakawaka')
       expect(result).to be_invalid
     end
   end
 
-  it 'creates a wrappable schema' do
-    # This is kind of a problem. Coercers expect their subschemas to be a
-    # particular type. If their subschema gets wrapped, the type changes, and
+  it 'disallows wrapping an already-wrapped schema' do
+    # Double wrapping is a problem. Coercers expect their subschemas to be a
+    # particular type. If their subschema gets wrapped again, the type changes, and
     # the coercer is unable to use the subschema during coercion, resulting in
-    # crashes. You must be very careful when wrapping schemas that have already
-    # been wrapped.
+    # crashes.
 
-    wrapped = WrapperStub.wrap(subject, :recursive)
-    expect(wrapped.wrapped_subschema).to be_a(RSchema::HTTPCoercer::FixedHashCoercer)
-    expect(wrapped.wrapped_subschema.subschema).to be_a(WrapperStub)
+    expect {
+      WrapperStub.wrap(subject, :recursive)
+    }.to raise_error(RSchema::HTTPCoercer::CanNotBeWrappedError)
   end
 end
