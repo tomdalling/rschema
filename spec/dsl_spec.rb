@@ -89,6 +89,31 @@ RSpec.describe RSchema::DSL do
     )
   end
 
+  specify '#Hash(based_on: x)' do
+    username_schema = double
+    password_schema = double
+    token_schema = double
+    original_schema = subject.instance_eval do
+      Hash(username: username_schema, password: password_schema)
+    end
+
+    merged_schema = subject.Hash_based_on(original_schema, {
+      password: nil, # remove :password attribute
+      token: token_schema, # add a new :token attribute
+    })
+
+    expect(merged_schema).to be_a(RSchema::Schemas::FixedHash)
+    expect(merged_schema.attributes.size).to eq(2)
+    expect(merged_schema.attributes.first).to have_attributes(
+      key: :username,
+      value_schema: username_schema,
+    )
+    expect(merged_schema.attributes.last).to have_attributes(
+      key: :token,
+      value_schema: token_schema,
+    )
+  end
+
   describe '#VariableHash' do
     specify 'correct usage' do
       key_schema = double

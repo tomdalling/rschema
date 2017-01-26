@@ -1,24 +1,15 @@
-Feature Roadmap
----------------
+TODO
+====
 
- - Returning multiple validation errors.
-
-   Almost done. TODO: Hash schemas have problems reporting errors for keys.
-
- - Schema compilation.
-
-   Basically done. Schemas are all custom objects. The last thing left to do is
-   allow FixedHash schemas to have non-destructive updates (create new schemas
-   from existing schemas).
+ - Revise/fix how Hash schemas report errors for keys.
 
  - Pluggable coercion.
 
-   Done. Different coercers can be applied to a single schema.
-   Could provide helper/convenience classes for writing custom coercers,
+   Could provide helper/convenience classes for creating custom coercers,
    although it won't provide any capabilities that the API doesn't already
    offer.
 
- - Symbolic errors.
+ - Error translations
 
    Errors contain a lot of information that can be translated to fit various
    context. There are already multiple developer-friendly translations, but
