@@ -1,6 +1,3 @@
-source 'https://rubygems.org/'
-
-gem 'rspec'
-gem 'simplecov'
-gem 'byebug'
-gem 'pry'
+source 'https://rubygems.org'
+gemspec
+gem "codeclimate-test-reporter", group: :test, require: nil
