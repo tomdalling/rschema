@@ -11,33 +11,12 @@ module RSchema
       def call(value, options=Options.default)
         return not_a_hash_result(value) unless value.is_a?(Hash)
 
-        #TODO: this isn't done
-        result = {}
-        key_errors = {}
-        value_errors = {}
-
-        value.each do |key, subvalue|
-          key_result = key_schema.call(key, options)
-          if key_result.invalid?
-            key_errors[key] = key_result.error
-            break if options.fail_fast?
-          end
-
-          subvalue_result = value_schema.call(subvalue, options)
-          if subvalue_result.invalid?
-            value_errors[key] = subvalue_result.error
-            break if options.fail_fast?
-          end
-
-          if key_result.valid? && subvalue_result.valid?
-            result[key_result.value] = subvalue_result.value
-          end
-        end
+        result, key_errors, value_errors = apply_subschemas(value, options)
 
         if key_errors.empty? && value_errors.empty?
           Result.success(result)
         else
-          Result.failure(subschema_error(value, key_errors, value_errors))
+          Result.failure(keys: key_errors, values: value_errors)
         end
       end
 
@@ -58,18 +37,30 @@ module RSchema
           ))
         end
 
-        def subschema_error(value, key_errors, value_errors)
-          Error.new(
-            schema: self,
-            value: value,
-            symbolic_name: :contents_invalid,
-            vars: {
-              # TODO: these need to be moved out of :vars.
-              #       they should be suberrors in an error hash.
-              key_errors: key_errors,
-              value_errors: value_errors,
-            }
-          )
+        def apply_subschemas(value, options)
+          result = {}
+          key_errors = {}
+          value_errors = {}
+
+          value.each do |key, subvalue|
+            key_result = key_schema.call(key, options)
+            if key_result.invalid?
+              key_errors[key] = key_result.error
+              break if options.fail_fast?
+            end
+
+            subvalue_result = value_schema.call(subvalue, options)
+            if subvalue_result.invalid?
+              value_errors[key] = subvalue_result.error
+              break if options.fail_fast?
+            end
+
+            if key_result.valid? && subvalue_result.valid?
+              result[key_result.value] = subvalue_result.value
+            end
+          end
+
+          return result, key_errors, value_errors
         end
     end
   end

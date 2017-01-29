@@ -23,7 +23,6 @@ RSpec.describe RSchema::Schemas::VariableHash do
     specify 'due to not being a hash' do
       result = subject.call(5)
 
-      expect(result).not_to be_valid
       expect(result.error).to have_attributes(
         schema: subject,
         value: 5,
@@ -34,46 +33,28 @@ RSpec.describe RSchema::Schemas::VariableHash do
     specify 'due to invalid key' do
       result = subject.call({ 5 => :valid })
 
-      expect(result).not_to be_valid
-      expect(result.error).to have_attributes(
-        schema: subject,
-        value: { 5 => :valid },
-        symbolic_name: :contents_invalid,
-        vars: {
-          key_errors: { 5 => key_schema.error },
-          value_errors: {},
-        }
-      )
+      expect(result.error).to eq({
+        keys: { 5 => key_schema.error },
+        values: {},
+      })
     end
 
     it 'due to invalid value' do
       result = subject.call({ hello: :wrong })
 
-      expect(result).not_to be_valid
-      expect(result.error).to have_attributes(
-        schema: subject,
-        value: { hello: :wrong },
-        symbolic_name: :contents_invalid,
-        vars: {
-          key_errors: {},
-          value_errors: { hello: value_schema.error },
-        }
-      )
+      expect(result.error).to eq({
+        keys: {},
+        values: { hello: value_schema.error },
+      })
     end
 
     it 'due to both invalid keys and invalid values' do
       result = subject.call({ hello: :wrong, 5 => :valid })
 
-      expect(result).not_to be_valid
-      expect(result.error).to have_attributes(
-        schema: subject,
-        value: { hello: :wrong, 5 => :valid },
-        symbolic_name: :contents_invalid,
-        vars: {
-          key_errors: { 5 => key_schema.error },
-          value_errors: { hello: value_schema.error },
-        }
-      )
+      expect(result.error).to eq({
+        keys: { 5 => key_schema.error },
+        values: { hello: value_schema.error },
+      })
     end
 
     it 'respects the `fail_fast` option' do
@@ -82,16 +63,10 @@ RSpec.describe RSchema::Schemas::VariableHash do
 
       result = subject.call(input, options)
 
-      expect(result).not_to be_valid
-      expect(result.error).to have_attributes(
-        schema: subject,
-        value: { hello: :wrong, 5 => :valid },
-        symbolic_name: :contents_invalid,
-        vars: {
-          key_errors: {}, # this would contain errors without the `fail_fast` option
-          value_errors: { hello: value_schema.error},
-        }
-      )
+      expect(result.error).to eq({
+        keys: {}, # this would contain errors without the `fail_fast` option
+        values: { hello: value_schema.error},
+      })
     end
   end
 
