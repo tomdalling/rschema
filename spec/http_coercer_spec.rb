@@ -106,8 +106,6 @@ RSpec.describe RSchema::HTTPCoercer do
     end
   end
 
-  #TODO: check what values browsers actually send for checkboxes.
-  #      this is probably totally wrong
   describe 'Boolean coercion' do
     subject(:bool_subject) { described_class.wrap(bool_schema) }
     let(:bool_schema) { RSchema.define_hash {{ bool: Boolean() }} }
