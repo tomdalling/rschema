@@ -27,9 +27,20 @@ module RSchema
       {
         schema: schema.class.name,
         error: symbolic_name.to_s,
-        value: value, #TODO: this needs to be JSONified
-        vars: vars, #TODO: also needs to be JSONified
+        value: jsonify(value),
+        vars: jsonify(vars),
       }
     end
+
+    private
+
+      def jsonify(value)
+        case value
+        when String, Symbol, Numeric, TrueClass, FalseClass, NilClass then value
+        when Array then value.map{ |element| jsonify(element) }
+        when Hash then value.map{ |k, v| [jsonify(k), jsonify(v)] }.to_h
+        else String(value)
+        end
+      end
   end
 end
