@@ -9,7 +9,7 @@ if [[ -z "$NEW_VERSION" ]] ; then
     Bumps the version, performs a commit, tags the commit, pushes the commit to
     github.
 
-        Usage: $0 <major|minor|patch>
+        Usage: $0 <major|minor|patch|pre>
 
 END_OF_STRING
 
