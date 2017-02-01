@@ -113,6 +113,14 @@ module RSchema
     end
 
     class FixedHashCoercer < Coercer
+      attr_reader :hash_attributes
+
+      def initialize(fixed_hash_schema)
+        super
+
+        @hash_attributes = fixed_hash_schema.attributes.map(&:dup)
+      end
+
       def coerce(value)
         default_bools_to_false(symbolize_keys(value))
       end
@@ -129,18 +137,18 @@ module RSchema
       end
 
       def keys_to_symbolize(hash)
-        # these could be cached if we know for sure that the subschema is immutable
-        symbol_keys = subschema.attributes
+        # some of this could be memoized
+        symbol_keys = hash_attributes
           .map(&:key)
           .select{ |k| k.is_a?(Symbol) }
           .map(&:to_s)
 
-        string_keys = subschema.attributes
+        string_keys = hash_attributes
           .map(&:key)
           .select{ |k| k.is_a?(String) }
 
         hash.keys.select do |k|
-          k.is_a?(String) && symbol_keys.include?(k) && !string_keys.include?(k)
+          symbol_keys.include?(k) && !string_keys.include?(k)
         end
       end
 
@@ -151,19 +159,26 @@ module RSchema
         #
         # This method coerces these missing values into `false`.
 
-        # some of this could be cached if we know for sure that the subschema is immutable
-        keys_to_default = subschema.attributes
-          .select { |attr| attr.value_schema.is_a?(BoolCoercer) }
-          .map(&:key)
+        missing_keys = keys_for_bool_defaulting
           .reject { |key| hash.has_key?(key) }
 
-        if keys_to_default.any?
-          defaults = keys_to_default.map{ |k| [k, false] }.to_h
+        if missing_keys.any?
+          defaults = missing_keys.map{ |k| [k, false] }.to_h
           hash.merge(defaults)
         else
           hash # no coercion necessary
         end
       end
+
+      private
+
+        def keys_for_bool_defaulting
+          # this could be memoized
+          hash_attributes
+            .reject(&:optional)
+            .select { |attr| attr.value_schema.is_a?(BoolCoercer) }
+            .map(&:key)
+        end
     end
 
     TYPE_COERCERS = {

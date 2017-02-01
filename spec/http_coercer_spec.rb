@@ -108,39 +108,44 @@ RSpec.describe RSchema::HTTPCoercer do
 
   describe 'Boolean coercion' do
     subject(:bool_subject) { described_class.wrap(bool_schema) }
-    let(:bool_schema) { RSchema.define_hash {{ bool: Boolean() }} }
+    let(:bool_schema) do
+      RSchema.define_hash {{
+        required: Boolean(),
+        optional(:opt) => Boolean(),
+      }}
+    end
 
     it 'coerces magic strings to true' do
       ['1', 'True', 'On'].each do |truthy|
-        result = bool_subject.call(bool: truthy)
-        expect(result.value).to eq(bool: true)
+        result = bool_subject.call(required: truthy)
+        expect(result.value).to eq(required: true)
       end
     end
 
     it 'coerces magic strings to false' do
       ['0', 'False', 'Off'].each do |falsey|
-        result = bool_subject.call(bool: falsey)
-        expect(result.value).to eq(bool: false)
+        result = bool_subject.call(required: falsey)
+        expect(result.value).to eq(required: false)
       end
     end
 
     it 'coerces nil to false' do
-      result = bool_subject.call(bool: nil)
-      expect(result.value).to eq(bool: false)
+      result = bool_subject.call(required: nil)
+      expect(result.value).to eq(required: false)
     end
 
     it 'defaults to false when the value is missing within a hash' do
       result = bool_subject.call({})
-      expect(result.value).to eq(bool: false)
+      expect(result.value).to eq(required: false)
     end
 
     it 'allows true and false to pass through' do
-      expect(bool_subject.call(bool: true)).to be_valid
-      expect(bool_subject.call(bool: false)).to be_valid
+      expect(bool_subject.call(required: true)).to be_valid
+      expect(bool_subject.call(required: false)).to be_valid
     end
 
     it 'will not coerce unrecognised values' do
-      result = bool_subject.call(bool: 'wakawaka')
+      result = bool_subject.call(required: 'wakawaka')
       expect(result).to be_invalid
     end
   end
