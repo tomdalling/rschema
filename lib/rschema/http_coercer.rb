@@ -33,11 +33,16 @@ module RSchema
       end
 
       def with_wrapped_subschemas(wrapper)
-        raise CanNotBeWrappedError, <<~EOS
-          This schema has already been wrapped by RSchema::HTTPCoercer.
-          Wrapping the schema again will most likely result in a schema that
-          crashes when it is called.
-        EOS
+        # Double wrapping is potentially a problem. Coercers expect their
+        # subschemas to be a particular type. If their subschema gets wrapped
+        # again, the type changes, so if the coercer tries to use its subschema
+        # during coercion, it will crash.
+        #
+        # For this reason, coercers must not rely upon the type of their
+        # subschemas within `#call`. Coercer schemas should store any required
+        # info from their subschemas within `#initialize`.
+
+        self.class.new(wrapper.wrap(subschema))
       end
 
       def invalid!
@@ -115,10 +120,10 @@ module RSchema
     class FixedHashCoercer < Coercer
       attr_reader :hash_attributes
 
-      def initialize(fixed_hash_schema)
-        super
+      def initialize(fixed_hash_schema, attributes = nil)
+        super(fixed_hash_schema)
 
-        @hash_attributes = fixed_hash_schema.attributes.map(&:dup)
+        @hash_attributes = attributes || fixed_hash_schema.attributes.map(&:dup)
       end
 
       def coerce(value)
@@ -168,6 +173,10 @@ module RSchema
         else
           hash # no coercion necessary
         end
+      end
+
+      def with_wrapped_subschemas(wrapper)
+        self.class.new(wrapper.wrap(subschema), hash_attributes)
       end
 
       private

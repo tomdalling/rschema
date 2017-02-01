@@ -6,7 +6,7 @@ RSpec.describe RSchema::HTTPCoercer do
         optional(:int) => _Integer,
         optional(:float) => _Float,
         optional(:symbol) => _Symbol,
-        #optional(:bool) => Boolean(),
+        #optional(:bool) => Boolean(), # tested seperately
         optional(:time) => _Time,
         optional(:date) => _Date,
         optional('string key') => _Integer,
@@ -150,14 +150,21 @@ RSpec.describe RSchema::HTTPCoercer do
     end
   end
 
-  it 'disallows wrapping an already-wrapped schema' do
-    # Double wrapping is a problem. Coercers expect their subschemas to be a
-    # particular type. If their subschema gets wrapped again, the type changes, and
-    # the coercer is unable to use the subschema during coercion, resulting in
-    # crashes.
+  it 'handles being wrapped twice' do
+    twice_wrapped = described_class.wrap(subject)
 
-    expect {
-      WrapperStub.wrap(subject, :recursive)
-    }.to raise_error(RSchema::HTTPCoercer::CanNotBeWrappedError)
+    result = twice_wrapped.call(
+      int: '5',
+      float: '6.7',
+      symbol: 'wimble',
+      date: '2017-01-27',
+    )
+
+    expect(result.value).to eq(
+      int: 5,
+      float: 6.7,
+      symbol: :wimble,
+      date: Date.new(2017, 01, 27),
+    )
   end
 end
