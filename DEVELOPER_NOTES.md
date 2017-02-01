@@ -1,10 +1,10 @@
-Gem Release Procedure
----------------------
+Gem Release
+-----------
 
-1. Add a new section to `CHANGELOG.md` and commit those changes
-2. Bump version with `sh/bump_version <VERSION>`
-3. Check that the new version is correct
-4. Release with `sh/release`
+1. Start with a clean working repository (commit all changes)
+2. Use `sh/bump_version`, which will modify the version, commit, tag, and push to github.
+3. Travis-CI will automatically build and publish the gem.
+
 
 TODO
 ----
