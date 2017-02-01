@@ -1,15 +1,16 @@
 lib = File.expand_path('../lib/', __FILE__)
 $:.unshift lib unless $:.include?(lib)
+
 require 'rschema/version'
 
 Gem::Specification.new do |s|
   s.name        = 'rschema'
   s.summary     = 'Schema-based validation and coercion for Ruby data structures'
-  s.homepage    = 'http://www.tomdalling.com/rschema'
-  s.licenses    = ['MIT']
+  s.homepage    = 'https://github.com/tomdalling/rschema'
+  s.license     = 'Apache-2.0'
   s.description = <<-GEM_DESC
-    Schema-based validation and coercion for Ruby data structures. Heavily inspired
-    by (read: stolen from) Prismatic/schema for Clojure.
+    Schema-based validation and coercion for Ruby data structures, inspired
+    by Prismatic/schema for Clojure.
   GEM_DESC
 
   s.version = RSchema::VERSION

@@ -1,186 +1,290 @@
 [![Build Status](https://travis-ci.org/tomdalling/rschema.svg?branch=master)](https://travis-ci.org/tomdalling/rschema)
 [![Test Coverage](https://codeclimate.com/github/tomdalling/rschema/badges/coverage.svg)](https://codeclimate.com/github/tomdalling/rschema/coverage)
 
-# RSchema
+RSchema
+=======
 
 Schema-based validation and coercion for Ruby data structures. Heavily inspired
-by (read: stolen from) [Prismatic/schema][] for Clojure.
+by [Prismatic/schema][].
 
 Meet RSchema
 ------------
 
-A "schema" is a data structure that describes the _shape_ of data.
-Schemas are generally just plain old hashes, arrays, and classes.
+RSchema provides a way to describe, validate, and coerce the "shape" of data.
+
+First you create a schema:
 
 ```ruby
-post_schema = {
-  title: String,
-  tags: Array[Symbol],
-  body: String
-}
+blog_post_schema = RSchema.define_hash {{
+  title: _String,
+  tags: Array(_Symbol),
+  body: _String,
+}}
 ```
 
-Schemas can be used to validate data. That is, they can check whether
-data is in the correct shape:
+Then you can use the schema to validate data:
 
 ```ruby
-RSchema.validate(post_schema, {
-  title: "You won't beleive how this developer foo'd her bar",
-  tags: [:foos, :bars, :unbeleivable],
+input = {
+  title: "One Weird Trick Developers Don't Want You To Know!",
+  tags: [:trick, :developers, :unbeleivable],
   body: '<p>blah blah</p>'
-}) #=> true
+}
+blog_post_schema.call(input).valid? #=> true
 ```
 
-What is a schema?
+What Is A Schema?
 -----------------
 
-Schemas are Ruby data structures. The simplest type of schema is just a class:
+Schemas are objects that _describe and validate a values_.
+
+The simplest schemas are `Type` schemas, which just validate the type of a value.
 
 ```ruby
-schema = Integer
-RSchema.validate(schema, 5) #=> true
-RSchema.validate(schema, 'hello') #=> false
+schema = RSchema.define { _Integer }
+schema.class #=> RSchema::Schemas::Type
+
+schema.call(1234).valid? #=> true
+schema.call('hi').valid? #=> false
 ```
 
 Then there are composite schemas, which are schemas composed of subschemas.
+
 Arrays are composite schemas:
 
 ```ruby
-schema = Array[Integer]
-RSchema.validate(schema, [10, 11, 12]) #=> true
-RSchema.validate(schema, [10, 11, '12']) #=> false
+schema = RSchema.define { Array(_Integer) }
+schema.call([10, 11, 12]).valid?  #=> true
+schema.call([10, 11, :hi]).valid? #=> false
 ```
 
 And so are hashes:
 
 ```ruby
-schema = { fname: String, age: Integer }
-RSchema.validate(schema, { fname: 'Jane', age: 27 }) #=> true
-RSchema.validate(schema, { fname: 'Johnny' }) #=> false
+schema = RSchema.define do
+  Hash(fname: _String, age: _Integer)
+end
+
+schema.call({ fname: 'Jane', age: 27 }).valid? #=> true
+schema.call({ fname: 'Johnny' }).valid? #=> false
 ```
 
-While schemas are just plain old Ruby data structures, RSchema also provides
-an extensible DSL for constructing more complicated schemas:
+Schema objects are composable – they are designed to be combined.
+This allows schemas to describe complex, nested data structures.
 
 ```ruby
-schema = RSchema.schema {{
+schema = RSchema.define_hash {{
   fname: predicate { |n| n.is_a?(String) && n.size > 0 },
-  favourite_foods: set_of(Symbol),
-  children_by_age: hash_of(Integer => String)
+  favourite_foods: Set(_Symbol),
+  children_by_age: VariableHash(_Integer => _String)
 }}
 
-RSchema.validate(schema, {
+input = {
   fname: 'Johnny',
   favourite_foods: Set.new([:bacon, :cheese, :onion]),
   children_by_age: {
     7 => 'Jenny',
-    5 => 'Simon'
-  }
-}) #=> true
+    5 => 'Simon',
+  },
+}
+
+schema.call(input).valid? #=> true
 ```
+
+RSchema provides many different kinds of schema classes for common tasks, but
+you can also write custom schema classes if you need to.
+
+
+The DSL
+-------
+
+Schemas are usually created and composed via a DSL using `RSchema.define`.
+They can be created manually, although this is often too verbose.
+
+For example, the following two schemas are identical. `schema1` is created via the
+DSL, and `schema2` is created manually.
+
+```ruby
+schema1 = RSchema.define { Array(_Symbol) }
+
+schema2 = RSchema::Schemas::VariableArray.new(
+  RSchema::Schemas::Type.new(Symbol)
+)
+```
+
+You will probably never need to create schemas manually unless you are doing
+something advanced, like writing your own DSL.
+
+The DSL is designed to be extensible. You can add your own methods to the
+default DSL, or create a separate, custom DSL to suite your needs.
+
 
 When Validation Fails
 ---------------------
 
-Using `RSchema.validate`, it is often difficult to tell exactly which values
-are failing validation.
+When data fails validation, it is often important to know exactly _which
+values_ were invalid, and _why_. RSchema provides details about every
+failure within a result object.
 
 ```ruby
-schema = RSchema.schema do
-  Array[{
-    name: String,
-    hair: enum([:red, :brown, :blonde, :black])
-  }]
+schema = RSchema.define do
+  Array(
+    Hash(
+      name: _String,
+      hair: enum([:red, :brown, :blonde, :black])
+    )
+  )
 end
 
-value = [
+input = [
   { name: 'Dane', hair: :black },
   { name: 'Tom', hair: :brown },
   { name: 'Effie', hair: :blond },
   { name: 'Chris', hair: :red },
 ]
 
-RSchema.validate(schema, value) #=> false
-```
+result = schema.call(input)
 
-To see exactly where validation fails, we can look at an
-`RSchema::ErrorDetails` object.
-
-The `validate!` method throws an exception when validation fails, and the
-exception contains the `RSchema::ErrorDetails` object.
-
-```ruby
-RSchema.validate!(schema, value) # throws exception:
-#=> RSchema::ValidationError: The value at [2, :hair] is not a valid enum member: :blond
+result.class #=> RSchema::Result
+result.valid? #=> false
+result.error #=> { 2 => { :hair => #<RSchema::Error> } }
+result.error[2][:hair].to_s
+  #=> "Error RSchema::Schemas::Enum/not_a_member for value: :blond"
 ```
 
 The error above says that the value `:blond`, which exists at location
-`value[2][:hair]`, is not a valid enum member. Looking back at the schema, we
+`input[2][:hair]`, is not a valid enum member. Looking back at the schema, we
 see that there is a typo, and it should be `:blonde` instead of `:blond`.
 
-To get an `RSchema::ErrorDetails` object _without_ using exceptions, we can use
-the `RSchema.validation_error` method.
+Error objects contain a lot of information, which can be used to generate
+error messages for developers or users.
 
 ```ruby
-error_details = RSchema.validation_error(schema, value)
+error = result.error[2][:hair]
+error.class #=> RSchema::Error
 
-error_details.failing_value #=> :blond
-error_details.reason #=> "is not a valid enum member"
-error_details.key_path #=> [2, :hair]
-error_details.to_s #=> "The value at [2, :hair] is not a valid enum member: :blond"
+error.value #=> :blond
+error.symbolic_name #=> :not_a_member
+error.schema #=> #<RSchema::Schemas::Enum>
+error.to_s #=> "Error RSchema::Schemas::Enum/not_a_member for value: :blond"
+error.to_s(:detailed) #=>
+  # Error: not_a_member
+  # Schema: RSchema::Schemas::Enum
+  # Value: :blond
+  # Vars: nil
 ```
 
-Array Schemas
--------------
-
-There are two types of array schemas. When the array schema has a single
-element, it is a variable-length array schema:
-
-```ruby
-schema = Array[Symbol]
-RSchema.validate(schema, [:a, :b, :c]) #=> true
-RSchema.validate(schema, [:a]) #=> true
-RSchema.validate(schema, []) #=> true
-```
-
-Otherwise, it is a fixed-length array schema
-
-```ruby
-schema = Array[Integer, String]
-RSchema.validate(schema, [10, 'hello']) #=> true
-RSchema.validate(schema, [10, 'hello', 'world']) #=> false
-RSchema.validate(schema, [10]) #=> false
-```
-
-Hash Schemas
+Type Schemas
 ------------
 
-Hash schemas map constant keys to subschema values:
+The most basic kind of schema is a `Type` schema.
+Type schemas validate the class of a value using `is_a?`.
 
 ```ruby
-schema = { fname: String }
-RSchema.validate(schema, { fname: 'William' }) #=> true
+schema = RSchema.define { type(String) }
+schema.call('hi').valid? #=> true
+schema.call(1234).valid? #=> false
 ```
 
-Keys can be optional:
+Type schemas are so common that the RSchema DSL provides a shorthand way to
+create them, using an underscore prefix:
 
 ```ruby
-schema = RSchema.schema {{
-  :fname => String,
-  optional(:age) => Integer
+schema1 = RSchema.define { _Integer }
+# is exactly the same as
+schema2 = RSchema.define { type(Integer) }
+```
+
+Because type schemas use `is_a?`, they handle subclasses, and can also be used
+to check for `include`d modules like `Enumerable`:
+
+```ruby
+schema = RSchema.define { _Enumerable }
+schema.call([1, 2, 3]).valid? #=> true
+schema.call({ a: 1, b: 2 }).valid? #=> true
+```
+
+Variable-length Array Schemas
+-----------------------------
+
+There are two types of array schemas.
+The first type are `VariableLengthArray` schemas, where every element in the
+array conforms to a single subschema:
+
+```ruby
+schema = RSchema.define { Array(_Symbol) }
+schema.class #=> RSchema::Schemas::VariableLengthArray
+
+schema.call([:a, :b, :c]).valid? #=> true
+schema.call([:a]).valid? #=> true
+schema.call([]).valid? #=> true
+```
+
+Fixed-length Array Schemas
+--------------------------
+
+There are also `FixedLengthArray` schemas, where the array must have a specific
+length, and each element of the array has a separate subschema:
+
+```ruby
+schema = RSchema.define{ Array(_Integer, _String) }
+schema.class #=> RSchema::Schemas::FixedLengthArray
+
+schema.call([10, 'hello']).valid? #=> true
+schema.call([22, 'world']).valid? #=> true
+schema.call(['heyoo', 33]).valid? #=> false
+```
+
+Fixed Hash Schemas
+------------------
+
+There are also two kinds of hash schemas.
+
+`FixedHash` schemas describes hashes where they keys are known constants:
+
+```ruby
+schema = RSchema.define do
+  Hash(name: _String, age: _Integer)
+end
+
+schema.call({ name: 'George', age: 2 }).valid? #=> true
+```
+
+Elements can be optional:
+
+```ruby
+schema = RSchema.define do
+  Hash(
+    name: _String,
+    optional(:age) => _Integer,
+  )
+end
+
+schema.call({ name: 'Lucy', age: 21 }).valid? #=> true
+schema.call({ name: 'Tom' }).valid? #=> true
+```
+
+`FixedHash` schemas are common, so the `RSchema.define_hash` method exists
+to make their creation more convenient:
+
+```ruby
+schema = RSchema.define_hash {{
+  name: _String,
+  optional(:age) => _Integer,
 }}
-RSchema.validate(schema, { fname: 'Lucy', age: 21 }) #=> true
-RSchema.validate(schema, { fname: 'Tom' }) #=> true
 ```
 
-There is also another type of hash schema that represents hashes with variable
-keys:
+Variable Hash Schemas
+---------------------
+
+`VariableHash` schemas are for hashes where the keys are _not_ known constants.
+They contain one subschema for keys, and another subschema for values.
 
 ```ruby
-schema = RSchema.schema { hash_of(String => Integer) }
-RSchema.validate(schema, { 'hello' => 1, 'world' => 2 }) #=> true
-RSchema.validate(schema, { 'hello' => 1 }) #=> true
-RSchema.validate(schema, {}) #=> true
+schema = RSchema.define { VariableHash(_Symbol => _Integer) }
+schema.call({}).valid? #=> true
+schema.call({ a: 1 }).valid? #=> true
+schema.call({ a: 1, b: 2 }).valid? #=> true
 ```
 
 Other Schema Types
@@ -189,155 +293,262 @@ Other Schema Types
 RSchema provides a few other schema types through its DSL:
 
 ```ruby
-# boolean
-boolean_schema = RSchema.schema{ boolean }
-RSchema.validate(boolean_schema, false) #=> true
-RSchema.validate(boolean_schema, nil)   #=> false
+# boolean (only true or false)
+boolean_schema = RSchema.define { Boolean() }
+boolean_schema.call(true).valid?  #=> true
+boolean_schema.call(false).valid? #=> true
+boolean_schema.call(nil).valid?   #=> false
 
-# any
-any_schema = RSchema.schema{ any }
-RSchema.validate(any_schema, "Hi")  #=> true
-RSchema.validate(any_schema, true)  #=> true
-RSchema.validate(any_schema, false) #=> true
-RSchema.validate(any_schema, nil)   #=> true
+# anything (literally any value)
+anything_schema = RSchema.define { anything }
+anything_schema.call('Hi').valid?  #=> true
+anything_schema.call(true).valid?  #=> true
+anything_schema.call(1234).valid?  #=> true
+anything_schema.call(nil).valid?   #=> true
 
-# either
-either_schema = RSchema.schema{ either(String, Integer, Float) }
-RSchema.validate(either_schema, 'hi') #=> true
-RSchema.validate(either_schema, 5555) #=> true
-RSchema.validate(either_schema, 77.1) #=> true
-RSchema.validate(either_schema, nil)  #=> false
+# either (sum types)
+either_schema = RSchema.define { either(_String, _Integer, _Float) }
+either_schema.call('hi').valid? #=> true
+either_schema.call(5555).valid? #=> true
+either_schema.call(77.1).valid? #=> true
 
-# maybe
-maybe_schema = RSchema.schema{ maybe(Integer) }
-RSchema.validate(maybe_schema, 5)   #=> true
-RSchema.validate(maybe_schema, nil) #=> true
+# maybe (allows nil)
+maybe_schema = RSchema.define { maybe(_Integer) }
+maybe_schema.call(5).valid?   #=> true
+maybe_schema.call(nil).valid? #=> true
 
-# enum
-enum_schema = RSchema.schema{ enum([:a, :b, :c]) }
-RSchema.validate(enum_schema, :a) #=> true
-RSchema.validate(enum_schema, :z) #=> false
+# enum (a set of valid values)
+enum_schema = RSchema.define { enum([:a, :b, :c]) }
+enum_schema.call(:a).valid? #=> true
+enum_schema.call(:z).valid? #=> false
 
-# predicate
-predicate_schema = RSchema.schema do
-  predicate('even') { |x| x.even? }
+# predicate (block returns true for valid values)
+predicate_schema = RSchema.define do
+  predicate { |x| x.even? }
 end
-RSchema.validate(predicate_schema, 4) #=> true
-RSchema.validate(predicate_schema, 5) #=> false
+predicate_schema.call(4).valid? #=> true
+predicate_schema.call(5).valid? #=> false
+
+# pipeline (apply multiple schemas to a single value, in order)
+pipeline_schema = RSchema.define do
+  pipeline(
+    either(_Integer, _Float),
+    predicate { |x| x.positive? },
+  )
+end
+pipeline_schema.call(123).valid? #=> true
+pipeline_schema.call(5.1).valid? #=> true
+pipeline_schema.call(-24).valid? #=> false
 ```
+
 
 Coercion
 --------
 
-RSchema is capable of coercing invalid values into valid ones, in some
-situations. Here are some examples:
+Coercers convert invalid data into valid data where possible, according to a
+schema.
+
+Take HTTP params as an example. Web forms often contain database IDs, which
+are integers, but are submitted as strings by the browser. Param hash keys
+are often expected to be `Symbol`s, but are also strings. The `HTTPCoercer`
+can automatically convert these strings into the appropriate type, based on a
+schema.
 
 ```ruby
-RSchema.coerce!(Symbol, "hello") #=> :hello
-RSchema.coerce!(String, :hello)  #=> "hello"
-RSchema.coerce!(Integer, "5")    #=> 5
-RSchema.coerce!(Integer, "cat")  # !!! raises RSchema::ValidationError !!!
-RSchema.coerce!(Set, [1, 2, 3])  #=> <Set: {1, 2, 3}>
-
-schema = RSchema.schema {{
-  fname: String,
-  favourite_foods: set_of(Symbol)
-}}
-
-value = {
-  fname: 'Peggy',
-  favourite_foods: ['berries', 'cake']
+# Input keys and values are all strings.
+input_params = {
+  'whatever_id' => '5',
+  'amount' => '123.45',
 }
 
-RSchema.coerce!(schema, value)
-  #=> { fname: "Peggy", favourite_foods: <Set: #{:berries, :cake}> }
+# The schema expects symbol keys, an integer value, and a float value.
+param_schema = RSchema.define_hash {{
+  whatever_id: _Integer,
+  amount: _Float,
+}}
+
+# The schema is wrapped in a HTTPCoercer.
+coercer = RSchema::HTTPCoercer.wrap(param_schema)
+
+# Use the coercer like a normal schema object.
+result = coercer.call(input_params)
+
+# The result object contains the coerced value
+result.valid? #=> true
+result.value #=> { :whatever_id => 5, :amount => 123.45 }
 ```
 
-Extending the DSL
+TODO: explain how to create custom coercers
+
+Extending The DSL
 -----------------
 
-You can create new, custom DSLs that extend the default DSL like so:
+To add methods to the default DSL, first create a module:
 
 ```ruby
-module MyCustomDSL
-  extend RSchema::DSL::Base
-  def self.positive_and_even(type)
-    predicate { |x| x > 0 && x.even? }
+module MyCustomMethods
+  def palendrome
+    pipeline(
+      _String,
+      predicate { |s| s == s.reverse },
+    )
   end
 end
 ```
 
-Pass the custom DSL to `RSchema.schema` to use it:
+Then include your module into `RSchema::DefaultDSL`:
 
 ```ruby
-schema = RSchema.schema(MyCustomDSL) { positive_and_even }
-RSchema.validate(schema, 6)  #=> true
-RSchema.validate(schema, -6) #=> false
+RSchema::DefaultDSL.include(MyCustomMethods)
 ```
+
+And your methods will be available via `RSchema.define`:
+
+```ruby
+schema = RSchema.define { palendrome }
+
+schema.call('racecar').valid? #=> true
+schema.call('ferrari').valid? #=> false
+```
+
+This is the preferred way for other gems to extend RSchema with new kinds
+of schema classes.
+
+
+Creating Your Own DSL
+---------------------
+
+The default DSL is designed to be extended (i.e. modified) by external gems/code.
+If you want a DSL that isn't affected by external factors, you can create one
+yourself.
+
+Create a new class, and include `RSchema::DSL` to get all the standard DSL
+methods that come built-in to RSchema. You can define your own custom methods
+on this class.
+
+```ruby
+class MyCustomDSL
+  include RSchema::DSL
+
+  def palendrome
+    pipeline(
+      _String,
+      predicate { |s| s == s.reverse },
+    )
+  end
+end
+```
+
+Then simply use `instance_eval` to make use of your custom DSL.
+
+```ruby
+schema = MyCustomDSL.new.instance_eval { palendrome }
+schema.call('racecar').valid? #=> true
+```
+
+See the implementation of `RSchema.define` for reference.
+
 
 Custom Schema Types
 -------------------
 
-Any Ruby object can be a schema, as long as it implements the `schema_walk`
-method.  Here is a schema called `Coordinate`, which is an x/y pair of `Float`s
-in an array:
+Schemas are objects that conform to a certain interface (i.e. a duck type).
+To create your own schema types, you just need to implement this interface.
+
+Below is a custom schema for pairs – arrays with two elements of the same type.
+This is already possible using existing schemas (e.g. `Array(_String, _String)`),
+and is only shown here for the purpose of demonstration.
 
 ```ruby
-# make the schema type class
-class CoordinateSchema
-  def schema_walk(value, mapper)
-    # validate `value`
-    return RSchema::ErrorDetails.new(value, 'is not an Array') unless value.is_a?(Array)
-    return RSchema::ErrorDetails.new(value, 'does not have two elements') unless value.size == 2
-
-    # walk the subschemas/subvalues
-    x, x_error = RSchema.walk(Float, value[0], mapper)
-    y, y_error = RSchema.walk(Float, value[1], mapper)
-
-    # look for subschema errors, and propagate them if found
-    return x_error.extend_key_path(:x) if x_error
-    return y_error.extend_key_path(:y) if y_error
-
-    # return the valid value
-    [x, y]
+class PairSchema
+  def initialize(subschema)
+    @subschema = subschema
   end
-end
 
-# add some DSL
-module RSchema::DSL
-  def self.coordinate
-    CoordinateSchema.new
+  def call(pair, options=RSchema::Options.default)
+    return not_an_array_failure(pair) unless pair.is_a?(Array)
+    return not_a_pair_failure(pair) unless pair.size == 2
+
+    subresults = pair.map { |x| @subschema.call(x, options) }
+
+    if subresults.all?(&:valid?)
+      RSchema::Result.success(subresults.map(&:value).to_a)
+    else
+      RSchema::Result.failure(subschema_error(subresults))
+    end
   end
-end
 
-# use the custom schema type (coercion works too)
-schema = RSchema.schema { coordinate }
-RSchema.validate(schema, [1.0, 2.0]) #=> true
-RSchema.validate(schema, [1, 2]) #=> false
-RSchema.coerce!(schema, ["1", "2"]) #=> [1.0, 2.0]
+  def with_wrapped_subschemas(wrapper)
+    PairSchema.new(wrapper.wrap(@subschema))
+  end
+
+  private
+
+    def not_an_array_failure(pair)
+      RSchema::Result.failure(
+        RSchema::Error.new(
+          symbolic_name: :not_an_array,
+          schema: self,
+          value: pair,
+        )
+      )
+    end
+
+    def not_a_pair_failure(pair)
+      RSchema::Result.failure(
+        RSchema::Error.new(
+          symbolic_name: :not_a_pair,
+          schema: self,
+          value: pair,
+          vars: {
+            expected_size: 2,
+            actual_size: pair.size,
+          }
+        )
+      )
+    end
+
+    def subschema_error(subresults)
+      subresults
+        .each_with_index
+        .select { |(result, idx)| result.invalid? }
+        .map(&:reverse)
+        .to_h
+    end
+end
 ```
 
-The `schema_walk` method receives two arguments:
+TODO: need to explain how to implement `#call` and `#with_wrapped_subschemas`
 
- - `value`: the value that is being validated against this schema
- - `mapper`: not usually used by the schema, but must be passed to
-   `RSchema.walk`.
+Add your new schema class to the default DSL:
 
-The `schema_walk` method has three responsibilities:
+```ruby
+module PairSchemaDSL
+  def pair(subschema)
+    PairSchema.new(subschema)
+  end
+end
 
- 1. It must validate the given value. If the value is invalid, the method must
-    return an `RSchema::ErrorDetails` object. If the value is valid, it must
-    return the valid value after walking all subvalues.
+RSchema::DefaultDSL.include(PairSchemaDSL)
+```
 
- 2. For composite schemas, it must walk subvalues by calling `RSchema.walk`.
-    The example above walks two subvalues (`value[0]` and `value[1]`) with the
-    `Float` schema.
+Then your schema is accessible from `RSchema.define`:
 
- 3. It must propagate any `RSchema::ErrorDetails` objects returned from walking
-    the subvalues. Walking subvalues with `RSchema.walk` may return an error,
-    in which case the `rschema_walk` method must also return an error. Use the
-    method `RSchema::ErrorDetails#extend_key_path` in this situation, to
-    include additional information in the error before returning it.
+```ruby
+gps_coordinate_schema = RSchema.define { pair(_Float) }
+gps_coordinate_schema.call([1.2, 3.4]).valid? #=> true
+```
+
+Coercion should work, as long as `#with_wrapped_subschemas` was implemented
+correctly.
+
+```ruby
+coercer = RSchema::HTTPCoercer.wrap(gps_coordinate_schema)
+result = coercer.call(['1', '2'])
+result.valid? #=> true
+result.value #=> [1.0, 2.0]
+```
+
 
 [Prismatic/schema]: https://github.com/Prismatic/schema
 
