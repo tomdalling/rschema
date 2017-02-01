@@ -151,7 +151,7 @@ RSpec.describe RSchema::HTTPCoercer do
   end
 
   it 'handles being wrapped twice' do
-    twice_wrapped = described_class.wrap(subject)
+    twice_wrapped = WrapperStub.wrap(subject)
 
     result = twice_wrapped.call(
       int: '5',
