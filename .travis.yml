@@ -1,7 +1,7 @@
 language: ruby
 cache: bundler
 rvm:
-- 2.3.3
+  - 2.3.3
 deploy:
   provider: rubygems
   on:
@@ -11,3 +11,5 @@ deploy:
 addons:
   code_climate:
     repo_token: b0a88d8b3f2d8a33a4782fa7a6d829d765c94dc6c9a9e2277abc7aa07fd5672c
+after_success:
+  - bundle exec codeclimate-test-reporter
