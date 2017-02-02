@@ -127,7 +127,11 @@ module RSchema
       end
 
       def coerce(value)
-        default_bools_to_false(symbolize_keys(value))
+        [value]
+          .map(&method(:symbolize_keys))
+          .map(&method(:remove_extraneous_elements))
+          .map(&method(:default_bools_to_false))
+          .last
       end
 
       def symbolize_keys(hash)
@@ -154,6 +158,19 @@ module RSchema
 
         hash.keys.select do |k|
           symbol_keys.include?(k) && !string_keys.include?(k)
+        end
+      end
+
+      def remove_extraneous_elements(hash)
+        valid_keys = hash_attributes.map(&:key)
+        keys_to_remove = hash.keys - valid_keys
+
+        if keys_to_remove.any?
+          hash.dup.tap do |stripped_hash|
+            keys_to_remove.each { |k| stripped_hash.delete(k) }
+          end
+        else
+          hash
         end
       end
 

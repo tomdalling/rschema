@@ -94,15 +94,20 @@ RSpec.describe RSchema::HTTPCoercer do
     end
   end
 
-  describe 'FixedHash key symbolization' do
-    it 'coerces fixed hash keys from strings to symbols' do
+  describe 'FixedHash coercion' do
+    it 'coerces keys from strings to symbols' do
       result = subject.call('int' => 5)
       expect(result.value).to eq(int: 5)
     end
 
-    it 'does not affect keys that are supposed to be strings' do
+    it 'does not coerce keys that are supposed to be strings' do
       result = subject.call('string key' => 5)
       expect(result.value).to eq('string key' => 5)
+    end
+
+    it 'removes extranous elements' do
+      result = subject.call(123 => 4, wawawawawaw: 5)
+      expect(result.value).to eq({})
     end
   end
 
