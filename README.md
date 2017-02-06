@@ -1,6 +1,12 @@
 [![Build Status](https://travis-ci.org/tomdalling/rschema.svg?branch=master)](https://travis-ci.org/tomdalling/rschema)
 [![Test Coverage](https://codeclimate.com/github/tomdalling/rschema/badges/coverage.svg)](https://codeclimate.com/github/tomdalling/rschema/coverage)
 
+NOTE: These are the docs for the version 3 prerelease
+=====================================================
+
+For earlier versions, see the tags.
+
+
 RSchema
 =======
 
