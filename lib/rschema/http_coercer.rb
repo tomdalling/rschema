@@ -85,7 +85,7 @@ module RSchema
     class IntegerCoercer < Coercer
       def coerce(value)
         Integer(value)
-      rescue ArgumentError
+      rescue ArgumentError, TypeError
         invalid!
       end
     end

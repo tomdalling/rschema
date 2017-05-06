@@ -15,9 +15,16 @@ RSpec.describe RSchema::HTTPCoercer do
     end
   end
 
-  it 'coerces strings to Integer' do
-    result = subject.call(int: '5')
-    expect(result.value).to eq(int: 5)
+  describe 'Integer coercion' do
+    it 'coerces strings to Integer' do
+      result = subject.call(int: '5')
+      expect(result.value).to eq(int: 5)
+    end
+
+    it 'fails on nil' do
+      result = subject.call(int: nil)
+      expect(result.error[:int].symbolic_name).to eq(:coercion_failure)
+    end
   end
 
   it 'coerces through Enum schemas' do
