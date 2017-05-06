@@ -1,6 +1,7 @@
 require 'rschema/options'
 require 'rschema/error'
 require 'rschema/result'
+
 require 'rschema/schemas/type'
 require 'rschema/schemas/maybe'
 require 'rschema/schemas/enum'
@@ -14,7 +15,12 @@ require 'rschema/schemas/variable_hash'
 require 'rschema/schemas/fixed_hash'
 require 'rschema/schemas/variable_length_array'
 require 'rschema/schemas/fixed_length_array'
+require 'rschema/schemas/coercer'
+
 require 'rschema/dsl'
+
+require 'rschema/coercers'
+require 'rschema/coercion_wrapper'
 require 'rschema/http_coercer'
 
 module RSchema

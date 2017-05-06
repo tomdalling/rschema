@@ -16,12 +16,12 @@ RSpec.describe RSchema::HTTPCoercer do
   end
 
   describe 'Integer coercion' do
-    it 'coerces strings to Integer' do
+    specify 'for strings' do
       result = subject.call(int: '5')
       expect(result.value).to eq(int: 5)
     end
 
-    it 'fails on nil' do
+    specify 'for nil' do
       result = subject.call(int: nil)
       expect(result.error[:int].symbolic_name).to eq(:coercion_failure)
     end
@@ -68,13 +68,16 @@ RSpec.describe RSchema::HTTPCoercer do
       expect(result.value[:time]).to be(time)
     end
 
-    it 'coerces iso8601 strings to Time' do
-      result = subject.call(time: '2016-12-24T18:37:43+11:00')
-      expect(result.value).to eq(time: Time.new(2016, 12, 24, 18, 37, 43, '+11:00'))
+    it 'coerces strings with Time.parse' do
+      dummy = Time.now
+      expect(Time).to receive(:parse).with('waka').and_return(dummy)
+
+      result = subject.call(time: 'waka')
+      expect(result.value.fetch(:time)).to be(dummy)
     end
 
     it 'rejects non-iso8601 strings' do
-      result = subject.call(time: '23rd July 2016')
+      result = subject.call(time: '')
       expect(result.error[:time].symbolic_name).to eq(:coercion_failure)
     end
 
