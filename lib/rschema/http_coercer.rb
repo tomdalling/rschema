@@ -1,6 +1,5 @@
 module RSchema
   module HTTPCoercer
-    class CanNotBeWrappedError < StandardError; end
 
     def self.wrap(schema)
       coercer_klass = begin
