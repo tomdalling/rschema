@@ -19,7 +19,7 @@ module RSchema
       coercer_class = coercer_class_for_schema(schema)
 
       if coercer_class
-        coercer = coercer_class.new(wrapped_schema)
+        coercer = coercer_class.build(wrapped_schema)
         Schemas::Coercer.new(coercer, wrapped_schema)
       else
         wrapped_schema

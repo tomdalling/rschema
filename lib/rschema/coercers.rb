@@ -1,8 +1,11 @@
 module RSchema
 module Coercers
 
-  class Time
-    def initialize(schema)
+  module Time
+    extend self
+
+    def build(schema)
+      self
     end
 
     def call(value)
@@ -18,8 +21,11 @@ module Coercers
     end
   end
 
-  class Date
-    def initialize(schema)
+  module Date
+    extend self
+
+    def build(schema)
+      self
     end
 
     def call(value)
@@ -35,8 +41,11 @@ module Coercers
     end
   end
 
-  class Symbol
-    def initialize(schema)
+  module Symbol
+    extend self
+
+    def build(schema)
+      self
     end
 
     def call(value)
@@ -48,8 +57,11 @@ module Coercers
     end
   end
 
-  class Integer
-    def initialize(schema)
+  module Integer
+    extend self
+
+    def build(schema)
+      self
     end
 
     def call(value)
@@ -58,8 +70,11 @@ module Coercers
     end
   end
 
-  class Float
-    def initialize(schema)
+  module Float
+    extend self
+
+    def build(schema)
+      self
     end
 
     def call(value)
@@ -68,11 +83,14 @@ module Coercers
     end
   end
 
-  class Boolean
+  module Boolean
+    extend self
+
     TRUTHY_STRINGS = ['on', '1', 'true', 'yes']
     FALSEY_STRINGS = ['off', '0', 'false', 'no']
 
-    def initialize(schema)
+    def build(schema)
+      self
     end
 
     def call(value)
@@ -93,6 +111,10 @@ module Coercers
   module HTTP
     class ParamHash
       attr_reader :hash_attributes
+
+      def self.build(schema)
+        new(schema)
+      end
 
       def initialize(fixed_hash_schema)
         #TODO: make fixed hash attributes frozen, and eliminate dup
