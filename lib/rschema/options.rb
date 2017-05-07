@@ -4,8 +4,8 @@ module RSchema
       @default ||= new
     end
 
-    def initialize(vars={})
-      @fail_fast = vars.fetch(:fail_fast, false)
+    def initialize(fail_fast: false)
+      @fail_fast = fail_fast
     end
 
     def fail_fast?
