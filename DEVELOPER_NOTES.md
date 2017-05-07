@@ -22,3 +22,7 @@ TODO
    Errors contain a lot of information that can be translated to fit various
    context. There are already multiple developer-friendly translations, but
    these errors should probably be translatable via Rails i18n functionality.
+
+ - Remove `Hash_based_on` in favour of something like
+   `preexisting_schema.without(:hash, :keys)` and
+   `preexisting_schema.merge(attr1, attr2)`
