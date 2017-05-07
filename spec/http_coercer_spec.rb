@@ -131,14 +131,14 @@ RSpec.describe RSchema::HTTPCoercer do
     end
 
     it 'coerces magic strings to true' do
-      ['1', 'True', 'On'].each do |truthy|
+      ['1', 'True', 'On', 'Yes'].each do |truthy|
         result = bool_subject.call(required: truthy)
         expect(result.value).to eq(required: true)
       end
     end
 
     it 'coerces magic strings to false' do
-      ['0', 'False', 'Off'].each do |falsey|
+      ['0', 'False', 'Off', 'No'].each do |falsey|
         result = bool_subject.call(required: falsey)
         expect(result.value).to eq(required: false)
       end
