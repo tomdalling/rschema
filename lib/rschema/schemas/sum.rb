@@ -8,23 +8,18 @@ module RSchema
       end
 
       def call(value, options=Options.default)
-        suberrors = []
+        suberrors = {}
 
         @subschemas.each do |subsch|
           result = subsch.call(value, options)
           if result.valid?
             return result
           else
-            suberrors << result.error
+            suberrors[subsch] = result.error
           end
         end
 
-        Result.failure(Error.new(
-          schema: self,
-          value: value,
-          symbolic_name: :all_invalid,
-          vars: suberrors,
-        ))
+        Result.failure(suberrors)
       end
 
       def with_wrapped_subschemas(wrapper)

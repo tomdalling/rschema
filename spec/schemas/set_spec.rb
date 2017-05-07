@@ -39,12 +39,9 @@ RSpec.describe RSchema::Schemas::Set do
       result = subject.call(input)
 
       expect(result).not_to be_valid
-      expect(result.error).to have_attributes(
-        schema: subject,
-        value: Set.new([5]),
-        symbolic_name: :contents_invalid,
-        vars: [subschema.error],
-      )
+      expect(result.error).to eq({
+        5 => subschema.error,
+      })
     end
 
     it 'respects the `fail_fast` option' do
@@ -54,7 +51,7 @@ RSpec.describe RSchema::Schemas::Set do
       result = subject.call(input, options)
 
       expect(result).not_to be_valid
-      expect(result.error.vars.length).to eq(1)
+      expect(result.error.size).to eq(1)
     end
   end
 

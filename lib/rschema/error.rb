@@ -2,11 +2,14 @@ module RSchema
   class Error
     attr_reader :schema, :value, :symbolic_name, :vars
 
-    def initialize(schema:, value:, symbolic_name:, vars: nil)
+    def initialize(schema:, value:, symbolic_name:, vars: {})
+      raise ArgumentError.new("vars must be a hash") unless vars.is_a?(Hash)
+
       @schema = schema
       @value = value
       @symbolic_name = symbolic_name
-      @vars = vars
+      @vars = vars || {}
+
       freeze
     end
 

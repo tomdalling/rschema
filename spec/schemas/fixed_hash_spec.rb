@@ -49,7 +49,9 @@ RSpec.describe RSchema::Schemas::FixedHash do
         schema: subject,
         value: {},
         symbolic_name: :missing_attributes,
-        vars: [:name],
+        vars: {
+          missing_keys: [:name],
+        },
       )
     end
 
@@ -61,7 +63,9 @@ RSpec.describe RSchema::Schemas::FixedHash do
         schema: subject,
         value: { name: 'Tom', unspecified_key: 123 },
         symbolic_name: :extraneous_attributes,
-        vars: [:unspecified_key],
+        vars: {
+          extraneous_keys: [:unspecified_key],
+        },
       )
     end
 

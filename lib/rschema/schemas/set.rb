@@ -13,14 +13,14 @@ module RSchema
         return not_a_set_result(value) unless value.is_a?(::Set)
 
         result_value = ::Set.new
-        result_errors = []
+        result_errors = {}
 
         value.each do |subvalue|
           subresult = subschema.call(subvalue, options)
           if subresult.valid?
             result_value << subresult.value
           else
-            result_errors << subresult.error
+            result_errors[subvalue] = subresult.error
           end
 
           break if options.fail_fast?
@@ -29,12 +29,7 @@ module RSchema
         if result_errors.empty?
           Result.success(result_value)
         else
-          Result.failure(Error.new(
-            schema: self,
-            value: value,
-            symbolic_name: :contents_invalid,
-            vars: result_errors,
-          ))
+          Result.failure(result_errors)
         end
       end
 

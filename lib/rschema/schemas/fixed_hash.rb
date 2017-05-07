@@ -53,7 +53,9 @@ module RSchema
           schema: self,
           value: value,
           symbolic_name: :missing_attributes,
-          vars: missing_keys(value),
+          vars: {
+            missing_keys: missing_keys(value),
+          }
         ))
       end
 
@@ -67,7 +69,9 @@ module RSchema
           schema: self,
           value: value,
           symbolic_name: :extraneous_attributes,
-          vars: extraneous_keys(value),
+          vars: {
+            extraneous_keys: extraneous_keys(value),
+          },
         ))
       end
 
