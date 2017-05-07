@@ -24,7 +24,7 @@ RSpec.describe RSchema do
 
   it 'provides coercion' do
     array_of_symbols = RSchema.define { Array(_Symbol) }
-    coercer = RSchema::HTTPCoercer.wrap(array_of_symbols)
+    coercer = RSchema::RACK_PARAM_COERCER.wrap(array_of_symbols)
 
     result = coercer.call(['a', :b, 'c'])
 
@@ -107,7 +107,7 @@ RSpec.describe RSchema do
     end
 
     it 'handles coercion' do
-      user_coercer = RSchema::HTTPCoercer.wrap(user_schema)
+      user_coercer = RSchema::RACK_PARAM_COERCER.wrap(user_schema)
       input = valid_user.merge(rating: '6.7')
 
       result = user_coercer.call(input)

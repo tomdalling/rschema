@@ -1,4 +1,4 @@
-RSpec.describe RSchema::HTTPCoercer do
+RSpec.describe RSchema::RACK_PARAM_COERCER do
   subject { described_class.wrap(schema) }
   let(:schema) do
     RSchema.define do
