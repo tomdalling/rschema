@@ -32,6 +32,10 @@ module RSchema
     default_dsl.Hash(define(&block))
   end
 
+  def self.define_predicate(name = nil, &block)
+    default_dsl.predicate(name, &block)
+  end
+
   def self.default_dsl
     @default_dsl ||= DefaultDSL.new
   end

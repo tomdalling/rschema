@@ -40,6 +40,15 @@ RSpec.describe RSchema do
     expect(result).to be_valid
   end
 
+  specify '#define_predicate' do
+    schema = RSchema.define_predicate('even') { |x| x.even? }
+
+    result = schema.call(5)
+
+    expect(result).not_to be_valid
+    expect(result.error.schema.name).to eq('even')
+  end
+
   context 'Complicated, nested schemas and values' do
     let(:user_schema) do
       RSchema.define do
