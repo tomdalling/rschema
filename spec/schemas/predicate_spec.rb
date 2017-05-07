@@ -1,6 +1,7 @@
 RSpec.describe RSchema::Schemas::Predicate do
-  subject { described_class.new(predicate) }
-  let(:predicate) { ->(x){ x.even? } }
+  subject do
+    described_class.new(:even?.to_proc, 'bongos')
+  end
 
   it_behaves_like 'a schema'
 
@@ -17,6 +18,10 @@ RSpec.describe RSchema::Schemas::Predicate do
       value: 5,
       symbolic_name: :false,
     )
+  end
+
+  it 'has a name' do
+    expect(subject.name).to eq('bongos')
   end
 
   specify '#with_wrapped_subschemas' do

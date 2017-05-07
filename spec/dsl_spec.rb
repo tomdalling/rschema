@@ -164,10 +164,11 @@ RSpec.describe RSchema::DSL do
   specify '#predicate' do
     callable = ->(x){ x }
 
-    schema = subject.predicate(&callable)
+    schema = subject.predicate('hello', &callable)
 
     expect(schema).to be_a(RSchema::Schemas::Predicate)
     expect(schema.block).to be(callable)
+    expect(schema.name).to eq('hello')
   end
 
   specify '#pipeline' do

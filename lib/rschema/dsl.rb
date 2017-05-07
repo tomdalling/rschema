@@ -66,8 +66,8 @@ module RSchema
       Schemas::Sum.new(subschemas)
     end
 
-    def predicate(&block)
-      Schemas::Predicate.new(block)
+    def predicate(name = nil, &block)
+      Schemas::Predicate.new(block, name)
     end
 
     def pipeline(*subschemas)

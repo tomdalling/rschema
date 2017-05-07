@@ -52,7 +52,7 @@ RSpec.describe RSchema do
           rating: either(_Integer, _Float),
           alternate_names: Array(_String),
           gps_coordinates: Array(_Float, _Float),
-          favourite_even_number: pipeline(_Integer, predicate(&:even?)),
+          favourite_even_number: pipeline(_Integer, predicate('even', &:even?)),
           animals: Set(_Symbol),
           whatever: anything,
           cakes_by_date: VariableHash(_Date => _String),
