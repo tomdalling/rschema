@@ -7,7 +7,7 @@ module RSchema
     coerce_type Date, with: Coercers::Date
 
     coerce Schemas::Boolean, with: Coercers::Boolean
-    coerce Schemas::FixedHash, with: [
+    coerce Schemas::FixedHash, with: Coercers::Chain[
       Coercers::FixedHash::SymbolizeKeys,
       Coercers::FixedHash::RemoveExtraneousAttributes,
       Coercers::FixedHash::DefaultBooleansToFalse,

@@ -1,45 +1,44 @@
 module RSchema
   class CoercionWrapper
     def initialize(&initializer)
-      @builders_by_schema = {}
-      @builders_by_type = {}
+      @builder_by_schema = {}
+      @builder_by_type = {}
       instance_eval(&initializer) if initializer
     end
 
     def coerce(schema_type, with:)
-      @builders_by_schema[schema_type] ||= Array(with)
+      @builder_by_schema[schema_type] = with
     end
 
     def coerce_type(type, with:)
-      @builders_by_type[type] ||= Array(with)
+      @builder_by_type[type] = with
     end
 
     def wrap(schema)
       wrapped_schema = schema.with_wrapped_subschemas(self)
-      builders = builders_for_schema(schema)
-
-      if builders.any?
-        wrap_with_builders(wrapped_schema, builders)
-      else
-        wrapped_schema
-      end
+      wrap_with_coercer(wrapped_schema)
     end
 
     private
 
-      def builders_for_schema(schema)
-        @builders_by_schema.fetch(schema.class) do
+      def builder_for_schema(schema)
+        @builder_by_schema.fetch(schema.class) do
           if schema.is_a?(Schemas::Type)
-            @builders_by_type.fetch(schema.type, [])
+            @builder_by_type.fetch(schema.type, nil)
           else
-            []
+            nil
           end
         end
       end
 
-      def wrap_with_builders(schema, builders)
-        coercers = builders.map{ |b| b.build(schema) }
-        Schemas::Coercer.new(coercers, schema)
+      def wrap_with_coercer(schema)
+        builder = builder_for_schema(schema)
+        if builder
+          coercer = builder.build(schema)
+          Schemas::Coercer.new(coercer, schema)
+        else
+          schema
+        end
       end
 
   end

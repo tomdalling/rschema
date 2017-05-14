@@ -1,19 +1,20 @@
 module RSchema
   module Schemas
     class Coercer
-      attr_reader :coercers, :subschema
+      attr_reader :coercer, :subschema
 
-      def initialize(coercers, subschema)
-        @coercers = Array(coercers)
+      def initialize(coercer, subschema)
+        byebug if coercer.is_a?(Array)
+        @coercer = coercer
         @subschema = subschema
       end
 
       def call(value, options=RSchema::Options.default)
-        result = coerce(value)
+        result = coercer.call(value)
         if result.valid?
           @subschema.call(result.value, options)
         else
-          result.error.is_a?(RSchema::Error) ? result : default_failure(value)
+          failure(value, result.error)
         end
       end
 
@@ -23,22 +24,11 @@ module RSchema
 
       private
 
-        def coerce(value)
-          result = Result.success(value)
-
-          coercers.each do |coerc|
-            result = coerc.call(result.value)
-            break if result.invalid?
-          end
-
-          result
-        end
-
-        def default_failure(value)
+        def failure(value, name)
           return Result.failure(Error.new(
             schema: self,
             value: value,
-            symbolic_name: :coercion_failure,
+            symbolic_name: name || :coercion_failure,
           ))
         end
     end
