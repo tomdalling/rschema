@@ -9,8 +9,6 @@ Gem Release
 TODO
 ----
 
- - Revise/fix how Hash schemas report errors for keys.
-
  - Pluggable coercion.
 
    Could provide helper/convenience classes for creating custom coercers,
@@ -26,11 +24,6 @@ TODO
  - Remove `Hash_based_on` in favour of something like
    `preexisting_schema.without(:hash, :keys)` and
    `preexisting_schema.merge(attr1, attr2)`
-
- - let CoercionWrapper objects apply multiple coercers, and pick whichever
-   one works first. Maybe implement this with a composite coercer.
-
- - maybe implement coercer pipelining with a composite coercer too
 
  - fix up the README documentation
 
