@@ -22,12 +22,12 @@ RSpec.configure do |config|
   end
 
   Kernel.srand config.seed
+
+  # auto-require supporting classes/stuff
+  Dir[__dir__ + '/support/**/*.rb'].each{ |path| require path }
 end
 
 require 'rschema'
-require 'schema_stub'
-require 'wrapper_stub'
-require 'coercer_stub'
 
 RSpec.shared_examples 'a schema' do
   it 'responds to #call' do
