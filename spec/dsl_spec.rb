@@ -69,48 +69,36 @@ RSpec.describe RSchema::DSL do
   end
 
   specify '#Hash' do
+    attr1 = double
+    attr2 = double
+    expect(subject).to receive(:attributes).with(555).and_return([attr1, attr2])
+
+    schema = subject.Hash(555)
+
+    expect(schema).to be_a(RSchema::Schemas::FixedHash)
+    expect(schema.attributes).to eq([attr1, attr2])
+  end
+
+  specify '#attributes' do
     name_schema = double
     age_schema = double
 
-    schema = subject.instance_eval do
-      Hash(name: name_schema, optional(:age) => age_schema)
+    attrs = subject.instance_eval do
+      attributes(
+        name: name_schema,
+        optional(:age) => age_schema,
+      )
     end
 
-    expect(schema).to be_a(RSchema::Schemas::FixedHash)
-    expect(schema.attributes.first).to have_attributes(
+    expect(attrs.first).to have_attributes(
       key: :name,
       value_schema: name_schema,
       optional: false,
     )
-    expect(schema.attributes.last).to have_attributes(
+    expect(attrs.last).to have_attributes(
       key: :age,
       value_schema: age_schema,
       optional: true,
-    )
-  end
-
-  specify '#Hash(based_on: x)' do
-    username_schema = double
-    password_schema = double
-    token_schema = double
-    original_schema = subject.instance_eval do
-      Hash(username: username_schema, password: password_schema)
-    end
-
-    merged_schema = subject.Hash_based_on(original_schema, {
-      password: nil, # remove :password attribute
-      token: token_schema, # add a new :token attribute
-    })
-
-    expect(merged_schema).to be_a(RSchema::Schemas::FixedHash)
-    expect(merged_schema.attributes.size).to eq(2)
-    expect(merged_schema.attributes.first).to have_attributes(
-      key: :username,
-      value_schema: username_schema,
-    )
-    expect(merged_schema.attributes.last).to have_attributes(
-      key: :token,
-      value_schema: token_schema,
     )
   end
 

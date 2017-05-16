@@ -1,5 +1,7 @@
 module RSchema
   module DSL
+    OptionalWrapper = Struct.new(:key)
+
     def type(type)
       Schemas::Type.new(type)
     end
@@ -18,23 +20,7 @@ module RSchema
     end
 
     def Hash(attribute_hash)
-      Schemas::FixedHash.new(__fixed_hash_attributes(attribute_hash))
-    end
-
-    def Hash_based_on(preexisting_hash_schema, new_attributes_hash)
-      old_attrs = preexisting_hash_schema.attributes
-        .map{ |attr| [attr.key, attr] }
-        .to_h
-
-      new_attrs = __fixed_hash_attributes(new_attributes_hash)
-        .map{ |attr| [attr.key, attr] }
-        .to_h
-
-      merged_attrs = old_attrs.merge(new_attrs)
-        .values
-        .reject{ |attr| attr.value_schema.nil? }
-
-      Schemas::FixedHash.new(merged_attrs)
+      Schemas::FixedHash.new(attributes(attribute_hash))
     end
 
     def Set(subschema)
@@ -52,6 +38,14 @@ module RSchema
 
       key_schema, value_schema = subschemas.first
       Schemas::VariableHash.new(key_schema, value_schema)
+    end
+
+    def attributes(attribute_hash)
+      attribute_hash.map do |dsl_key, value_schema|
+        optional = dsl_key.is_a?(OptionalWrapper)
+        key = optional ? dsl_key.key : dsl_key
+        Schemas::FixedHash::Attribute.new(key, value_schema, optional)
+      end
     end
 
     def maybe(subschema)
@@ -87,17 +81,5 @@ module RSchema
         super
       end
     end
-
-    OptionalWrapper = Struct.new(:key)
-
-    private
-
-      def __fixed_hash_attributes(attribute_hash)
-        attribute_hash.map do |dsl_key, value_schema|
-          optional = dsl_key.kind_of?(OptionalWrapper)
-          key = optional ? dsl_key.key : dsl_key
-          Schemas::FixedHash::Attribute.new(key, value_schema, optional)
-        end
-      end
   end
 end
