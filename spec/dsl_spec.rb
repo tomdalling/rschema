@@ -32,11 +32,11 @@ RSpec.describe RSchema::DSL do
     end
   end
 
-  describe '#Array' do
+  describe '#array' do
     specify 'variable-length' do
       subschema = double
 
-      schema = subject.Array(subschema)
+      schema = subject.array(subschema)
 
       expect(schema).to be_a(RSchema::Schemas::VariableLengthArray)
       expect(schema.element_schema).to be(subschema)
@@ -46,34 +46,34 @@ RSpec.describe RSchema::DSL do
       first_subschema = double
       last_subschema = double
 
-      schema = subject.Array(first_subschema, last_subschema)
+      schema = subject.array(first_subschema, last_subschema)
 
       expect(schema).to be_a(RSchema::Schemas::FixedLengthArray)
       expect(schema.subschemas).to eq([first_subschema, last_subschema])
     end
   end
 
-  specify '#Boolean' do
-    schema = subject.Boolean()
+  specify '#boolean' do
+    schema = subject.boolean()
 
     expect(schema).to be(RSchema::Schemas::Boolean.instance)
   end
 
-  specify '#Set' do
+  specify '#set' do
     subschema = double
 
-    schema = subject.Set(subschema)
+    schema = subject.set(subschema)
 
     expect(schema).to be_a(RSchema::Schemas::Set)
     expect(schema.subschema).to be(subschema)
   end
 
-  specify '#Hash' do
+  specify '#fixed_hash' do
     attr1 = double
     attr2 = double
     expect(subject).to receive(:attributes).with(555).and_return([attr1, attr2])
 
-    schema = subject.Hash(555)
+    schema = subject.fixed_hash(555)
 
     expect(schema).to be_a(RSchema::Schemas::FixedHash)
     expect(schema.attributes).to eq([attr1, attr2])
@@ -102,12 +102,12 @@ RSpec.describe RSchema::DSL do
     )
   end
 
-  describe '#VariableHash' do
+  describe '#variable_hash' do
     specify 'correct usage' do
       key_schema = double
       value_schema = double
 
-      schema = subject.VariableHash(key_schema => value_schema)
+      schema = subject.variable_hash(key_schema => value_schema)
 
       expect(schema).to be_a(RSchema::Schemas::VariableHash)
       expect(schema.key_schema).to be(key_schema)
@@ -116,7 +116,7 @@ RSpec.describe RSchema::DSL do
 
     specify 'incorrect usage' do
       expect {
-        subject.VariableHash(a: 1, b: 2)
+        subject.variable_hash(a: 1, b: 2)
       }.to raise_error(ArgumentError, 'argument must be a Hash of size 1')
     end
   end

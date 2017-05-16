@@ -10,7 +10,7 @@ RSpec.describe RSchema do
   end
 
   it 'provides details when values are not valid' do
-    array_of_symbols = RSchema.define { Array(_Symbol) }
+    array_of_symbols = RSchema.define { array(_Symbol) }
 
     result = array_of_symbols.call([:a, :b, 'see'])
     expect(result).not_to be_valid
@@ -23,7 +23,7 @@ RSpec.describe RSchema do
   end
 
   it 'provides coercion' do
-    array_of_symbols = RSchema.define { Array(_Symbol) }
+    array_of_symbols = RSchema.define { array(_Symbol) }
     coercer = RSchema::RACK_PARAM_COERCER.wrap(array_of_symbols)
 
     result = coercer.call(['a', :b, 'c'])
@@ -52,19 +52,19 @@ RSpec.describe RSchema do
   context 'Complicated, nested schemas and values' do
     let(:user_schema) do
       RSchema.define do
-        Hash(
+        hash(
           name: _String,
           optional(:age) => _Integer,
           email: maybe(_String),
           role: enum([:journalist, :editor, :administrator]),
-          enabled: Boolean(),
+          enabled: boolean(),
           rating: either(_Integer, _Float),
-          alternate_names: Array(_String),
-          gps_coordinates: Array(_Float, _Float),
+          alternate_names: array(_String),
+          gps_coordinates: array(_Float, _Float),
           favourite_even_number: pipeline(_Integer, predicate('even', &:even?)),
-          animals: Set(_Symbol),
+          animals: set(_Symbol),
           whatever: anything,
-          cakes_by_date: VariableHash(_Date => _String),
+          cakes_by_date: variable_hash(_Date => _String),
         )
       end
     end
@@ -114,6 +114,19 @@ RSpec.describe RSchema do
 
       expect(result).to be_valid
       expect(result.value[:rating]).to eq(6.7)
+    end
+
+    it 'allows creation of new schemas based on existing ones' do
+      new_user_schema = RSchema.define do
+        user_schema.merge(attributes(
+          wigwam: _String,
+        ))
+      end
+
+      result = new_user_schema.call(valid_user.merge(wigwam: 'teepee'))
+
+      expect(result).to be_valid
+      expect(result.value[:wigwam]).to eq('teepee')
     end
   end
 end

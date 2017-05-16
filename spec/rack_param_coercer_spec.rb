@@ -2,11 +2,11 @@ RSpec.describe RSchema::RACK_PARAM_COERCER do
   subject { described_class.wrap(schema) }
   let(:schema) do
     RSchema.define do
-      Hash(
+      fixed_hash(
         optional(:int) => _Integer,
         optional(:float) => _Float,
         optional(:symbol) => _Symbol,
-        #optional(:bool) => Boolean(), # tested seperately
+        #optional(:bool) => boolean, # tested seperately
         optional(:time) => _Time,
         optional(:date) => _Date,
         optional('string key') => _Integer,
@@ -125,8 +125,8 @@ RSpec.describe RSchema::RACK_PARAM_COERCER do
     subject(:bool_subject) { described_class.wrap(bool_schema) }
     let(:bool_schema) do
       RSchema.define_hash {{
-        required: Boolean(),
-        optional(:opt) => Boolean(),
+        required: boolean,
+        optional(:opt) => boolean,
       }}
     end
 

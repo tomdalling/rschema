@@ -17,12 +17,14 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.0.0'
   s.authors = ['Tom Dalling']
   s.email = ['tom' + '@' + 'tomdalling.com']
-
+  s.require_paths = ['lib']
   s.files = Dir['lib/**/*'] + %w{LICENSE.txt README.md}
+
+  s.add_runtime_dependency 'docile', '~> 1.1'
+
   s.add_development_dependency 'rspec', '~> 3.0'
   s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'gem-release', '~> 0.7'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'byebug'
-  s.require_paths = ['lib']
 end

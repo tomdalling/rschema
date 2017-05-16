@@ -5,9 +5,8 @@ module RSchema
     def type(type)
       Schemas::Type.new(type)
     end
-    alias_method :_, :type
 
-    def Array(*subchemas)
+    def array(*subchemas)
       if subchemas.count == 1
         Schemas::VariableLengthArray.new(subchemas.first)
       else
@@ -15,15 +14,16 @@ module RSchema
       end
     end
 
-    def Boolean
+    def boolean
       Schemas::Boolean.instance
     end
 
-    def Hash(attribute_hash)
+    def fixed_hash(attribute_hash)
       Schemas::FixedHash.new(attributes(attribute_hash))
     end
+    def hash(*args); fixed_hash(*args); end
 
-    def Set(subschema)
+    def set(subschema)
       Schemas::Set.new(subschema)
     end
 
@@ -31,7 +31,7 @@ module RSchema
       OptionalWrapper.new(key)
     end
 
-    def VariableHash(subschemas)
+    def variable_hash(subschemas)
       unless subschemas.is_a?(Hash) && subschemas.size == 1
         raise ArgumentError, 'argument must be a Hash of size 1'
       end
@@ -80,6 +80,11 @@ module RSchema
       else
         super
       end
+    end
+
+    def respond_to?(sym, include_all=false)
+      # check if method starts with an underscore followed by a capital
+      super || !!sym.to_s.match(/\A_[A-Z]/)
     end
   end
 end
