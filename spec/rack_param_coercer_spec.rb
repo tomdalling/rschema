@@ -1,4 +1,6 @@
-RSpec.describe RSchema::RACK_PARAM_COERCER do
+require 'rschema/coercion_wrapper/rack_params'
+
+RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
   subject { described_class.wrap(schema) }
   let(:schema) do
     RSchema.define do
@@ -6,7 +8,7 @@ RSpec.describe RSchema::RACK_PARAM_COERCER do
         optional(:int) => _Integer,
         optional(:float) => _Float,
         optional(:symbol) => _Symbol,
-        #optional(:bool) => boolean, # tested seperately
+        #optional(:bool) => boolean, # tested separately
         optional(:time) => _Time,
         optional(:date) => _Date,
         optional('string key') => _Integer,

@@ -1,3 +1,5 @@
+require 'rschema/coercion_wrapper/rack_params'
+
 RSpec.describe RSchema do
   it 'provides schema-based validation of arbitrary data structures' do
     int_schema = RSchema.define { _Integer }
@@ -24,7 +26,7 @@ RSpec.describe RSchema do
 
   it 'provides coercion' do
     array_of_symbols = RSchema.define { array(_Symbol) }
-    coercer = RSchema::RACK_PARAM_COERCER.wrap(array_of_symbols)
+    coercer = RSchema::CoercionWrapper::RACK_PARAMS.wrap(array_of_symbols)
 
     result = coercer.call(['a', :b, 'c'])
 
@@ -107,7 +109,7 @@ RSpec.describe RSchema do
     end
 
     it 'handles coercion' do
-      user_coercer = RSchema::RACK_PARAM_COERCER.wrap(user_schema)
+      user_coercer = RSchema::CoercionWrapper::RACK_PARAMS.wrap(user_schema)
       input = valid_user.merge(rating: '6.7')
 
       result = user_coercer.call(input)

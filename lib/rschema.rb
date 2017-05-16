@@ -7,7 +7,6 @@ require 'rschema/schemas'
 require 'rschema/dsl'
 require 'rschema/coercers'
 require 'rschema/coercion_wrapper'
-require 'rschema/rack_param_coercer'
 
 module RSchema
   def self.define(dsl = nil, &block)

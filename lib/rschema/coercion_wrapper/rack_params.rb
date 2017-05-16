@@ -1,5 +1,7 @@
 module RSchema
-  RACK_PARAM_COERCER = CoercionWrapper.new do
+class CoercionWrapper
+
+  RACK_PARAMS = CoercionWrapper.new do
     coerce_type Symbol, with: Coercers::Symbol
     coerce_type Integer, with: Coercers::Integer
     coerce_type Float, with: Coercers::Float
@@ -13,5 +15,7 @@ module RSchema
       Coercers::FixedHash::DefaultBooleansToFalse,
     ]
   end
+
+end
 end
 
