@@ -91,5 +91,26 @@ RSpec.describe RSchema::Schemas::FixedHash do
   it 'returns attribute objects via the subscript operator' do
     expect(subject[:name]).to be(name_attr)
   end
+
+  describe '#merge' do
+    it 'adds new attributes' do
+      newattr = RSchema::Schemas::FixedHash::Attribute.new(:newattr, nil, true)
+      merged = subject.merge([newattr])
+      expect(merged.attributes).to match_array(subject.attributes + [newattr])
+    end
+
+    it 'overwrites existing attributes' do
+      new_name_attr = RSchema::Schemas::FixedHash::Attribute.new(:name, nil, false)
+      merged = subject.merge([new_name_attr])
+      expect(merged.attributes).to match_array([age_attr, new_name_attr])
+    end
+  end
+
+  describe '#without' do
+    it 'removes attributes' do
+      removed = subject.without([:name])
+      expect(removed.attributes).to eq([age_attr])
+    end
+  end
 end
 

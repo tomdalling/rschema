@@ -33,6 +33,22 @@ module RSchema
         attributes.find{ |attr| attr.key == attr_key }
       end
 
+      def merge(new_attributes)
+        merged_attrs = (attributes + new_attributes)
+          .map { |attr| [attr.key, attr] }
+          .to_h
+          .values
+
+        self.class.new(merged_attrs)
+      end
+
+      def without(attribute_keys)
+        filtered_attrs = attributes
+          .reject { |attr| attribute_keys.include?(attr.key) }
+
+        self.class.new(filtered_attrs)
+      end
+
       Attribute = Struct.new(:key, :value_schema, :optional) do
         def with_wrapped_value_schema(wrapper)
           self.class.new(key, wrapper.wrap(value_schema), optional)
