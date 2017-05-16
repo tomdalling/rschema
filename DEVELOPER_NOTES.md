@@ -21,10 +21,6 @@ TODO
    context. There are already multiple developer-friendly translations, but
    these errors should probably be translatable via Rails i18n functionality.
 
- - Remove `Hash_based_on` in favour of something like
-   `preexisting_schema.without(:hash, :keys)` and
-   `preexisting_schema.merge(attr1, attr2)`
-
  - fix up the README documentation
 
  - At least a little bit of RDoc documentation
