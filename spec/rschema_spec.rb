@@ -129,4 +129,18 @@ RSpec.describe RSchema do
       expect(result.value[:wigwam]).to eq('teepee')
     end
   end
+
+  describe 'custom DSL methods' do
+    module MyCustomMethods
+      def modern_major_general
+        :penzance
+      end
+    end
+
+    it 'can be included' do
+      RSchema::DefaultDSL.include(MyCustomMethods)
+      schema = RSchema.define{ modern_major_general }
+      expect(schema).to eq(:penzance)
+    end
+  end
 end
