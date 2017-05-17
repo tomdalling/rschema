@@ -67,8 +67,8 @@ module RSchema
   #     end
   #
   # @param name [String] An arbitraty name for the predicate schema.
-  # @yields [value] Yields a single value.
-  # @yieldreturn [Boolean] true if the value is valid, otherwise false.
+  # @yield [value] Yields a single value.
+  # @yieldreturn [Boolean] Truthy if the value is valid, otherwise falsey.
   # @return [Schemas::Predicate]
   #
   # @example A predicate schema that only allows `odd?` objects.

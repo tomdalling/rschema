@@ -45,7 +45,9 @@ module RSchema
 
     class InvalidError < StandardError; end
 
+    # @!visibility private
     NIL_SUCCESS = new(true, nil, nil)
+    # @!visibility private
     NIL_FAILURE = new(false, nil, nil)
   end
 end
