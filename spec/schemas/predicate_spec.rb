@@ -1,6 +1,6 @@
 RSpec.describe RSchema::Schemas::Predicate do
   subject do
-    described_class.new(:even?.to_proc, 'bongos')
+    described_class.new('bongos', &:even?)
   end
 
   it_behaves_like 'a schema'

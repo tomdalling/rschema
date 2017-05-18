@@ -268,7 +268,7 @@ module RSchema
     #     # matches 5
     #
     def predicate(name = nil, &block)
-      Schemas::Predicate.new(block, name)
+      Schemas::Predicate.new(name, &block)
     end
 
     #

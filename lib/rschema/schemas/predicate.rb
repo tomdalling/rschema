@@ -3,7 +3,7 @@ module Schemas
 class Predicate
   attr_reader :block, :name
 
-  def initialize(block, name = nil)
+  def initialize(name = nil, &block)
     @block = block
     @name = name
   end
