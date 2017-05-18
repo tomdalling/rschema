@@ -19,46 +19,46 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
 
   describe 'Integer coercion' do
     specify 'for strings' do
-      result = subject.call(int: '5')
+      result = validate(int: '5')
       expect(result.value).to eq(int: 5)
     end
 
     specify 'for nil' do
-      result = subject.call(int: nil)
+      result = validate(int: nil)
       expect(result.error[:int].symbolic_name).to eq(:coercion_failure)
     end
   end
 
   it 'coerces through Enum schemas' do
-    result = subject.call(enum: 'a')
+    result = validate(enum: 'a')
     expect(result.value).to eq(enum: :a)
   end
 
   describe 'Float coercion' do
     it 'coerces strings to Float' do
-      result = subject.call(float: '5.6')
+      result = validate(float: '5.6')
       expect(result.value).to eq(float: 5.6)
     end
 
     it 'fails for invalid strings' do
-      result = subject.call(float: 'abc')
+      result = validate(float: 'abc')
       expect(result).to be_invalid
     end
   end
 
   describe 'Symbol coercion' do
     it 'allows Symbols to pass though' do
-      result = subject.call(symbol: :hello)
+      result = validate(symbol: :hello)
       expect(result.value).to eq(symbol: :hello)
     end
 
     it 'converts strings to Symbols' do
-      result = subject.call(symbol: 'waka')
+      result = validate(symbol: 'waka')
       expect(result.value).to eq(symbol: :waka)
     end
 
     it 'rejects all other types' do
-      result = subject.call(symbol: 5)
+      result = validate(symbol: 5)
       expect(result.error[:symbol].symbolic_name).to eq(:coercion_failure)
     end
   end
@@ -66,7 +66,7 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
   describe 'Time coercion' do
     it 'allows Time values to pass through' do
       time = Time.new(2016, 12, 24, 18, 37, 43, '+11:00')
-      result = subject.call(time: time)
+      result = validate(time: time)
       expect(result.value[:time]).to be(time)
     end
 
@@ -74,57 +74,57 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
       dummy = Time.now
       expect(Time).to receive(:parse).with('waka').and_return(dummy)
 
-      result = subject.call(time: 'waka')
+      result = validate(time: 'waka')
       expect(result.value.fetch(:time)).to be(dummy)
     end
 
     it 'rejects non-iso8601 strings' do
-      result = subject.call(time: '')
+      result = validate(time: '')
       expect(result.error[:time].symbolic_name).to eq(:coercion_failure)
     end
 
     it 'rejects all other types' do
-      result = subject.call(time: 5)
+      result = validate(time: 5)
       expect(result.error[:time].symbolic_name).to eq(:coercion_failure)
     end
   end
 
   describe 'Date coercion' do
     it 'coerces iso8601 strings to Date' do
-      result = subject.call(date: '2016-12-25')
+      result = validate(date: '2016-12-25')
       expect(result.value).to eq(date: Date.new(2016, 12, 25))
     end
 
     it 'rejects non-iso8601 strings' do
-      result = subject.call(date: '2016')
+      result = validate(date: '2016')
       expect(result.error[:date].symbolic_name).to eq(:coercion_failure)
     end
 
     it 'rejects all other types' do
-      result = subject.call(date: 5)
+      result = validate(date: 5)
       expect(result.error[:date].symbolic_name).to eq(:coercion_failure)
     end
   end
 
   describe 'FixedHash coercion' do
     it 'coerces keys from strings to symbols' do
-      result = subject.call('int' => 5)
+      result = validate('int' => 5)
       expect(result.value).to eq(int: 5)
     end
 
     it 'does not coerce keys that are supposed to be strings' do
-      result = subject.call('string key' => 5)
+      result = validate('string key' => 5)
       expect(result.value).to eq('string key' => 5)
     end
 
     it 'removes extranous elements' do
-      result = subject.call(123 => 4, wawawawawaw: 5)
+      result = validate(123 => 4, wawawawawaw: 5)
       expect(result.value).to eq({})
     end
   end
 
   describe 'Boolean coercion' do
-    subject(:bool_subject) { described_class.wrap(bool_schema) }
+    subject { described_class.wrap(bool_schema) }
     let(:bool_schema) do
       RSchema.define_hash {{
         required: boolean,
@@ -134,35 +134,35 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
 
     it 'coerces magic strings to true' do
       ['1', 'True', 'On', 'Yes'].each do |truthy|
-        result = bool_subject.call(required: truthy)
+        result = validate(required: truthy)
         expect(result.value).to eq(required: true)
       end
     end
 
     it 'coerces magic strings to false' do
       ['0', 'False', 'Off', 'No'].each do |falsey|
-        result = bool_subject.call(required: falsey)
+        result = validate(required: falsey)
         expect(result.value).to eq(required: false)
       end
     end
 
     it 'coerces nil to false' do
-      result = bool_subject.call(required: nil)
+      result = validate(required: nil)
       expect(result.value).to eq(required: false)
     end
 
     it 'defaults to false when the value is missing within a hash' do
-      result = bool_subject.call({})
+      result = validate({})
       expect(result.value).to eq(required: false)
     end
 
     it 'allows true and false to pass through' do
-      expect(bool_subject.call(required: true)).to be_valid
-      expect(bool_subject.call(required: false)).to be_valid
+      expect(validate(required: true)).to be_valid
+      expect(validate(required: false)).to be_valid
     end
 
     it 'will not coerce unrecognised values' do
-      result = bool_subject.call(required: 'wakawaka')
+      result = validate(required: 'wakawaka')
       expect(result).to be_invalid
     end
   end
@@ -170,12 +170,12 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
   it 'handles being wrapped twice' do
     twice_wrapped = WrapperStub.wrap(subject)
 
-    result = twice_wrapped.call(
+    result = twice_wrapped.call({
       int: '5',
       float: '6.7',
       symbol: 'wimble',
       date: '2017-01-27',
-    )
+    }, RSchema::Options.default)
 
     expect(result.value).to eq(
       int: 5,

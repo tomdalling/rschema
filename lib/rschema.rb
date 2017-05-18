@@ -30,6 +30,11 @@ module RSchema
   #   end
   #
   def self.define(dsl = nil, &block)
+    schema = dsl_eval(dsl, &block)
+    Schemas::Convenience.wrap(schema)
+  end
+
+  def self.dsl_eval(dsl = nil, &block)
     Docile::Execution.exec_in_proxy_context(
       dsl || default_dsl,
       Docile::FallbackContextProxy,
@@ -56,7 +61,9 @@ module RSchema
   #     }}
   #
   def self.define_hash(&block)
-    default_dsl.fixed_hash(define(&block))
+    Schemas::Convenience.wrap(
+      default_dsl.fixed_hash(dsl_eval(&block))
+    )
   end
 
   #
@@ -80,7 +87,9 @@ module RSchema
   # @see DSL#predicate
   #
   def self.define_predicate(name = nil, &block)
-    default_dsl.predicate(name, &block)
+    Schemas::Convenience.wrap(
+      default_dsl.predicate(name, &block)
+    )
   end
 
   #
@@ -101,5 +110,14 @@ module RSchema
   #
   class DefaultDSL
     include RSchema::DSL
+  end
+
+  class Invalid < StandardError
+    attr_reader :validation_error
+
+    def initialize(validation_error)
+      super()
+      @validation_error = validation_error
+    end
   end
 end

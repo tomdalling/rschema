@@ -6,7 +6,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
   it_behaves_like 'a schema'
 
   specify 'successful validation' do
-    result = subject.call([:valid, :valid])
+    result = validate([:valid, :valid])
 
     expect(result).to be_valid
     expect(result.value).to eq([:valid, :valid])
@@ -14,7 +14,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
 
   context 'failed validation' do
     specify 'due to not being an array' do
-      result = subject.call(6)
+      result = validate(6)
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -25,7 +25,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
     end
 
     specify 'due to incorrect number of elements' do
-      result = subject.call([])
+      result = validate([])
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -36,7 +36,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
     end
 
     specify 'due to subschema failure' do
-      result = subject.call([:wrong, :wrong_again])
+      result = validate([:wrong, :wrong_again])
 
       expect(result).not_to be_valid
       expect(result.error).to eq({
@@ -48,7 +48,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
     it 'respects the `fail_fast` option' do
       options = RSchema::Options.new(fail_fast: true)
 
-      result = subject.call([:wrong, :wrong_again], options)
+      result = validate([:wrong, :wrong_again], options)
 
       expect(result.error).to eq({ 0 => first_subschema.error })
     end

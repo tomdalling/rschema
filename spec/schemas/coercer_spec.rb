@@ -10,7 +10,7 @@ RSpec.describe RSchema::Schemas::Coercer do
   it_behaves_like 'a schema'
 
   specify 'successful validation' do
-    result = subject.call('5')
+    result = validate('5')
 
     expect(result).to be_valid
     expect(result.value).to eq(5)
@@ -18,7 +18,7 @@ RSpec.describe RSchema::Schemas::Coercer do
 
   describe 'failed validation' do
     specify 'due to coercion failure' do
-      result = subject.call('abc')
+      result = validate('abc')
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -29,7 +29,7 @@ RSpec.describe RSchema::Schemas::Coercer do
     end
 
     specify 'due to subschema failure' do
-      result = subject.call('6')
+      result = validate('6')
 
       expect(result).not_to be_valid
       expect(result.error).to be(subschema.error)

@@ -4,17 +4,17 @@ RSpec.describe RSchema do
   it 'provides schema-based validation of arbitrary data structures' do
     int_schema = RSchema.define { _Integer }
 
-    valid_result = int_schema.call(5)
+    valid_result = int_schema.validate(5)
     expect(valid_result).to be_valid
 
-    invalid_result = int_schema.call('hello')
+    invalid_result = int_schema.validate('hello')
     expect(invalid_result).not_to be_valid
   end
 
   it 'provides details when values are not valid' do
     array_of_symbols = RSchema.define { array(_Symbol) }
 
-    result = array_of_symbols.call([:a, :b, 'see'])
+    result = array_of_symbols.validate([:a, :b, 'see'])
     expect(result).not_to be_valid
 
     error = result.error[2]
@@ -28,7 +28,7 @@ RSpec.describe RSchema do
     array_of_symbols = RSchema.define { array(_Symbol) }
     coercer = RSchema::CoercionWrapper::RACK_PARAMS.wrap(array_of_symbols)
 
-    result = coercer.call(['a', :b, 'c'])
+    result = coercer.validate(['a', :b, 'c'])
 
     expect(result).to be_valid
     expect(result.value).to eq([:a, :b, :c])
@@ -37,7 +37,7 @@ RSpec.describe RSchema do
   specify '#define_hash' do
     schema = RSchema.define_hash{{ name: _String }}
 
-    result = schema.call({ name: 'Tom' })
+    result = schema.validate({ name: 'Tom' })
 
     expect(result).to be_valid
   end
@@ -45,7 +45,7 @@ RSpec.describe RSchema do
   specify '#define_predicate' do
     schema = RSchema.define_predicate('even') { |x| x.even? }
 
-    result = schema.call(5)
+    result = schema.validate(5)
 
     expect(result).not_to be_valid
     expect(result.error.schema.name).to eq('even')
@@ -92,14 +92,14 @@ RSpec.describe RSchema do
     end
 
     it 'handles valid values' do
-      result = user_schema.call(valid_user)
+      result = user_schema.validate(valid_user)
       expect(result).to be_valid
     end
 
     it 'handles invalid values' do
       invalid_user = valid_user.merge(gps_coordinates: [123.45, 'wrong!'])
 
-      result = user_schema.call(invalid_user)
+      result = user_schema.validate(invalid_user)
 
       expect(result).not_to be_valid
       expect(result.error[:gps_coordinates][1]).to have_attributes({
@@ -112,7 +112,7 @@ RSpec.describe RSchema do
       user_coercer = RSchema::CoercionWrapper::RACK_PARAMS.wrap(user_schema)
       input = valid_user.merge(rating: '6.7')
 
-      result = user_coercer.call(input)
+      result = user_coercer.validate(input)
 
       expect(result).to be_valid
       expect(result.value[:rating]).to eq(6.7)
@@ -125,7 +125,7 @@ RSpec.describe RSchema do
         ))
       end
 
-      result = new_user_schema.call(valid_user.merge(wigwam: 'teepee'))
+      result = new_user_schema.validate(valid_user.merge(wigwam: 'teepee'))
 
       expect(result).to be_valid
       expect(result.value[:wigwam]).to eq('teepee')
@@ -141,8 +141,8 @@ RSpec.describe RSchema do
 
     it 'can be included' do
       RSchema::DefaultDSL.include(MyCustomMethods)
-      schema = RSchema.define{ modern_major_general }
-      expect(schema).to eq(:penzance)
+      result = RSchema.dsl_eval{ modern_major_general }
+      expect(result).to eq(:penzance)
     end
   end
 end

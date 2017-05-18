@@ -9,13 +9,13 @@ RSpec.describe RSchema::Schemas::FixedHash do
 
   context 'successful validation' do
     specify 'with optional attrs present' do
-      result = subject.call(name: 'Tom', age: 7)
+      result = validate(name: 'Tom', age: 7)
       expect(result).to be_valid
       expect(result.value).to eq({ name: 'Tom', age: 7 })
     end
 
     specify 'with optional attrs missing' do
-      result = subject.call(name: 'Tom')
+      result = validate(name: 'Tom')
       expect(result).to be_valid
       expect(result.value).to eq({ name: 'Tom' })
     end
@@ -23,7 +23,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
 
   context 'failed validation' do
     specify 'due to not being a hash' do
-      result = subject.call(5)
+      result = validate(5)
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -34,7 +34,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
     end
 
     specify 'due to subschema failure' do
-      result = subject.call(name: 123)
+      result = validate(name: 123)
 
       expect(result).not_to be_valid
       expect(result.error).to have_key(:name)
@@ -42,7 +42,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
     end
 
     specify 'due to missing keys' do
-      result = subject.call({})
+      result = validate({})
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -56,7 +56,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
     end
 
     specify 'due to extraneous keys' do
-      result = subject.call(name: 'Tom', unspecified_key: 123)
+      result = validate(name: 'Tom', unspecified_key: 123)
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -73,7 +73,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
       options = RSchema::Options.new(fail_fast: true)
       input = { name: 123, age: 'wawawa' }
 
-      result = subject.call(input, options)
+      result = validate(input, options)
 
       expect(result).not_to be_valid
       expect(result.error.keys).to eq([:name])

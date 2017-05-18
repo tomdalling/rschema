@@ -6,11 +6,11 @@ RSpec.describe RSchema::Schemas::Predicate do
   it_behaves_like 'a schema'
 
   it 'gives a valid result if the predicate passes' do
-    expect(subject.call(4)).to be_valid
+    expect(validate(4)).to be_valid
   end
 
   it 'gives an invalid result if the predicate fails' do
-    result = subject.call(5)
+    result = validate(5)
 
     expect(result).not_to be_valid
     expect(result.error).to have_attributes(

@@ -3,7 +3,7 @@ class SchemaStub
     @validity_checker = validity_checker
   end
 
-  def call(value, options=nil)
+  def call(value, options)
     if valid?(value)
       RSchema::Result.success(value)
     else
@@ -21,6 +21,10 @@ class SchemaStub
       value: :mock_value,
       symbolic_name: :mock_error,
     )
+  end
+
+  def useless_method
+    "yep, it's useless"
   end
 
   private

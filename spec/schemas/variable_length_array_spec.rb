@@ -5,7 +5,7 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
   it_behaves_like 'a schema'
 
   specify 'successful validation' do
-    result = subject.call([:valid, :valid, :valid])
+    result = validate([:valid, :valid, :valid])
 
     expect(result).to be_valid
     expect(result.value).to eq([:valid, :valid, :valid])
@@ -13,7 +13,7 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
 
   context 'failed validation' do
     specify 'due to value not being an array' do
-      result = subject.call(5)
+      result = validate(5)
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -24,7 +24,7 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
     end
 
     specify 'due to subchema failure' do
-      result = subject.call([:wrong, :valid, :wrong])
+      result = validate([:wrong, :valid, :wrong])
 
       expect(result).not_to be_valid
       expect(result.error).to eq({
@@ -36,7 +36,7 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
     it 'respects the `fail_fast` option' do
       options = RSchema::Options.new(fail_fast: true)
 
-      result = subject.call([:valid, :wrong, :wrong], options)
+      result = validate([:valid, :wrong, :wrong], options)
 
       expect(result).not_to be_valid
       expect(result.error).to eq({ 1 => subschema.error })

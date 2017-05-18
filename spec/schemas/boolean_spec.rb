@@ -4,12 +4,12 @@ RSpec.describe RSchema::Schemas::Boolean do
   it_behaves_like 'a schema'
 
   specify 'successful validation' do
-    expect(subject.call(true)).to be_valid
-    expect(subject.call(false)).to be_valid
+    expect(validate(true)).to be_valid
+    expect(validate(false)).to be_valid
   end
 
   specify 'failed validation' do
-    result = subject.call(nil)
+    result = validate(nil)
 
     expect(result).to be_invalid
     expect(result.error).to have_attributes(

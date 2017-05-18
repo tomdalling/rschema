@@ -5,7 +5,7 @@ RSpec.describe RSchema::Schemas::Anything do
 
   it 'always succeeds' do
     value = double
-    result = subject.call(value)
+    result = validate(value)
 
     expect(result).to be_valid
     expect(result.value).to be(value)

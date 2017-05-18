@@ -6,7 +6,7 @@ RSpec.describe RSchema::Schemas::Set do
 
   context 'valid result' do
     it 'allows empty sets' do
-      result = subject.call(Set.new)
+      result = validate(Set.new)
       expect(result).to be_valid
       expect(result.value).to eq(Set.new)
     end
@@ -14,7 +14,7 @@ RSpec.describe RSchema::Schemas::Set do
     it 'allows sets of arbirary size' do
       input = Set.new([:a, :b, :c])
 
-      result = subject.call(input)
+      result = validate(input)
 
       expect(result).to be_valid
       expect(result.value).to eq(Set.new([:a, :b, :c]))
@@ -23,7 +23,7 @@ RSpec.describe RSchema::Schemas::Set do
 
   context 'invalid result' do
     specify 'due to not being a set' do
-      result = subject.call(5)
+      result = validate(5)
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -36,7 +36,7 @@ RSpec.describe RSchema::Schemas::Set do
     specify 'due to invalid subschema' do
       input = Set.new([5])
 
-      result = subject.call(input)
+      result = validate(input)
 
       expect(result).not_to be_valid
       expect(result.error).to eq({
@@ -48,7 +48,7 @@ RSpec.describe RSchema::Schemas::Set do
       options = RSchema::Options.new(fail_fast: true)
       input = Set.new([1, 2, 3])
 
-      result = subject.call(input, options)
+      result = validate(input, options)
 
       expect(result).not_to be_valid
       expect(result.error.size).to eq(1)

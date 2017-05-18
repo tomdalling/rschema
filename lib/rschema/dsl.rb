@@ -61,6 +61,8 @@ module RSchema
     #     # matches [5, "hello"]
     #
     def array(*subschemas)
+      subschemas = subschemas.map{ |ss| inconvenience(ss) }
+
       if subschemas.count == 1
         Schemas::VariableLengthArray.new(subschemas.first)
       else
@@ -111,7 +113,7 @@ module RSchema
     #     # matches Set[1,2,3]
     #
     def set(subschema)
-      Schemas::Set.new(subschema)
+      Schemas::Set.new(inconvenience(subschema))
     end
 
     #
@@ -149,7 +151,10 @@ module RSchema
       end
 
       key_schema, value_schema = subschemas.first
-      Schemas::VariableHash.new(key_schema, value_schema)
+      Schemas::VariableHash.new(
+        inconvenience(key_schema),
+        inconvenience(value_schema),
+      )
     end
 
     #
@@ -188,7 +193,7 @@ module RSchema
       attribute_hash.map do |dsl_key, value_schema|
         optional = dsl_key.is_a?(OptionalWrapper)
         key = optional ? dsl_key.key : dsl_key
-        Schemas::FixedHash::Attribute.new(key, value_schema, optional)
+        Schemas::FixedHash::Attribute.new(key, inconvenience(value_schema), optional)
       end
     end
 
@@ -205,7 +210,7 @@ module RSchema
     #     # matches nil
     #
     def maybe(subschema)
-      Schemas::Maybe.new(subschema)
+      Schemas::Maybe.new(inconvenience(subschema))
     end
 
     #
@@ -225,6 +230,7 @@ module RSchema
     #     # matches :scissors
     #
     def enum(valid_values, subschema=nil)
+      subschema = inconvenience(subschema) if subschema
       Schemas::Enum.new(valid_values, subschema || type(valid_values.first.class))
     end
 
@@ -241,6 +247,7 @@ module RSchema
     #     # matches 1337
     #
     def either(*subschemas)
+      subschemas = subschemas.map{ |ss| inconvenience(ss) }
       Schemas::Sum.new(subschemas)
     end
 
@@ -279,6 +286,7 @@ module RSchema
     #     # matches 6.2
     #
     def pipeline(*subschemas)
+      subschemas = subschemas.map{ |ss| inconvenience(ss) }
       Schemas::Pipeline.new(subschemas)
     end
 
@@ -295,6 +303,14 @@ module RSchema
     #
     def anything
       Schemas::Anything.instance
+    end
+
+    def convenience(schema)
+      Schemas::Convenience.wrap(schema)
+    end
+
+    def inconvenience(schema)
+      Schemas::Convenience.unwrap(schema)
     end
 
     def method_missing(sym, *args, &block)

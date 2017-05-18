@@ -10,7 +10,7 @@ RSpec.describe RSchema::Schemas::Pipeline do
     expect(first_subschema).to receive(:call).and_return(RSchema::Result.success(nil))
     expect(last_subschema).to receive(:call).and_return(RSchema::Result.success(nil))
 
-    result = subject.call(123)
+    result = validate(123)
 
     expect(result).to be_valid
   end
@@ -23,7 +23,7 @@ RSpec.describe RSchema::Schemas::Pipeline do
       .with('curly' , options)
       .and_return(RSchema::Result.success('moe'))
 
-    result = subject.call('larry', options)
+    result = validate('larry', options)
 
     expect(result).to be_valid
     expect(result.value).to eq('moe')
@@ -34,7 +34,7 @@ RSpec.describe RSchema::Schemas::Pipeline do
     expect(first_subschema).to receive(:call).and_return(RSchema::Result.success(nil))
     expect(last_subschema).to receive(:call).and_return(RSchema::Result.failure(error))
 
-    result = subject.call(123)
+    result = validate(123)
 
     expect(result).not_to be_valid
     expect(result.error).to be(error)

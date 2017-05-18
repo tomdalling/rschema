@@ -7,7 +7,7 @@ RSpec.describe RSchema::Schemas::Enum do
   it_behaves_like 'a schema'
 
   specify 'successful validation' do
-    result = subject.call(:b)
+    result = validate(:b)
 
     expect(result).to be_valid
     expect(result.value).to eq(:b)
@@ -15,7 +15,7 @@ RSpec.describe RSchema::Schemas::Enum do
 
   describe 'failed validation' do
     specify 'due to not being an enum member' do
-      result = subject.call(:z)
+      result = validate(:z)
 
       expect(result).not_to be_valid
       expect(result.error).to have_attributes(
@@ -26,7 +26,7 @@ RSpec.describe RSchema::Schemas::Enum do
     end
 
     specify 'due to subschema failure' do
-      result = subject.call('waka')
+      result = validate('waka')
 
       expect(result).not_to be_valid
       expect(result.error).to be(subschema.error)

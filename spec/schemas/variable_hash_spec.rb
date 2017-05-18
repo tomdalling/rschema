@@ -7,13 +7,13 @@ RSpec.describe RSchema::Schemas::VariableHash do
 
   context 'valid result' do
     it 'allows empty hashes' do
-      result = subject.call({})
+      result = validate({})
       expect(result).to be_valid
       expect(result.value).to eq({})
     end
 
     it 'allows hashes of arbirary size' do
-      result = subject.call({ cat: :valid, dog: :valid })
+      result = validate({ cat: :valid, dog: :valid })
       expect(result).to be_valid
       expect(result.value).to eq({ cat: :valid, dog: :valid })
     end
@@ -21,7 +21,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
 
   context 'invalid result' do
     specify 'due to not being a hash' do
-      result = subject.call(5)
+      result = validate(5)
 
       expect(result.error).to have_attributes(
         schema: subject,
@@ -31,7 +31,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
     end
 
     specify 'due to invalid key' do
-      result = subject.call({ 5 => :valid })
+      result = validate({ 5 => :valid })
 
       expect(result.error).to eq({
         keys: { 5 => key_schema.error },
@@ -40,7 +40,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
     end
 
     it 'due to invalid value' do
-      result = subject.call({ hello: :wrong })
+      result = validate({ hello: :wrong })
 
       expect(result.error).to eq({
         keys: {},
@@ -49,7 +49,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
     end
 
     it 'due to both invalid keys and invalid values' do
-      result = subject.call({ hello: :wrong, 5 => :valid })
+      result = validate({ hello: :wrong, 5 => :valid })
 
       expect(result.error).to eq({
         keys: { 5 => key_schema.error },
@@ -61,7 +61,7 @@ RSpec.describe RSchema::Schemas::VariableHash do
       options = RSchema::Options.new(fail_fast: true)
       input = { hello: :wrong, 5 => :valid }
 
-      result = subject.call(input, options)
+      result = validate(input, options)
 
       expect(result.error).to eq({
         keys: {}, # this would contain errors without the `fail_fast` option

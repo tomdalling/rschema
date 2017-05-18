@@ -6,16 +6,16 @@ RSpec.describe RSchema::Schemas::Maybe do
 
   context 'successful validation' do
     it 'allows nil' do
-      expect(subject.call(nil)).to be_valid
+      expect(validate(nil)).to be_valid
     end
 
     it 'otherwise delegates to the subschema' do
-      expect(subject.call(:valid)).to be_valid
+      expect(validate(:valid)).to be_valid
     end
   end
 
   specify 'failed validation' do
-    result = subject.call(:wrong)
+    result = validate(:wrong)
 
     expect(result).not_to be_valid
     expect(result.error).to be(subschema.error)
