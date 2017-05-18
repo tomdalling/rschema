@@ -8,14 +8,14 @@ class Sum
   end
 
   def call(value, options)
-    suberrors = {}
+    suberrors = []
 
     @subschemas.each do |subsch|
       result = subsch.call(value, options)
       if result.valid?
         return result
       else
-        suberrors[subsch] = result.error
+        suberrors << result.error
       end
     end
 

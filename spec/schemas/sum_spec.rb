@@ -15,10 +15,10 @@ RSpec.describe RSchema::Schemas::Sum do
     result = validate(-5)
 
     expect(result).not_to be_valid
-    expect(result.error).to eq({
-      even_schema => even_schema.error,
-      positive_schema => positive_schema.error,
-    })
+    expect(result.error).to eq([
+      even_schema.error,
+      positive_schema.error,
+    ])
   end
 
   specify '#with_wrapped_subschemas' do
