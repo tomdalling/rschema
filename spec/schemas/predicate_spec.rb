@@ -17,6 +17,9 @@ RSpec.describe RSchema::Schemas::Predicate do
       schema: subject,
       value: 5,
       symbolic_name: :false,
+      vars: {
+        predicate_name: 'bongos',
+      }
     )
   end
 

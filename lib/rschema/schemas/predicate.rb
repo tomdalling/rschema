@@ -16,6 +16,7 @@ class Predicate
         schema: self,
         value: value,
         symbolic_name: :false,
+        vars: { predicate_name: name }
       ))
     end
   end
