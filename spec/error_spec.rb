@@ -6,33 +6,28 @@ RSpec.describe RSchema::Error do
       schema: schema,
       value: 'dog',
       symbolic_name: :not_a_duck,
-      vars: { fee: Set.new(['fie', 'foe']) },
+      vars: { fee: 'fi fo' },
     )
   }
   let(:schema) { TestNamespace::TestSchema.new }
 
-  it 'provides a short, developer-friendly description' do
-    expect(error.to_s).to eq(
-      'Error TestNamespace::TestSchema/not_a_duck for value: "dog"'
-    )
+  specify '#to_s provides a short, developer-friendly description' do
+    expect(error.to_s).to eq('TestNamespace::TestSchema/not_a_duck')
   end
 
-  it 'provides a long, developer-friendly description' do
-    expect(error.to_s(:detailed)).to eq(<<~EOS)
-      Error: not_a_duck
-      Schema: TestNamespace::TestSchema
-      Value: "dog"
-      Vars: {:fee=>#<Set: {"fie", "foe"}>}
-    EOS
-  end
+  describe '#inspect' do
+    it 'provides a detailed, developer-friendly description' do
+      expect(error.inspect).to eq(
+        '<RSchema::Error TestNamespace::TestSchema/not_a_duck fee="fi fo" value="dog">'
+      )
+    end
 
-  it 'provides a json-compatible hash' do
-    json = error.to_json
-
-    expect(json[:schema]).to eq('TestNamespace::TestSchema')
-    expect(json[:error]).to eq('not_a_duck')
-    expect(json[:value]).to eq('dog')
-    expect(json[:vars][:fee]).to start_with('#<Set:')
+    it 'works without vars' do
+      error.vars.clear
+      expect(error.inspect).to eq(
+        '<RSchema::Error TestNamespace::TestSchema/not_a_duck value="dog">'
+      )
+    end
   end
 
   module TestNamespace
