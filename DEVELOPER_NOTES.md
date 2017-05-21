@@ -16,12 +16,14 @@ Gem Release
 TODO
 ----
 
+ - fix up the README documentation
+
+ - At least a little bit of RDoc documentation
+
+ - Unit tests for CoercionWrapper
+
  - Error translations
 
    Errors contain a lot of information that can be translated to fit various
    contexts. There are already developer-friendly ways to stringify errors, but
    these errors should probably be translatable via Rails i18n functionality.
-
- - fix up the README documentation
-
- - At least a little bit of RDoc documentation
