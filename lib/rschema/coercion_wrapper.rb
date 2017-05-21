@@ -24,11 +24,21 @@ module RSchema
       def builder_for_schema(schema)
         @builder_by_schema.fetch(schema.class) do
           if schema.is_a?(Schemas::Type)
-            @builder_by_type.fetch(schema.type, nil)
+            builder_for_type(schema.type)
           else
             nil
           end
         end
+      end
+
+      def builder_for_type(type)
+        # polymorphic lookup
+        type.ancestors.each do |ancestor|
+          builder = @builder_by_type[ancestor]
+          return builder if builder
+        end
+
+        nil
       end
 
       def wrap_with_coercer(schema)

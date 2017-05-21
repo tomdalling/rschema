@@ -167,6 +167,37 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
     end
   end
 
+  describe 'polymophic lookup for coercing types' do
+    module IncrementCoercer
+      def self.build(_)
+        self
+      end
+
+      def self.call(value)
+        RSchema::Result.success(value + 1)
+      end
+    end
+
+    let(:wrapper) do
+      RSchema::CoercionWrapper.new do
+        coerce_type Numeric, with: IncrementCoercer
+      end
+    end
+
+    it 'works for modules/ancestor classes' do
+      int_schema = wrapper.wrap(RSchema.define{ _Integer })
+      float_schema = wrapper.wrap(RSchema.define{ _Float })
+
+      int_result = int_schema.validate!(6)
+      float_result = float_schema.validate!(6.5)
+
+      expect(int_result).to be_a(Integer)
+      expect(int_result).to eq(7)
+      expect(float_result).to be_a(Float)
+      expect(float_result).to eq(7.5)
+    end
+  end
+
   it 'handles being wrapped twice' do
     twice_wrapped = WrapperStub.wrap(subject)
 
