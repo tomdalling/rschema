@@ -4,6 +4,10 @@ module RSchema
       @default ||= new
     end
 
+    def self.fail_fast
+      @fail_fast ||= new(fail_fast: true)
+    end
+
     def initialize(fail_fast: false)
       @fail_fast = fail_fast
     end

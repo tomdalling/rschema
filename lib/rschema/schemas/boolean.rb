@@ -1,5 +1,15 @@
 module RSchema
 module Schemas
+
+#
+# A schema that matches only `true` and `false`
+#
+# @example The boolean schema
+#     schema = RSchema.define { boolean }
+#     schema.valid?(true)  #=> true
+#     schema.valid?(false) #=> true
+#     schema.valid?(nil)   #=> false
+#
 class Boolean
   def self.instance
     @instance ||= new

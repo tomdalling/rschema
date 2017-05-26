@@ -1,5 +1,17 @@
 module RSchema
 module Schemas
+
+#
+# A schema that represents an array of fixed length
+#
+# Each element in the fixed-length array has its own subschema
+#
+# @example A fixed-length array schema
+#     schema = RSchema.define { array(_Integer, _String) }
+#     schema.valid?([5, "hello"]) #=> true
+#     schema.valid?([5]) #=> false
+#     schema.valid?([5, "hello", "world"]) #=> false
+#
 class FixedLengthArray
   attr_reader :subschemas
 

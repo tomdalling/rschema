@@ -1,5 +1,16 @@
 module RSchema
 module Schemas
+
+#
+# A schema that uses a given block to determine whether a value is valid
+#
+# @example A predicate that checks if numbers are odd
+#     schema = RSchema.define do
+#       predicate('odd'){ |x| x.odd? }
+#     end
+#     schema.valid?(5) #=> true
+#     schema.valid?(6) #=> false
+#
 class Predicate
   attr_reader :block, :name
 

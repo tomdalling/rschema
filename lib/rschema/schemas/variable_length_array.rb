@@ -1,5 +1,15 @@
 module RSchema
 module Schemas
+
+#
+# A schema that matches variable-length arrays, where all elements conform to
+# a single subschema
+#
+# @example A variable-length array schema
+#     schema = RSchema.define { array(_Integer) }
+#     schema.valid?([1,2,3]) #=> true
+#     schema.valid?([]) #=> true
+#
 class VariableLengthArray
   attr_accessor :element_schema
 

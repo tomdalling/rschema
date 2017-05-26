@@ -1,5 +1,15 @@
 module RSchema
 module Schemas
+
+#
+# A schema that matches variable-sized `Hash` objects, where the keys are _not_
+# known ahead of time.
+#
+# @example A hash of integers to strings
+#     schema = RSchema.define { variable_hash(_Integer => _String) }
+#     schema.valid?({ 5 => "hello", 7 => "world" }) #=> true
+#     schema.valid?({}) #=> true
+#
 class VariableHash
   attr_reader :key_schema, :value_schema
 

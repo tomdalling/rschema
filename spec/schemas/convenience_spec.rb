@@ -13,6 +13,16 @@ RSpec.describe RSchema::Schemas::Convenience do
     expect(result).to eq(:yep)
   end
 
+  describe '#error_for' do
+    it 'is nil when the value is valid' do
+      expect(subject.error_for(:valid)).to be_nil
+    end
+
+    it 'is the subschema error when the value is invalid' do
+      expect(subject.error_for('wrong')).to be(subschema.error)
+    end
+  end
+
   describe '#validate!' do
     it 'when valid, returns the result value' do
       result = subject.validate!(:valid)
@@ -32,6 +42,11 @@ RSpec.describe RSchema::Schemas::Convenience do
     expect(subject.valid?('wrong')).to be(false)
   end
 
+  specify '#invalid?' do
+    expect(subject).to receive(:valid?).with(5).and_return(false)
+    expect(subject.invalid?(5)).to be(true)
+  end
+
   it 'delegates methods calls to the raw schema' do
     expect(subject.useless_method).to eq("yep, it's useless")
   end
@@ -49,7 +64,7 @@ RSpec.describe RSchema::Schemas::Convenience do
     it "wraps a schema with #{described_class}" do
       wrapped = described_class.wrap(subschema)
       expect(wrapped).to be_a(described_class)
-      expect(wrapped.raw_schema).to be(subschema)
+      expect(wrapped.underlying_schema).to be(subschema)
     end
 
     it 'does not wrap already-wrapped schemas' do
@@ -59,7 +74,7 @@ RSpec.describe RSchema::Schemas::Convenience do
 
   specify '#with_wrapped_subschemas' do
     wrapped = subject.with_wrapped_subschemas(WrapperStub)
-    expect(wrapped.raw_schema).to be_a(WrapperStub)
-    expect(wrapped.raw_schema.wrapped_subschema).to be(subschema)
+    expect(wrapped.underlying_schema).to be_a(WrapperStub)
+    expect(wrapped.underlying_schema.wrapped_subschema).to be(subschema)
   end
 end

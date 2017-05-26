@@ -1,5 +1,16 @@
 module RSchema
 module Schemas
+
+#
+# A schema representing that a value may be `nil`
+#
+# If the value is not `nil`, it must conform to the subschema
+#
+# @example A nil-able Integer
+#     schema = RSchema.define{ maybe(_Integer) }
+#     schema.valid?(5) #=> true
+#     schema.valid?(nil) #=> true
+#
 class Maybe
   attr_reader :subschema
 
@@ -8,7 +19,7 @@ class Maybe
   end
 
   def call(value, options)
-    if value == nil
+    if nil == value
       Result.success(value)
     else
       @subschema.call(value, options)

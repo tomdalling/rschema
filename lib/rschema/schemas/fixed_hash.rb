@@ -1,5 +1,19 @@
 module RSchema
 module Schemas
+
+#
+# A schema that matches `Hash` objects with known keys
+#
+# @example A typical fixed hash schema
+#     schema = RSchema.define do
+#       fixed_hash(
+#         name: _String,
+#         optional(:age) => _Integer,
+#       )
+#     end
+#     schema.valid?({ name: "Tom" }) #=> true
+#     schema.valid?({ name: "Dane", age: 55 }) #=> true
+#
 class FixedHash
   attr_reader :attributes
 
@@ -32,6 +46,28 @@ class FixedHash
     attributes.find{ |attr| attr.key == attr_key }
   end
 
+  #
+  # Creates a new {FixedHash} schema with the given attributes merged in
+  #
+  # @param new_attributes [Array<Attribute>] The attributes to merge
+  # @return [FixedHash] A new schema with the given attributes merged in
+  #
+  # @example Merging new attributes into an existing {Schemas::FixedHash} schema
+  #     person_schema = RSchema.define_hash {{
+  #       name: _String,
+  #       age: _Integer,
+  #     }}
+  #     person_schema.valid?(name: "t", age: 5) #=> true
+  #     person_schema.valid?(name: "t", age: 5, id: 3) #=> false
+  #
+  #     person_with_id_schema = RSchema.define do
+  #       person_schema.merge(attributes(
+  #         id: _Integer,
+  #       ))
+  #     end
+  #     person_with_id_schema.valid?(name: "t", age: 5, id: 3) #=> true
+  #     person_with_id_schema.valid?(name: "t", age: 5) #=> false
+  #
   def merge(new_attributes)
     merged_attrs = (attributes + new_attributes)
       .map { |attr| [attr.key, attr] }
@@ -41,6 +77,22 @@ class FixedHash
     self.class.new(merged_attrs)
   end
 
+  #
+  # Creates a new {FixedHash} schema with the given attributes removed
+  #
+  # @param attribute_keys [Array<Object>] The keys to remove
+  # @return [FixedHash] A new schema with the given attributes removed
+  #
+  # @example Removing an attribute
+  #     cat_and_dog = RSchema.define_hash {{
+  #       dog: _String,
+  #       cat: _String,
+  #     }}
+  #
+  #     only_cat = RSchema.define { cat_and_dog.without(:dog) }
+  #     only_cat.valid?({ cat: 'meow' }) #=> true
+  #     only_cat.valid?({ cat: 'meow', dog: 'woof' }) #=> false
+  #
   def without(attribute_keys)
     filtered_attrs = attributes
       .reject { |attr| attribute_keys.include?(attr.key) }
@@ -104,16 +156,11 @@ class FixedHash
     subresults_by_key
   end
 
-  def failure_error(results)
-    error = {}
-
-    results.each do |key, attr_result|
-      if attr_result.invalid?
-        error[key] = attr_result.error
-      end
-    end
-
-    error
+  def failure_error(subresults)
+    subresults
+      .select{ |_, result| result.invalid? }
+      .map{ |key, result| [key, result.error] }
+      .to_h
   end
 
   def success_value(subresults)

@@ -2,6 +2,16 @@ require 'set'
 
 module RSchema
 module Schemas
+
+#
+# A schema that matches `Set` objects (from the Ruby standard library)
+#
+# @example A set of integers
+#     require 'set'
+#     schema = RSchema.define { set(_Integer) }
+#     schema.valid?(Set[1, 2, 3]) #=> true
+#     schema.valid?(Set[:a, :b, :c]) #=> false
+#
 class Set
   attr_reader :subschema
 

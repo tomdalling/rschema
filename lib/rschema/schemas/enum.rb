@@ -1,5 +1,15 @@
 module RSchema
 module Schemas
+
+#
+# A schema that matches a values in a given set.
+#
+# @example Rock-Paper-Scissors values
+#     schema = RSchema.define { enum([:rock, :paper, :scissors]) }
+#     schema.valid?(:rock)  #=> true
+#     schema.valid?(:paper) #=> true
+#     schema.valid?(:gun)   #=> false
+#
 class Enum
   attr_reader :members, :subschema
 

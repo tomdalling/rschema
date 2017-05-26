@@ -2,9 +2,8 @@ module RSchema
   #
   # A mixin containing all the standard RSchema DSL methods.
   #
-  # If you are making a custom DSL, you can include this mixin to get ONLY the
-  # standard RSchema DSL methods, without any of the extra ones that may have
-  # been included by third-party gems.
+  # This mixin contains only the standard RSchema DSL methods, without any of
+  # the extra ones that may have been included by third-party gems/code.
   #
   # @note Do not include your custom DSL methods into this module.
   #   Include them into the {DefaultDSL} class instead.
@@ -13,6 +12,10 @@ module RSchema
   # @see RSchema.default_dsl
   #
   module DSL
+    # A wrapper class used only by {DSL} to represent optional attributes.
+    #
+    # @see #attributes
+    # @see #fixed_hash
     OptionalWrapper = Struct.new(:key)
 
     #
@@ -27,18 +30,12 @@ module RSchema
     #     type(Integer)
     #
     # Underscores will not work for namespaced types (types that include `::`).
-    # In that case, it is necessary to use the `type` method:
-    #
-    #     _MyNamespace::MyType # this will NOT work
-    #     type(MyNamespace::MyType) # this will work
+    # In that case, it is necessary to use the `type` method.
     #
     # @param type [Class]
     # @return [Schemas::Type]
     #
-    # @example An `Integer` type schema
-    #     type(Integer)
-    #     # exactly the same as:
-    #     _Integer
+    # @example (see Schemas::Type)
     #
     def type(type)
       Schemas::Type.new(type)
@@ -52,13 +49,8 @@ module RSchema
     #   in the array.
     # @return [Schemas::VariableLengthArray, Schemas::FixedLengthArray]
     #
-    # @example A variable-length array schema
-    #     array(_Integer)
-    #     # matches [1, 2, 3, 4]
-    #
-    # @example A fixed-length array schema
-    #     array(_Integer, _String)
-    #     # matches [5, "hello"]
+    # @example (see Schemas::VariableLengthArray)
+    # @example (see Schemas::FixedLengthArray)
     #
     def array(*subschemas)
       subschemas = subschemas.map{ |ss| inconvenience(ss) }
@@ -75,9 +67,7 @@ module RSchema
     #
     # @return [Schemas::Boolean]
     #
-    # @example The boolean schema
-    #     boolean
-    #     # matches only `true` and `false`
+    # @example (see Schemas::Boolean)
     #
     def boolean
       Schemas::Boolean.instance
@@ -89,13 +79,10 @@ module RSchema
     # @param attribute_hash (see #attributes)
     # @return [Schemas::FixedHash]
     #
-    # @example A typical fixed hash schema
-    #     fixed_hash(
-    #       name: _String,
-    #       optional(:age) => _Integer,
-    #     )
-    #     # matches { name: "Tom" }
-    #     # matches { name: "Dane", age: 55 }
+    # @example (see Schemas::FixedHash)
+    #
+    # @see RSchema.define_hash
+    # @see #variable_hash
     #
     def fixed_hash(attribute_hash)
       Schemas::FixedHash.new(attributes(attribute_hash))
@@ -108,9 +95,7 @@ module RSchema
     # @param subschema [schema] A schema representing the elements of the set
     # @return [Schemas::Set]
     #
-    # @example A set of integers
-    #     set(_Integer)
-    #     # matches Set[1,2,3]
+    # @example (see Schemas::Set)
     #
     def set(subschema)
       Schemas::Set.new(inconvenience(subschema))
@@ -141,9 +126,9 @@ module RSchema
     #   The value is a schema representing all values.
     # @return [Schemas::VariableHash]
     #
-    # @example A hash of integers to strings
-    #     variable_hash(_Integer => _String)
-    #     # matches { 5 => "hello", 7 => "world" }
+    # @example (see Schemas::VariableHash)
+    #
+    # @see #fixed_hash
     #
     def variable_hash(subschemas)
       unless subschemas.is_a?(Hash) && subschemas.size == 1
@@ -162,32 +147,15 @@ module RSchema
     # Primarily for use with {Schemas::FixedHash#merge}.
     #
     # @param attribute_hash [Hash<key, schema>] A hash of keys to subschemas.
-    #   The values of this parameter must be schema objects.
+    #   The values of this hash must be schema objects.
     #   The keys should be the exact keys expected in the represented `Hash`
     #   (`Strings`, `Symbols`, whatever). Keys can be wrapped with {#optional}
-    #   to indicate that the key can be missing in the represented `Hash`.
+    #   to indicate that they can be missing from the represented `Hash`.
     # @return [Array<Schemas::FixedHash::Attribute>]
     #
     # @see Schemas::FixedHash#merge
     #
-    # @example Merging new attributes into an existing {Schemas::FixedHash} schema
-    #     person_schema = fixed_hash(
-    #       first_name: _String,
-    #       last_name: _String,
-    #     )
-    #
-    #     person_record_schema = person_schema.merge(attributes(
-    #       id: _Integer,
-    #       optional(:updated_at) => _Time,
-    #     ))
-    #
-    #     # person_record_schema matches:
-    #     #  {
-    #     #    id: 3,
-    #     #    updated_at: Time.now,
-    #     #    first_name: "Tom",
-    #     #    last_name: "Dalling",
-    #     #  }
+    # @example (see Schemas::FixedHash#merge)
     #
     def attributes(attribute_hash)
       attribute_hash.map do |dsl_key, value_schema|
@@ -204,10 +172,7 @@ module RSchema
     #   is not `nil`.
     # @return [Schemas::Maybe]
     #
-    # @example A nullable Integer
-    #     maybe(_Integer)
-    #     # matches 5
-    #     # matches nil
+    # @example (see Schemas::Maybe)
     #
     def maybe(subschema)
       Schemas::Maybe.new(inconvenience(subschema))
@@ -223,11 +188,7 @@ module RSchema
     #   as the inferred subschema).
     # @return [Schemas::Enum]
     #
-    # @example Valid Rock-Paper-Scissors turn values
-    #     enum([:rock, :paper, :scissors])
-    #     # matches :rock
-    #     # matches :paper
-    #     # matches :scissors
+    # @example (see Schemas::Enum)
     #
     def enum(valid_values, subschema=nil)
       subschema = inconvenience(subschema) if subschema
@@ -241,10 +202,7 @@ module RSchema
     #   valid values.
     # @return [Schemas::Sum]
     #
-    # @example A schema that matches both Integers and Strings
-    #     either(_String, _Integer)
-    #     # matches "hello"
-    #     # matches 1337
+    # @example (see Schemas::Sum)
     #
     def either(*subschemas)
       subschemas = subschemas.map{ |ss| inconvenience(ss) }
@@ -256,16 +214,16 @@ module RSchema
     #
     # @param name [String] An optional name for the predicate schema. This
     #   serves no purpose other than to provide useful debugging information,
-    #   or perhaps some metadata for the schema.
+    #   or perhaps some metadata.
     # @yield Values being validated are yielded to the given block. The return
     #   value of the block indicates whether the value is valid or not.
     # @yieldparam value [Object] The value being validated
     # @yieldreturn [Boolean] Truthy if the value is valid, otherwise falsey.
     # @return [Schemas::Predicate]
     #
-    # @example A predicate that checks if numbers are odd
-    #     predicate('odd'){ |x| x.odd? }
-    #     # matches 5
+    # @example (see Schemas::Predicate)
+    #
+    # @see RSchema.define_predicate
     #
     def predicate(name = nil, &block)
       Schemas::Predicate.new(name, &block)
@@ -278,12 +236,7 @@ module RSchema
     #   in order.
     # @return [Schemas::Pipeline]
     #
-    # @example A schema for positive floats
-    #     pipeline(
-    #       _Float,
-    #       predicate{ |f| f > 0.0 },
-    #     )
-    #     # matches 6.2
+    # @example (see Schemas::Pipeline)
     #
     def pipeline(*subschemas)
       subschemas = subschemas.map{ |ss| inconvenience(ss) }
@@ -295,24 +248,78 @@ module RSchema
     #
     # @return [Schemas::Anything]
     #
-    # @example The anything schema
-    #   anything
-    #   # matches nil
-    #   # matches 6.2
-    #   # matches { hello: Time.now }
+    # @example (see Schemas::Anything)
     #
     def anything
       Schemas::Anything.instance
     end
 
+    #
+    # Wraps a schema in a {Schemas::Convenience}
+    #
+    # It is not normally necessary to do this wrapping manually. Methods like
+    # {RSchema.define}, {RSchema.define_predicate} and {RSchema.define_hash}
+    # already return schema objects wrapped in {Schemas::Convenience}.
+    #
+    # @param schema [schema] The schema to wrap
+    # @return [Schemas::Convenience]
+    #
+    # @example Manually wrapping a schema with `convenience`
+    #     # Unlike `RSchema.define`, the `RSchema.dsl_eval` method does not
+    #     # wrap the return value with RSchema::Schemas::Convenience, so the
+    #     # returned schema is missing convenience methods like `valid?`
+    #     schema = RSchema.dsl_eval { _Integer }
+    #     schema.valid?(5) #=> NoMethodError: undefined method `valid?'
+    #
+    #     # After manually wrapping the schema, the convenience methods are
+    #     # available
+    #     schema = RSchema.dsl_eval { convenience(_Integer) }
+    #     schema.valid?(5) #=> true
+    #
     def convenience(schema)
       Schemas::Convenience.wrap(schema)
     end
 
+    #
+    # Removes any {Schemas::Convenience} wrappers from a schema.
+    #
+    # This method is only really useful when defining your own custom DSL
+    # methods.
+    #
+    # When creating a composite schema that contains other subschemas, it is
+    # unneccessary to have the subschemas wrapped in {Schemas::Convenience}.
+    # Using wrapped subschemas should not cause any errors, but unwrapped
+    # subschemas will have slightly better performance. So, when your custom
+    # DSL method is creating a composite schema, use {#inconvenience} to unwrap
+    # all the subschemas.
+    #
+    # @return [schema] The underlying schema object, once all convenience
+    #   wrappers have been removed.
+    #
+    # @example Unwrapping subschemas in a custom DSL method
+    #     module MyCustomDSL
+    #       def pair(subschema)
+    #         unwrapped = inconvenience(subschema)
+    #         RSchema::Schemas::FixedLengthArray.new([unwrapped, unwrapped])
+    #       end
+    #     end
+    #
+    #     RSchema::DefaultDSL.include(MyCustomDSL)
+    #
+    #     schema = RSchema.define{ pair(_Integer) }
+    #     schema.valid?([4, 6]) #=> true
+    #
     def inconvenience(schema)
       Schemas::Convenience.unwrap(schema)
     end
 
+    #
+    # Convenient way to create {Schemas::Type} schemas
+    #
+    # See {#type} for details.
+    #
+    # @see #type
+    #
     def method_missing(sym, *args, &block)
       type = sym.to_s
       if type.start_with?('_') && args.empty? && block.nil?

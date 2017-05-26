@@ -1,5 +1,16 @@
 module RSchema
 module Schemas
+
+#
+# A schema that represents a "sum type"
+#
+# Values must conform to one of the subschemas.
+#
+# @example A schema that matches both Integers and Strings
+#     schema = RSchema.define { either(_String, _Integer) }
+#     schema.valid?("hello") #=> true
+#     schema.valid?(5) #=> true
+#
 class Sum
   attr_reader :subschemas
 

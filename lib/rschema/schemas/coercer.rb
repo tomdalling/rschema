@@ -1,5 +1,13 @@
 module RSchema
 module Schemas
+
+#
+# A schema that applies a coercer to a value, before passing the coerced
+# value to a subschema.
+#
+# This is not a type of schema that you would typically create yourself.
+# It is used internally to implement RSchema's coercion functionality.
+#
 class Coercer
   attr_reader :coercer, :subschema
 

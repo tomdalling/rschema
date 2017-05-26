@@ -1,5 +1,22 @@
 module RSchema
 module Schemas
+
+#
+# A schema that matches values of a given type (i.e. `value.is_a?(type)`)
+#
+# @example An Integer schema
+#     schema = RSchema.define { _Integer }
+#     schema.valid?(5) #=> true
+#
+# @example A namespaced type
+#     schema = RSchema.define do
+#       # This will not work:
+#       # _ActiveWhatever::Thing
+#
+#       # This will work:
+#       type(ActiveWhatever::Thing)
+#     end
+#
 class Type
   attr_reader :type
 

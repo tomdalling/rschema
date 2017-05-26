@@ -1,5 +1,20 @@
 module RSchema
 module Schemas
+
+#
+# A schema that chains together an ordered list of other schemas
+#
+# @example A schema for positive floats
+#     schema = RSchema.define do
+#       pipeline(
+#         _Float,
+#         predicate{ |f| f > 0.0 },
+#       )
+#     end
+#     schema.valid?(6.2) #=> true
+#     schema.valid?('hi') #=> false (because it's not a Float)
+#     schema.valid?(-6.2) #=> false (because predicate failed)
+#
 class Pipeline
   attr_reader :subschemas
 

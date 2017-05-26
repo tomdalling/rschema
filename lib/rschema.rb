@@ -14,26 +14,35 @@ require 'rschema/coercion_wrapper'
 module RSchema
 
   #
-  # Runs a block using a DSL.
+  # Creates a schema object using a DSL
   #
-  # @param dsl [Object] An optional DSL object to run the block with.
-  #   Uses {RSchema#default_dsl} if nil.
-  # @yield Invokes the given block with access to the methods on `dsl`.
-  # @return The return value of the given block (usually some kind of schema object)
-  #
-  # @example Creating a typical fixed hash schema
-  #   person_schema = RSchema.define do
-  #     fixed_hash(
-  #       name: _String,
-  #       age: _Integer,
-  #     )
-  #   end
+  # @param dsl (see .dsl_eval)
+  # @yield (see .dsl_eval)
+  # @return [Schemas::Convenience] The schema object returned from the block,
+  #   wrapped in a {Schemas::Convenience}.
   #
   def self.define(dsl = nil, &block)
     schema = dsl_eval(dsl, &block)
     Schemas::Convenience.wrap(schema)
   end
 
+  #
+  # Runs a block using a DSL.
+  #
+  # @param dsl [Object] An optional DSL object to run the block with.
+  #   Uses {RSchema#default_dsl} if nil.
+  # @yield Invokes the given block with access to the methods on `dsl`.
+  # @return The return value of the given block (usually some kind of schema
+  #   object)
+  #
+  # @example Creating a typical fixed hash schema
+  #   person_schema = RSchema.dsl_eval do
+  #     fixed_hash(
+  #       name: _String,
+  #       age: _Integer,
+  #     )
+  #   end
+  #
   def self.dsl_eval(dsl = nil, &block)
     Docile::Execution.exec_in_proxy_context(
       dsl || default_dsl,
@@ -43,18 +52,20 @@ module RSchema
   end
 
   #
-  # A shortcut for:
+  # A convenience method for creating {Schemas::FixedHash} schemas
+  #
+  # This method is a shorter way to write:
   #
   #     RSchema.define do
   #       fixed_hash(...)
   #     end
   #
-  # @yield Invokes the given block with access to the methods of the default DSL.
+  # @yield (see .dsl_eval)
   # @yieldreturn The attributes of the hash schema (the argument to {DSL#fixed_hash}).
-  # @return [Schemas::FixedHash]
+  # @return [Schemas::Convenience] A {Schemas::FixedHash} schema wrapped in a
+  #   {Schemas::Convenience}.
   #
-  # @example A typical schema
-  #
+  # @example A typical fixed hash schema
   #     person_schema = RSchema.define_hash {{
   #       name: _String,
   #       age: _Integer,
@@ -67,19 +78,21 @@ module RSchema
   end
 
   #
-  # A shortcut for:
+  # A convenience method for creating {Schemas::Predicate} schemas.
+  #
+  # This method is a shorter way to write:
   #
   #     RSchema.define do
-  #       predicate { ... }
+  #       predicate(name) { ... }
   #     end
   #
-  # @param name [String] An arbitraty name for the predicate schema.
-  # @yield [value] Yields a single value.
-  # @yieldreturn [Boolean] Truthy if the value is valid, otherwise falsey.
-  # @return [Schemas::Predicate]
+  # @param name (see DSL#predicate)
+  # @yield (see DSL#predicate)
+  # @yieldreturn (see DSL#predicate)
+  # @return [Schemas::Convenience] A {Schemas::Predicate} schema wrapped in a
+  #   {Schemas::Convenience}.
   #
   # @example A predicate schema that only allows `odd?` objects.
-  #
   #     odd_schema = RSchema.define_predicate('odd') do |x|
   #       x.odd?
   #     end
@@ -101,7 +114,7 @@ module RSchema
   end
 
   #
-  # The class of the default RSchema DSL.
+  # The class of the default DSL object.
   #
   # By default, this only includes the methods from the {RSchema::DSL} mixin.
   #
