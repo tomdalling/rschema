@@ -16,10 +16,6 @@ Gem Release
 TODO
 ----
 
- - fix up the README documentation
-
- - At least a little bit of RDoc documentation
-
  - Unit tests for CoercionWrapper
 
  - Error translations
