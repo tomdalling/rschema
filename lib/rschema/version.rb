@@ -1,3 +1,3 @@
 module RSchema
-  VERSION = '3.0.1.pre5'
+  VERSION = '3.0.2'
 end
