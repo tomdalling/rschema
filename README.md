@@ -1,11 +1,6 @@
 [![Build Status](https://travis-ci.org/tomdalling/rschema.svg?branch=master)](https://travis-ci.org/tomdalling/rschema)
 [![Test Coverage](https://codeclimate.com/github/tomdalling/rschema/badges/coverage.svg)](https://codeclimate.com/github/tomdalling/rschema/coverage)
-
-NOTE: These are the docs for the version 3 prerelease
-=====================================================
-
-For earlier versions, see the tags.
-
+[![Yard Docs](http://img.shields.io/badge/yard-docs-blue.svg)](http://www.rubydoc.info/gems/rschema)
 
 RSchema
 =======
@@ -110,7 +105,7 @@ DSL, and `schema2` is created manually.
 You will probably not need to create schemas manually unless you are doing
 something advanced.
 
-For a full list of DSL methods, see the API documentation for `RSchema::DSL`.
+For a full list of DSL methods, see the [API documentation][] for `RSchema::DSL`.
 
 
 Errors (When Validation Fails)
@@ -308,7 +303,7 @@ RSchema provides a few other schema types through its DSL:
     pipeline_schema.valid?(5.1) #=> true
     pipeline_schema.valid?(-24) #=> false
 
-For a full list of built-in schema types, see the API documentation for all
+For a full list of built-in schema types, see the [API documentation][] for all
 classes in the `RSchema::Schemas` module.
 
 Extending The DSL
@@ -523,4 +518,8 @@ correctly.
     result = coercer.validate(["1", "2"])
     result.valid? #=> true
     result.value #=> [1.0, 2.0]
+
+
+
+[API documentation]: http://www.rubydoc.info/gems/rschema
 
