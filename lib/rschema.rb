@@ -21,6 +21,8 @@ module RSchema
   # @return [Schemas::Convenience] The schema object returned from the block,
   #   wrapped in a {Schemas::Convenience}.
   #
+  # @example (see Schemas::FixedHash)
+  #
   def self.define(dsl = nil, &block)
     schema = dsl_eval(dsl, &block)
     Schemas::Convenience.wrap(schema)
