@@ -13,6 +13,7 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
         optional(:date) => _Date,
         optional('string key') => _Integer,
         optional(:enum) => enum([:a, :b, :c]),
+        optional(:maybe_int) => maybe(_Integer),
       )
     end
   end
@@ -164,6 +165,39 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
     it 'will not coerce unrecognised values' do
       result = validate(required: 'wakawaka')
       expect(result).to be_invalid
+    end
+  end
+
+  describe 'Array coercion' do
+    subject { described_class.wrap(array_schema) }
+    let(:array_schema) do
+      RSchema.define_hash {{
+        required: array(_Integer),
+        optional(:opt) => array(_Integer),
+      }}
+    end
+
+    it 'allows arrays to pass through' do
+      expect(validate(required: [1,2,3])).to be_valid
+    end
+
+    it 'defaults to an empty array when the value is missing within a hash' do
+      result = validate({})
+      expect(result).to be_valid
+      expect(result.value).to eq({ required: [] })
+    end
+  end
+
+  describe 'Maybe coercion' do
+    it 'coerces empty strings to nil' do
+      result = validate(maybe_int: '')
+      expect(result).to be_valid
+      expect(result.value).to eq({ maybe_int: nil })
+    end
+
+    it 'works normally for non-empty strings' do
+      result = validate(maybe_int: '5')
+      expect(result.value).to eq({ maybe_int: 5 })
     end
   end
 

@@ -8,11 +8,13 @@ class CoercionWrapper
     coerce_type Time, with: Coercers::Time
     coerce_type Date, with: Coercers::Date
 
+    coerce Schemas::Maybe, with: Coercers::NilEmptyStrings
     coerce Schemas::Boolean, with: Coercers::Boolean
     coerce Schemas::FixedHash, with: Coercers::Chain[
       Coercers::FixedHash::SymbolizeKeys,
       Coercers::FixedHash::RemoveExtraneousAttributes,
       Coercers::FixedHash::DefaultBooleansToFalse,
+      Coercers::FixedHash::DefaultArraysToEmpty,
     ]
   end
 
