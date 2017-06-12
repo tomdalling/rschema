@@ -17,11 +17,15 @@ BAD_INPUTS = [
   { }, # all keys missing
 ]
 
-RSCHEMA = RSchema.define_hash {{
-  name: _String,
-  age: maybe(_Integer),
-  optional(:password) => _String,
-}}
+def build_rschema
+  RSchema.define_hash {{
+    name: _String,
+    age: maybe(_Integer),
+    optional(:password) => _String,
+  }}
+end
+
+RSCHEMA = build_rschema
 
 DRY_SCHEMA = Dry::Validation.Schema do
   required(:name) { str? }
@@ -54,8 +58,15 @@ Benchmark.ips do |x|
     validate_inputs { |input| RSCHEMA.validate(input).valid? }
   end
 
-  x.report('RSchema (coerced)') do
+  x.report('(coerced)') do
     validate_inputs { |input| COERCED_RSCHEMA.validate(input).valid? }
+  end
+
+  x.report('(built + coerced)') do
+    validate_inputs do |input|
+      schema = RSchema::CoercionWrapper::RACK_PARAMS.wrap(build_rschema)
+      schema.validate(input).valid?
+    end
   end
 
   x.report("ActiveModel #{ActiveModel::VERSION::STRING}") do
