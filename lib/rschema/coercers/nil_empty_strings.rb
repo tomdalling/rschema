@@ -9,11 +9,15 @@ module Coercers
     end
 
     def call(value)
-      if value.is_a?(String) && value.empty?
+      if "" == value
         Result.success(nil)
       else
         Result.success(value)
       end
+    end
+
+    def will_affect?(value)
+      "" == value
     end
   end
 

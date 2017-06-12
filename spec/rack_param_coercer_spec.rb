@@ -210,6 +210,10 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
       def self.call(value)
         RSchema::Result.success(value + 1)
       end
+
+      def self.will_affect?(value)
+        true
+      end
     end
 
     let(:wrapper) do

@@ -12,6 +12,10 @@ module Coercers
       flt = Float(value) rescue nil
       flt ? Result.success(flt) : Result.failure
     end
+
+    def will_affect?(value)
+      not value.is_a?(Float)
+    end
   end
 
 end

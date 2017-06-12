@@ -18,17 +18,29 @@ module FixedHash
       Result.success(remove_extraneous_elements(value))
     end
 
+    def will_affect?(value)
+      keys_to_remove(value).any?
+    end
+
     private
 
       def remove_extraneous_elements(hash)
-        keys_to_remove = hash.keys - valid_keys
+        extra_keys = keys_to_remove(hash)
 
-        if keys_to_remove.any?
+        if extra_keys.any?
           hash.dup.tap do |stripped_hash|
-            keys_to_remove.each { |k| stripped_hash.delete(k) }
+            extra_keys.each { |k| stripped_hash.delete(k) }
           end
         else
           hash
+        end
+      end
+
+      def keys_to_remove(value)
+        if value.is_a?(Hash)
+          value.keys - valid_keys
+        else
+          []
         end
       end
 

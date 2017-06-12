@@ -26,15 +26,27 @@ module FixedHash
       Result.success(default_arrays_to_empty(value))
     end
 
+    def will_affect?(value)
+      keys_to_default(value).any?
+    end
+
     private
       def default_arrays_to_empty(hash)
-        missing_keys = keys_for_array_defaulting - hash.keys
+        missing_keys = keys_to_default(hash)
 
         if missing_keys.any?
           defaults = missing_keys.map{ |k| [k, []] }.to_h
           hash.merge(defaults)
         else
           hash # no coercion necessary
+        end
+      end
+
+      def keys_to_default(value)
+        if value.is_a?(Hash)
+          keys_for_array_defaulting - value.keys
+        else
+          []
         end
       end
 

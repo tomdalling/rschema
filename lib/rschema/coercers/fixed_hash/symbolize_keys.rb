@@ -20,6 +20,10 @@ module FixedHash
       Result.success(symbolize_keys(value))
     end
 
+    def will_affect?(value)
+      keys_to_symbolize(hash).any?
+    end
+
     private
 
       def symbolize_keys(hash)
@@ -33,9 +37,13 @@ module FixedHash
         end
       end
 
-      def keys_to_symbolize(hash)
-        non_string_keys = Set.new(hash.keys) - string_keys
-        non_string_keys.intersection(symbol_keys_as_strings)
+      def keys_to_symbolize(value)
+        if value.is_a?(Hash)
+          non_string_keys = Set.new(value.keys) - string_keys
+          non_string_keys.intersection(symbol_keys_as_strings)
+        else
+          []
+        end
       end
 
       def symbol_keys_as_strings

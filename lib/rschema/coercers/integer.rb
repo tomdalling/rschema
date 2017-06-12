@@ -12,6 +12,10 @@ module Coercers
       int = Integer(value) rescue nil
       int ? Result.success(int) : Result.failure
     end
+
+    def will_affect?(value)
+      not value.is_a?(Integer)
+    end
   end
 
 end

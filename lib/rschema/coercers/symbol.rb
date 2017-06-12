@@ -15,6 +15,10 @@ module Coercers
       else Result.failure
       end
     end
+
+    def will_affect?(value)
+      not value.is_a?(Symbol)
+    end
   end
 
 end

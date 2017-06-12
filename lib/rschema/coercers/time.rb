@@ -19,6 +19,10 @@ module Coercers
         Result.failure
       end
     end
+
+    def will_affect?(value)
+      not value.is_a?(Time)
+    end
   end
 
 end

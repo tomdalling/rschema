@@ -18,6 +18,11 @@ class Coercer
   end
 
   def call(value, options)
+    unless coercer.will_affect?(value)
+      # short-circuit the coercer
+      return @subschema.call(value, options)
+    end
+
     result = coercer.call(value)
     if result.valid?
       @subschema.call(result.value, options)

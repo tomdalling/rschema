@@ -24,6 +24,10 @@ module Coercers
       else Result.failure
       end
     end
+
+    def will_affect?(value)
+      true != value && false != value
+    end
   end
 
 end

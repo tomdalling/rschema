@@ -25,15 +25,27 @@ module FixedHash
       Result.success(default_bools_to_false(value))
     end
 
+    def will_affect?(value)
+      keys_to_default(value).any?
+    end
+
     private
       def default_bools_to_false(hash)
-        missing_keys = keys_for_bool_defaulting - hash.keys
+        missing_keys = keys_to_default(hash)
 
         if missing_keys.any?
           defaults = missing_keys.map{ |k| [k, false] }.to_h
           hash.merge(defaults)
         else
           hash # no coercion necessary
+        end
+      end
+
+      def keys_to_default(value)
+        if value.is_a?(Hash)
+          keys_for_bool_defaulting - value.keys
+        else
+          []
         end
       end
 

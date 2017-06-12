@@ -21,6 +21,10 @@ module Coercers
       result
     end
 
+    def will_affect?(value)
+      subcoercers.any? { |sc| sc.will_affect?(value) }
+    end
+
     class Builder
       attr_reader :subbuilders
 

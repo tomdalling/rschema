@@ -10,4 +10,8 @@ class CoercerStub
       RSchema::Result.failure
     end
   end
+
+  def will_affect?(value)
+    true
+  end
 end
