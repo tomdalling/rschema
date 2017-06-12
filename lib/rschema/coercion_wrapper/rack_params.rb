@@ -1,3 +1,5 @@
+require 'date'
+
 module RSchema
 class CoercionWrapper
 
