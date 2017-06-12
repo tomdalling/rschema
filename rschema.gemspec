@@ -28,4 +28,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pry'
   s.add_development_dependency 'byebug'
   s.add_development_dependency 'yard'
+
+  # for benchmarking
+  s.add_development_dependency 'benchmark-ips'
+  s.add_development_dependency 'activemodel'
+  s.add_development_dependency 'dry-validation'
 end
