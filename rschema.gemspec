@@ -32,5 +32,6 @@ Gem::Specification.new do |s|
   # for benchmarking
   s.add_development_dependency 'benchmark-ips'
   s.add_development_dependency 'activemodel'
+  s.add_development_dependency 'actionpack'
   s.add_development_dependency 'dry-validation'
 end

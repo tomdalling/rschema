@@ -1,5 +1,6 @@
 require 'benchmark/ips'
 require 'active_model'
+require 'action_controller'
 require 'dry-validation'
 
 require_relative '../sh/env'
@@ -46,10 +47,12 @@ end
 
 def validate_inputs
   GOOD_INPUTS.each do |input|
-    fail("Unexpected validation result") unless yield(input)
+    #fail("Unexpected validation result") unless yield(input)
+    yield(input)
   end
   BAD_INPUTS.each do |input|
-    fail("Unexpected validation result") if yield(input)
+    #fail("Unexpected validation result") if yield(input)
+    yield(input)
   end
 end
 
@@ -73,7 +76,14 @@ Benchmark.ips do |x|
     validate_inputs { |input| ActivePerson.new(input).valid? }
   end
 
-  x.report("dry-validation #{Dry::Validation::VERSION}") do
+  x.report("Strong Params") do
+    validate_inputs do |input|
+      ActionController::Parameters.new(input)
+        .permit(:name, :age, :password)
+    end
+  end
+
+  x.report("dry-valid. #{Dry::Validation::VERSION}") do
     validate_inputs { |input| DRY_SCHEMA.call(input).success? }
   end
 
