@@ -83,6 +83,12 @@ Benchmark.ips do |x|
     end
   end
 
+  x.report("Strong Params (built)") do
+    validate_inputs do |input|
+      ActionController::Parameters.new(input)
+    end
+  end
+
   x.report("dry-valid. #{Dry::Validation::VERSION}") do
     validate_inputs { |input| DRY_SCHEMA.call(input).success? }
   end
