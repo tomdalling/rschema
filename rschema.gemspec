@@ -22,16 +22,18 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'docile', '~> 1.1'
 
-  s.add_development_dependency 'rspec', '~> 3.0'
   s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'gem-release', '~> 0.7'
-  s.add_development_dependency 'pry'
-  s.add_development_dependency 'byebug'
   s.add_development_dependency 'yard'
+
+  # for testing
+  s.add_development_dependency 'rspec', '~> 3.5'
+  s.add_development_dependency 'rails', '~> 5.1'
+  s.add_development_dependency 'rack-test', '~> 0.6.3'
+  s.add_development_dependency 'byebug'
+  s.add_development_dependency 'pry'
 
   # for benchmarking
   s.add_development_dependency 'benchmark-ips'
-  s.add_development_dependency 'activemodel'
-  s.add_development_dependency 'actionpack'
   s.add_development_dependency 'dry-validation'
 end
