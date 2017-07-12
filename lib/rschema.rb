@@ -46,6 +46,10 @@ module RSchema
   #   end
   #
   def self.dsl_eval(dsl = nil, &block)
+    if block.nil?
+      raise ArgumentError, "Must provide a block for the RSchema DSL"
+    end
+
     Docile::Execution.exec_in_proxy_context(
       dsl || default_dsl,
       Docile::FallbackContextProxy,
