@@ -16,7 +16,7 @@ module RSchema
         @instance ||= new
       end
 
-      def call(value, _)
+      def call(value, _options)
         if value.equal?(true) || value.equal?(false)
           Result.success(value)
         else
@@ -24,7 +24,7 @@ module RSchema
         end
       end
 
-      def with_wrapped_subschemas(_)
+      def with_wrapped_subschemas(_wrapper)
         self
       end
 

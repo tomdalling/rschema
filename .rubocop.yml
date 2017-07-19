@@ -1,2 +1,7 @@
+AllCops:
+  Exclude:
+    - 'spec/**/*_spec.rb'
+    - 'sh/*'
+
 Style/TrailingCommaInArguments:
     EnforcedStyleForMultiline: consistent_comma

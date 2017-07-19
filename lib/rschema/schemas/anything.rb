@@ -16,11 +16,11 @@ module RSchema
         @instance ||= new
       end
 
-      def call(value, _)
+      def call(value, _options)
         Result.success(value)
       end
 
-      def with_wrapped_subschemas(_)
+      def with_wrapped_subschemas(_wrapper)
         self
       end
     end

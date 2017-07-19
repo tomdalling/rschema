@@ -1,5 +1,6 @@
-require 'docile'
+# frozen_string_literal: true
 
+require 'docile'
 require 'rschema/options'
 require 'rschema/error'
 require 'rschema/result'
@@ -12,7 +13,6 @@ require 'rschema/coercion_wrapper'
 # Schema-based validation and coercion
 #
 module RSchema
-
   #
   # Creates a schema object using a DSL
   #
@@ -47,7 +47,7 @@ module RSchema
   #
   def self.dsl_eval(dsl = nil, &block)
     if block.nil?
-      raise ArgumentError, "Must provide a block for the RSchema DSL"
+      raise ArgumentError, 'Must provide a block for the RSchema DSL'
     end
 
     Docile::Execution.exec_in_proxy_context(
@@ -67,7 +67,8 @@ module RSchema
   #     end
   #
   # @yield (see .dsl_eval)
-  # @yieldreturn The attributes of the hash schema (the argument to {DSL#fixed_hash}).
+  # @yieldreturn The attributes of the hash schema
+  #   (the argument to {DSL#fixed_hash}).
   # @return [Schemas::Convenience] A {Schemas::FixedHash} schema wrapped in a
   #   {Schemas::Convenience}.
   #
@@ -79,7 +80,7 @@ module RSchema
   #
   def self.define_hash(&block)
     Schemas::Convenience.wrap(
-      default_dsl.fixed_hash(dsl_eval(&block))
+      default_dsl.fixed_hash(dsl_eval(&block)),
     )
   end
 
@@ -107,7 +108,7 @@ module RSchema
   #
   def self.define_predicate(name = nil, &block)
     Schemas::Convenience.wrap(
-      default_dsl.predicate(name, &block)
+      default_dsl.predicate(name, &block),
     )
   end
 
@@ -131,6 +132,9 @@ module RSchema
     include RSchema::DSL
   end
 
+  #
+  # Indicates that validation has failed
+  #
   class Invalid < StandardError
     attr_reader :validation_error
 
