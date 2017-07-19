@@ -1,36 +1,42 @@
+# frozen_string_literal: true
+
 module RSchema
-module Schemas
+  module Schemas
+    #
+    # A schema that matches only `true` and `false`
+    #
+    # @example The boolean schema
+    #     schema = RSchema.define { boolean }
+    #     schema.valid?(true)  #=> true
+    #     schema.valid?(false) #=> true
+    #     schema.valid?(nil)   #=> false
+    #
+    class Boolean
+      def self.instance
+        @instance ||= new
+      end
 
-#
-# A schema that matches only `true` and `false`
-#
-# @example The boolean schema
-#     schema = RSchema.define { boolean }
-#     schema.valid?(true)  #=> true
-#     schema.valid?(false) #=> true
-#     schema.valid?(nil)   #=> false
-#
-class Boolean
-  def self.instance
-    @instance ||= new
-  end
+      def call(value, _)
+        if value.equal?(true) || value.equal?(false)
+          Result.success(value)
+        else
+          Result.failure(error(value))
+        end
+      end
 
-  def call(value, options)
-    if value.equal?(true) || value.equal?(false)
-      Result.success(value)
-    else
-      Result.failure(Error.new(
-        schema: self,
-        value: value,
-        symbolic_name: :not_a_boolean,
-      ))
+      def with_wrapped_subschemas(_)
+        self
+      end
+
+      private
+
+      def error(value)
+        Error.new(
+          schema: self,
+          value: value,
+          symbolic_name: :not_a_boolean,
+        )
+      end
     end
   end
-
-  def with_wrapped_subschemas(wrapper)
-    self
-  end
-
-end
-end
 end

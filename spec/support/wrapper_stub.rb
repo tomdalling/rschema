@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class WrapperStub
-  def self.wrap(schema, recursive=false)
+  def self.wrap(schema, recursive = false)
     new(recursive ? schema.with_wrapped_subschemas(self) : schema)
   end
 

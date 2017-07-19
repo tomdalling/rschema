@@ -1,29 +1,28 @@
+# frozen_string_literal: true
+
 module RSchema
-module Schemas
+  module Schemas
+    #
+    # A schema that matches literally any value
+    #
+    # @example The anything schema
+    #   schema = RSchema.define { anything }
+    #   schema.valid?(nil) #=> true
+    #   schema.valid?(6.2) #=> true
+    #   schema.valid?({ hello: Time.now }) #=> true
+    #
+    class Anything
+      def self.instance
+        @instance ||= new
+      end
 
-#
-# A schema that matches literally any value
-#
-# @example The anything schema
-#   schema = RSchema.define { anything }
-#   schema.valid?(nil) #=> true
-#   schema.valid?(6.2) #=> true
-#   schema.valid?({ hello: Time.now }) #=> true
-#
-class Anything
+      def call(value, _)
+        Result.success(value)
+      end
 
-  def self.instance
-    @instance ||= new
+      def with_wrapped_subschemas(_)
+        self
+      end
+    end
   end
-
-  def call(value, options)
-    Result.success(value)
-  end
-
-  def with_wrapped_subschemas(wrapper)
-    self
-  end
-
-end
-end
 end

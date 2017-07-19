@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'gem-release', '~> 0.7'
   s.add_development_dependency 'yard'
+  s.add_development_dependency 'rubocop', '~> 0.49.1'
 
   # for testing
   s.add_development_dependency 'rspec', '~> 3.5'
