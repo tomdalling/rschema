@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSchema
   #
   # A mixin containing all the standard RSchema DSL methods.
@@ -45,15 +47,15 @@ module RSchema
     # Creates a {Schemas::VariableLengthArray} if given one argument, otherwise
     # creates a {Schemas::FixedLengthArray}
     #
-    # @param subschemas [Array<schema>] one or more schema objects representing elements
-    #   in the array.
+    # @param subschemas [Array<schema>] one or more schema objects representing
+    #   elements in the array.
     # @return [Schemas::VariableLengthArray, Schemas::FixedLengthArray]
     #
     # @example (see Schemas::VariableLengthArray)
     # @example (see Schemas::FixedLengthArray)
     #
     def array(*subschemas)
-      subschemas = subschemas.map{ |ss| inconvenience(ss) }
+      subschemas = subschemas.map { |ss| inconvenience(ss) }
 
       if subschemas.count == 1
         Schemas::VariableLengthArray.new(subschemas.first)
@@ -87,7 +89,7 @@ module RSchema
     def fixed_hash(attribute_hash)
       Schemas::FixedHash.new(attributes(attribute_hash))
     end
-    alias_method :hash, :fixed_hash
+    alias hash fixed_hash
 
     #
     # Creates a {Schemas::Set} schema
@@ -143,8 +145,9 @@ module RSchema
     end
 
     #
-    # Turns an "attribute hash" into an array of {Schemas::FixedHash::Attribute}.
-    # Primarily for use with {Schemas::FixedHash#merge}.
+    # Turns an "attribute hash" into an array of
+    # {Schemas::FixedHash::Attribute}. Primarily for use with
+    # {Schemas::FixedHash#merge}.
     #
     # @param attribute_hash [Hash<key, schema>] A hash of keys to subschemas.
     #   The values of this hash must be schema objects.
@@ -161,7 +164,9 @@ module RSchema
       attribute_hash.map do |dsl_key, value_schema|
         optional = dsl_key.is_a?(OptionalWrapper)
         key = optional ? dsl_key.key : dsl_key
-        Schemas::FixedHash::Attribute.new(key, inconvenience(value_schema), optional)
+        Schemas::FixedHash::Attribute.new(
+          key, inconvenience(value_schema), optional,
+        )
       end
     end
 
@@ -190,9 +195,11 @@ module RSchema
     #
     # @example (see Schemas::Enum)
     #
-    def enum(valid_values, subschema=nil)
+    def enum(valid_values, subschema = nil)
       subschema = inconvenience(subschema) if subschema
-      Schemas::Enum.new(valid_values, subschema || type(valid_values.first.class))
+      Schemas::Enum.new(
+        valid_values, subschema || type(valid_values.first.class),
+      )
     end
 
     #
@@ -205,7 +212,7 @@ module RSchema
     # @example (see Schemas::Sum)
     #
     def either(*subschemas)
-      subschemas = subschemas.map{ |ss| inconvenience(ss) }
+      subschemas = subschemas.map { |ss| inconvenience(ss) }
       Schemas::Sum.new(subschemas)
     end
 
@@ -239,7 +246,7 @@ module RSchema
     # @example (see Schemas::Pipeline)
     #
     def pipeline(*subschemas)
-      subschemas = subschemas.map{ |ss| inconvenience(ss) }
+      subschemas = subschemas.map { |ss| inconvenience(ss) }
       Schemas::Pipeline.new(subschemas)
     end
 
@@ -331,9 +338,9 @@ module RSchema
     end
 
     # @!visibility private
-    def respond_to?(sym, include_all=false)
+    def respond_to_missing?(sym, include_all = false)
       # check if method starts with an underscore followed by a capital
-      super || !!sym.to_s.match(/\A_[A-Z]/)
+      super || sym.to_s.match(/\A_[A-Z]/)
     end
   end
 end

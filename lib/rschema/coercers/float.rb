@@ -1,22 +1,29 @@
+# frozen_string_literal: true
+
 module RSchema
-module Coercers
+  module Coercers
+    #
+    # Coerces values into `Float` objects using `Kernel#Float`
+    #
+    module Float
+      extend self
 
-  module Float
-    extend self
+      def build(_schema)
+        self
+      end
 
-    def build(schema)
-      self
-    end
+      def call(value)
+        flt = begin
+                Float(value)
+              rescue
+                nil
+              end
+        flt ? Result.success(flt) : Result.failure
+      end
 
-    def call(value)
-      flt = Float(value) rescue nil
-      flt ? Result.success(flt) : Result.failure
-    end
-
-    def will_affect?(value)
-      not value.is_a?(Float)
+      def will_affect?(value)
+        !value.is_a?(Float)
+      end
     end
   end
-
-end
 end

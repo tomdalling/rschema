@@ -1,22 +1,28 @@
+# frozen_string_literal: true
+
 module RSchema
-module Coercers
+  module Coercers
+    #
+    # Coerces values to `Integer`s using `Kernel#Integer`
+    module Integer
+      extend self
 
-  module Integer
-    extend self
+      def build(_schema)
+        self
+      end
 
-    def build(schema)
-      self
-    end
+      def call(value)
+        int = begin
+                Integer(value)
+              rescue
+                nil
+              end
+        int ? Result.success(int) : Result.failure
+      end
 
-    def call(value)
-      int = Integer(value) rescue nil
-      int ? Result.success(int) : Result.failure
-    end
-
-    def will_affect?(value)
-      not value.is_a?(Integer)
+      def will_affect?(value)
+        !value.is_a?(Integer)
+      end
     end
   end
-
-end
 end

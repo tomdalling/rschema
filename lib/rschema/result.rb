@@ -1,4 +1,9 @@
+# frozen_string_literal: true
+
 module RSchema
+  #
+  # The return value when calling a schema
+  #
   class Result
     def self.success(value = nil)
       if value.nil?
@@ -28,20 +33,15 @@ module RSchema
     end
 
     def invalid?
-      not valid?
+      !valid?
     end
 
     def value
-      if valid?
-        @value
-      else
-        raise InvalidError
-      end
+      raise InvalidError if invalid?
+      @value
     end
 
-    def error
-      @error
-    end
+    attr_reader :error
 
     class InvalidError < StandardError; end
 

@@ -1,7 +1,17 @@
 AllCops:
   Exclude:
-    - 'spec/**/*_spec.rb'
-    - 'sh/*'
+    - 'spec/**/*'
+    - 'sh/**/*'
+    - 'Gemfile'
+    - 'Rakefile'
+    - 'rschema.gemspec'
+    - 'benchmarks/**/*'
 
 Style/TrailingCommaInArguments:
     EnforcedStyleForMultiline: consistent_comma
+
+Style/ModuleFunction:
+    Enabled: false
+
+Style/RaiseArgs:
+    Enabled: false

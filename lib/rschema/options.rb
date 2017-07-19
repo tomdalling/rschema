@@ -1,4 +1,9 @@
+# frozen_string_literal: true
+
 module RSchema
+  #
+  # Settings, passed in as an argument when calling schemas
+  #
   class Options
     def self.default
       @default ||= new

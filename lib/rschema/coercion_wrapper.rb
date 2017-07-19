@@ -1,4 +1,9 @@
+# frozen_string_literal: true
+
 module RSchema
+  #
+  # Builds coercing schemas, by wrapping coercers around an existing schema.
+  #
   class CoercionWrapper
     def initialize(&initializer)
       @builder_by_schema = {}
@@ -21,36 +26,30 @@ module RSchema
 
     private
 
-      def builder_for_schema(schema)
-        @builder_by_schema.fetch(schema.class) do
-          if schema.is_a?(Schemas::Type)
-            builder_for_type(schema.type)
-          else
-            nil
-          end
-        end
+    def builder_for_schema(schema)
+      @builder_by_schema.fetch(schema.class) do
+        builder_for_type(schema.type) if schema.is_a?(Schemas::Type)
+      end
+    end
+
+    def builder_for_type(type)
+      # polymorphic lookup
+      type.ancestors.each do |ancestor|
+        builder = @builder_by_type[ancestor]
+        return builder if builder
       end
 
-      def builder_for_type(type)
-        # polymorphic lookup
-        type.ancestors.each do |ancestor|
-          builder = @builder_by_type[ancestor]
-          return builder if builder
-        end
+      nil
+    end
 
-        nil
+    def wrap_with_coercer(schema)
+      builder = builder_for_schema(schema)
+      if builder
+        coercer = builder.build(schema)
+        Schemas::Coercer.new(coercer, schema)
+      else
+        schema
       end
-
-      def wrap_with_coercer(schema)
-        builder = builder_for_schema(schema)
-        if builder
-          coercer = builder.build(schema)
-          Schemas::Coercer.new(coercer, schema)
-        else
-          schema
-        end
-      end
-
+    end
   end
 end
-

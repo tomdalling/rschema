@@ -1,34 +1,44 @@
+# frozen_string_literal: true
+
 module RSchema
-module Coercers
+  module Coercers
+    #
+    # Coerces certain strings, and nil, to true or false
+    #
+    module Boolean
+      extend self
 
-  module Boolean
-    extend self
+      TRUTHY_STRINGS = %w[on 1 true yes].freeze
+      FALSEY_STRINGS = %w[off 0 false no].freeze
 
-    TRUTHY_STRINGS = ['on', '1', 'true', 'yes']
-    FALSEY_STRINGS = ['off', '0', 'false', 'no']
+      def build(_schema)
+        self
+      end
 
-    def build(schema)
-      self
-    end
-
-    def call(value)
-      case value
-      when true, false then Result.success(value)
-      when nil then Result.success(false)
-      when String
-        case
-        when TRUTHY_STRINGS.include?(value.downcase) then Result.success(true)
-        when FALSEY_STRINGS.include?(value.downcase) then Result.success(false)
+      def call(value)
+        case value
+        when true, false then Result.success(value)
+        when nil then Result.success(false)
+        when String then coerce_string(value)
         else Result.failure
         end
-      else Result.failure
+      end
+
+      def will_affect?(value)
+        value != true && value != false
+      end
+
+      private
+
+      def coerce_string(str)
+        if TRUTHY_STRINGS.include?(str.downcase)
+          Result.success(true)
+        elsif FALSEY_STRINGS.include?(str.downcase)
+          Result.success(false)
+        else
+          Result.failure
+        end
       end
     end
-
-    def will_affect?(value)
-      true != value && false != value
-    end
   end
-
-end
 end
