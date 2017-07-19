@@ -46,7 +46,7 @@ RSpec.describe RSchema::Schemas::Set do
 
     it 'respects the `fail_fast` option' do
       options = RSchema::Options.new(fail_fast: true)
-      input = Set.new([1, 2, 3])
+      input = Set.new([:valid, 2, 3])
 
       result = validate(input, options)
 

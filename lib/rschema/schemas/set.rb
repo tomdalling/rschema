@@ -49,8 +49,8 @@ module RSchema
             validated_set << subresult.value
           else
             errors[subvalue] = subresult.error
+            break if options.fail_fast?
           end
-          break if options.fail_fast?
         end
 
         [validated_set, errors]
