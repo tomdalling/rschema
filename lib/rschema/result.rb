@@ -37,13 +37,11 @@ module RSchema
     end
 
     def value
-      raise InvalidError if invalid?
+      raise RSchema::Invalid.new(error) if invalid?
       @value
     end
 
     attr_reader :error
-
-    class InvalidError < StandardError; end
 
     # @!visibility private
     NIL_SUCCESS = new(true, nil, nil)
