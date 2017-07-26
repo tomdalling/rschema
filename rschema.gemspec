@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   GEM_DESC
 
   s.version = RSchema::VERSION
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 2.2.7'
   s.authors = ['Tom Dalling']
   s.email = ['tom' + '@' + 'tomdalling.com']
   s.require_paths = ['lib']
