@@ -4,7 +4,6 @@ rvm:
   - 2.3.4
   - 2.4.1
   - 2.2.7
-  - 2.1.10
 deploy:
   provider: rubygems
   on:
