@@ -5,6 +5,13 @@ RSpec.describe RSchema::Rails do
   include Rack::Test::Methods
 
   let(:app){ Rails5Host::Application }
+  let(:controller) { Rails5Host::TestController }
+
+  after do
+    if controller.instance_variable_defined?(:@__rschema_options)
+      controller.instance_variable_get(:@__rschema_options).clear
+    end
+  end
 
   def request(method, *args)
     send(method, *args)
@@ -24,6 +31,37 @@ RSpec.describe RSchema::Rails do
     expect {
       request(:post, '/raising_schema', { 'thing' => 'hello' })
     }.to raise_error(RSchema::Rails::InvalidParams)
+  end
+
+  it 'exposes rschema_options at the class level' do
+    controller.rschema_options(thingy: 5)
+    expect(controller.rschema_options[:thingy]).to eq(5)
+  end
+
+  it 'allows rschema_options to be inherited from a superclass' do
+    parent_class = Rails5Host::TestController
+    parent_class.rschema_options(override_me: 5, inherit_me: 'jewelery')
+
+    child_class = Class.new(Rails5Host::TestController)
+    child_class.rschema_options(override_me: 77)
+
+    expect(parent_class.rschema_options[:override_me]).to eq(5)
+    expect(parent_class.rschema_options[:inherit_me]).to eq('jewelery')
+
+    expect(child_class.rschema_options[:override_me]).to eq(77)
+    expect(child_class.rschema_options[:inherit_me]).to eq('jewelery')
+  end
+
+  it 'allows the coercion wrapper to be configured' do
+    coercion_wrapper = double
+    expect(coercion_wrapper).to receive(:wrap)
+      .with(be_a(RSchema::Schemas::Convenience))
+      .and_return(555)
+
+    controller.rschema_options(coercion_wrapper: coercion_wrapper)
+    result = controller.param_schema {{ whatever: _Integer }}
+
+    expect(result).to eq(555)
   end
 end
 

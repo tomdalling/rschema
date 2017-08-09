@@ -38,9 +38,33 @@ module RSchema
       # Class methods added to ActionController classes
       #
       module ClassMethods
+        DEFAULT_OPTIONS = {
+          coercion_wrapper: RSchema::CoercionWrapper::RACK_PARAMS
+        }.freeze
+
         def param_schema(&schema_block)
           schema = RSchema.define_hash(&schema_block)
-          RSchema::CoercionWrapper::RACK_PARAMS.wrap(schema)
+          coercer = rschema_options.fetch(:coercion_wrapper)
+          coercer ? coercer.wrap(schema) : schema
+        end
+
+        def rschema_options(options = nil)
+          if options.nil?
+            __rschema_get_options
+          else
+            @__rschema_options ||= {}
+            @__rschema_options.merge!(options)
+          end
+        end
+
+        def __rschema_get_options
+          self.ancestors.reverse.reduce(DEFAULT_OPTIONS) do |options, klass|
+            if klass.instance_variable_defined?(:@__rschema_options)
+              options.merge(klass.instance_variable_get(:@__rschema_options))
+            else
+              options
+            end
+          end
         end
       end
     end
