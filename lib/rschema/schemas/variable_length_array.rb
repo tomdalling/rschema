@@ -21,12 +21,7 @@ module RSchema
       def call(value, options)
         return type_failure(value) unless value.is_a?(Array)
 
-        validated_values, errors = validate_elements(value, options)
-        if errors.empty?
-          Result.success(validated_values)
-        else
-          Result.failure(errors)
-        end
+        accumulate_elements(value, options).to_result
       end
 
       def with_wrapped_subschemas(wrapper)
@@ -45,21 +40,42 @@ module RSchema
         )
       end
 
-      def validate_elements(array, options)
-        errors = {}
-        validated_values = []
+      def accumulate_elements(array, options)
+        Accumulation.new.tap do |accumulator|
+          array.each_with_index do |subvalue, idx|
+            result = @element_schema.call(subvalue, options)
+            accumulator.merge!(result, idx)
+            break if options.fail_fast? && accumulator.failed?
+          end
+        end
+      end
 
-        array.each_with_index do |subvalue, idx|
-          result = @element_schema.call(subvalue, options)
+      # @!visibility private
+      class Accumulation
+        def initialize
+          @errors = {}
+          @values = []
+        end
+
+        def merge!(result, idx)
           if result.valid?
-            validated_values[idx] = result.value
+            @values[idx] = result.value
           else
-            errors[idx] = result.error
-            break if options.fail_fast?
+            @errors[idx] = result.error
           end
         end
 
-        [validated_values, errors]
+        def failed?
+          !@errors.empty?
+        end
+
+        def to_result
+          if @errors.empty?
+            Result.success(@values)
+          else
+            Result.failure(@errors)
+          end
+        end
       end
     end
   end

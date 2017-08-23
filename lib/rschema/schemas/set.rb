@@ -23,13 +23,7 @@ module RSchema
       def call(value, options)
         return not_a_set_result(value) unless value.is_a?(::Set)
 
-        validated_set, errors = apply_subschema(value, options)
-
-        if errors.empty?
-          Result.success(validated_set)
-        else
-          Result.failure(errors)
-        end
+        accumulate_elements(value, options).to_result
       end
 
       def with_wrapped_subschemas(wrapper)
@@ -39,21 +33,14 @@ module RSchema
 
       private
 
-      def apply_subschema(set, options)
-        validated_set = ::Set.new
-        errors = {}
-
-        set.each do |subvalue|
-          subresult = subschema.call(subvalue, options)
-          if subresult.valid?
-            validated_set << subresult.value
-          else
-            errors[subvalue] = subresult.error
-            break if options.fail_fast?
+      def accumulate_elements(set, options)
+        Accumulation.new.tap do |accumulation|
+          set.each do |subvalue|
+            subresult = subschema.call(subvalue, options)
+            accumulation.merge!(subresult, subvalue)
+            break if options.fail_fast? && accumulation.failed?
           end
         end
-
-        [validated_set, errors]
       end
 
       def not_a_set_result(value)
@@ -64,6 +51,34 @@ module RSchema
             value: value,
           ),
         )
+      end
+
+      # @!visibility private
+      class Accumulation
+        def initialize
+          @set = ::Set.new
+          @errors = {}
+        end
+
+        def merge!(result, element)
+          if result.valid?
+            @set << result.value
+          else
+            @errors[element] = result.error
+          end
+        end
+
+        def failed?
+          !@errors.empty?
+        end
+
+        def to_result
+          if failed?
+            Result.failure(@errors)
+          else
+            Result.success(@set)
+          end
+        end
       end
     end
   end

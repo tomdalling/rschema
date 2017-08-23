@@ -15,3 +15,6 @@ Style/ModuleFunction:
 
 Style/RaiseArgs:
     Enabled: false
+
+Style/GuardClause:
+    Enabled: false

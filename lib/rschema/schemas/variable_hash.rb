@@ -22,13 +22,7 @@ module RSchema
       def call(value, options)
         return not_a_hash_result(value) unless value.is_a?(Hash)
 
-        validated_hash, key_errors, value_errors = apply_subschemas(value, options)
-
-        if key_errors.empty? && value_errors.empty?
-          Result.success(validated_hash)
-        else
-          Result.failure(keys: key_errors, values: value_errors)
-        end
+        accumulate_elements(value, options).to_result
       end
 
       def with_wrapped_subschemas(wrapper)
@@ -50,30 +44,49 @@ module RSchema
         )
       end
 
-      def apply_subschemas(value, options)
-        validated_hash = {}
-        key_errors = {}
-        value_errors = {}
+      def accumulate_elements(value, options)
+        Accumulation.new.tap do |accumulation|
+          value.each do |key, subvalue|
+            key_result = key_schema.call(key, options)
+            subvalue_result = value_schema.call(subvalue, options)
+            accumulation.merge!(key, key_result, subvalue_result)
+            break if options.fail_fast? && accumulation.failed?
+          end
+        end
+      end
 
-        value.each do |key, subvalue|
-          key_result = key_schema.call(key, options)
+      # @!visibility private
+      class Accumulation
+        def initialize
+          @key_errors = {}
+          @value_errors = {}
+          @validated_hash = {}
+          @failed = false
+        end
+
+        def merge!(key, key_result, value_result)
           if key_result.invalid?
-            key_errors[key] = key_result.error
-            break if options.fail_fast?
-          end
-
-          subvalue_result = value_schema.call(subvalue, options)
-          if subvalue_result.invalid?
-            value_errors[key] = subvalue_result.error
-            break if options.fail_fast?
-          end
-
-          if key_result.valid? && subvalue_result.valid?
-            validated_hash[key_result.value] = subvalue_result.value
+            @key_errors[key] = key_result.error
+            @failed = true
+          elsif value_result.invalid?
+            @value_errors[key] = value_result.error
+            @failed = true
+          else
+            @validated_hash[key_result.value] = value_result.value
           end
         end
 
-        [validated_hash, key_errors, value_errors]
+        def failed?
+          @failed
+        end
+
+        def to_result
+          if failed?
+            Result.failure(keys: @key_errors, values: @value_errors)
+          else
+            Result.success(@validated_hash)
+          end
+        end
       end
     end
   end

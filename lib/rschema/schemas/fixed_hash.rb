@@ -27,12 +27,7 @@ module RSchema
         return missing_attrs_result(value) if missing_keys(value).any?
         return extraneous_attrs_result(value) if extraneous_keys(value).any?
 
-        subresults = attr_subresults(value, options)
-        if subresults.values.any?(&:invalid?)
-          Result.failure(failure_error(subresults))
-        else
-          Result.success(success_value(subresults))
-        end
+        accumulate_elements(value, options).to_result
       end
 
       def with_wrapped_subschemas(wrapper)
@@ -147,30 +142,15 @@ module RSchema
         )
       end
 
-      def attr_subresults(value, options)
-        subresults_by_key = {}
-
-        @attributes.map do |attr|
-          next unless value.key?(attr.key)
-          subresult = attr.value_schema.call(value[attr.key], options)
-          subresults_by_key[attr.key] = subresult
-          break if subresult.invalid? && options.fail_fast?
+      def accumulate_elements(value, options)
+        Accumulation.new.tap do |accumulation|
+          @attributes.each do |attr|
+            next unless value.key?(attr.key)
+            subresult = attr.value_schema.call(value[attr.key], options)
+            accumulation.merge!(attr.key, subresult)
+            break if options.fail_fast? && accumulation.failed?
+          end
         end
-
-        subresults_by_key
-      end
-
-      def failure_error(subresults)
-        subresults
-          .select { |_, result| result.invalid? }
-          .map { |key, result| [key, result.error] }
-          .to_h
-      end
-
-      def success_value(subresults)
-        subresults
-          .map { |key, attr_result| [key, attr_result.value] }
-          .to_h
       end
 
       def not_a_hash_result(value)
@@ -181,6 +161,46 @@ module RSchema
             symbolic_name: :not_a_hash,
           ),
         )
+      end
+
+      # @!visibility private
+      class Accumulation
+        def initialize
+          @subresults = {}
+          @failed = false
+        end
+
+        def merge!(key, result)
+          @subresults[key] = result
+          @failed = true if result.invalid?
+        end
+
+        def failed?
+          @failed
+        end
+
+        def to_result
+          if failed?
+            Result.failure(failure_error)
+          else
+            Result.success(success_value)
+          end
+        end
+
+        private
+
+        def failure_error
+          @subresults
+            .select { |_, result| result.invalid? }
+            .map { |key, result| [key, result.error] }
+            .to_h
+        end
+
+        def success_value
+          @subresults
+            .map { |key, attr_result| [key, attr_result.value] }
+            .to_h
+        end
       end
     end
   end

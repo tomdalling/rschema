@@ -24,12 +24,7 @@ module RSchema
         return type_failure(value) unless value.is_a?(Array)
         return size_failure(value) unless value.size == @subschemas.size
 
-        validated_array, error = apply_subschemas(value, options)
-        if error.empty?
-          Result.success(validated_array)
-        else
-          Result.failure(error)
-        end
+        accumulate_elements(value, options).to_result
       end
 
       def with_wrapped_subschemas(wrapper)
@@ -39,21 +34,14 @@ module RSchema
 
       private
 
-      def apply_subschemas(array, options)
-        validated_array = []
-        errors = {}
-
-        array.zip(@subschemas).each_with_index do |(subvalue, subschema), idx|
-          result = subschema.call(subvalue, options)
-          if result.valid?
-            validated_array << result.value
-          else
-            errors[idx] = result.error
-            break if options.fail_fast?
+      def accumulate_elements(array, options)
+        Accumulation.new.tap do |accumulation|
+          array.zip(@subschemas).each_with_index do |(subvalue, subschema), idx|
+            result = subschema.call(subvalue, options)
+            accumulation.merge!(result, idx)
+            break if options.fail_fast? && accumulation.failed?
           end
         end
-
-        [validated_array, errors]
       end
 
       def type_failure(value)
@@ -74,6 +62,34 @@ module RSchema
             value: value,
           ),
         )
+      end
+
+      # @!visibility private
+      class Accumulation
+        def initialize
+          @errors = {}
+          @values = []
+        end
+
+        def merge!(result, idx)
+          if result.valid?
+            @values[idx] = result.value
+          else
+            @errors[idx] = result.error
+          end
+        end
+
+        def failed?
+          !@errors.empty?
+        end
+
+        def to_result
+          if failed?
+            Result.failure(@errors)
+          else
+            Result.success(@values)
+          end
+        end
       end
     end
   end
