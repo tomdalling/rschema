@@ -1,7 +1,9 @@
 RSpec.describe RSchema::Schemas::VariableHash do
   subject { described_class.new(key_schema, value_schema) }
-  let(:key_schema) { SchemaStub.new { |x| x.is_a?(Symbol) } }
-  let(:value_schema) { SchemaStub.new }
+  let(:key_schema) do
+    SchemaStub.that_succeeds_where { |key| Symbol === key }
+  end
+  let(:value_schema) { SchemaStub.for_valid_values(:ok) }
 
   it_behaves_like 'a schema'
 
@@ -13,9 +15,9 @@ RSpec.describe RSchema::Schemas::VariableHash do
     end
 
     it 'allows hashes of arbirary size' do
-      result = validate({ cat: :valid, dog: :valid })
+      result = validate({ cat: :ok, dog: :ok })
       expect(result).to be_valid
-      expect(result.value).to eq({ cat: :valid, dog: :valid })
+      expect(result.value).to eq({ cat: :ok, dog: :ok })
     end
   end
 
@@ -31,10 +33,10 @@ RSpec.describe RSchema::Schemas::VariableHash do
     end
 
     specify 'due to invalid key' do
-      result = validate({ 5 => :valid })
+      result = validate({ 5 => :ok })
 
-      expect(result.error).to eq({
-        keys: { 5 => key_schema.error },
+      expect(result.error).to match({
+        keys: { 5 => key_schema.errors.last },
         values: {},
       })
     end
@@ -42,30 +44,30 @@ RSpec.describe RSchema::Schemas::VariableHash do
     it 'due to invalid value' do
       result = validate({ hello: :wrong })
 
-      expect(result.error).to eq({
+      expect(result.error).to match({
         keys: {},
-        values: { hello: value_schema.error },
+        values: { hello: value_schema.errors.last },
       })
     end
 
     it 'due to both invalid keys and invalid values' do
-      result = validate({ hello: :wrong, 5 => :valid })
+      result = validate({ hello: :wrong, 5 => :ok })
 
-      expect(result.error).to eq({
-        keys: { 5 => key_schema.error },
-        values: { hello: value_schema.error },
+      expect(result.error).to match({
+        keys: { 5 => key_schema.errors.last },
+        values: { hello: value_schema.errors.last },
       })
     end
 
     it 'respects the `fail_fast` option' do
       options = RSchema::Options.new(fail_fast: true)
-      input = { hello: :wrong, 5 => :valid }
+      input = { hello: :wrong, 5 => :ok }
 
       result = validate(input, options)
 
-      expect(result.error).to eq({
+      expect(result.error).to match({
         keys: {}, # this would contain errors without the `fail_fast` option
-        values: { hello: value_schema.error},
+        values: { hello: anything },
       })
     end
   end

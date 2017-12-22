@@ -1,6 +1,6 @@
 RSpec.describe RSchema::Schemas::Set do
   subject { described_class.new(subschema) }
-  let(:subschema) { SchemaStub.new { |value| value.is_a?(Symbol) } }
+  let(:subschema) { SchemaStub.that_succeeds_where { |value| Symbol === value } }
 
   it_behaves_like 'a schema'
 
@@ -40,7 +40,7 @@ RSpec.describe RSchema::Schemas::Set do
 
       expect(result).not_to be_valid
       expect(result.error).to eq({
-        5 => subschema.error,
+        5 => subschema.errors.last,
       })
     end
 

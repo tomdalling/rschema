@@ -1,7 +1,7 @@
 RSpec.describe RSchema::Schemas::Enum do
   subject { described_class.new([:a, :b, :c], subschema) }
   let(:subschema) do
-    SchemaStub.new { |value| value.is_a?(Symbol) }
+    SchemaStub.that_succeeds_where { |value| Symbol === value }
   end
 
   it_behaves_like 'a schema'
@@ -29,7 +29,7 @@ RSpec.describe RSchema::Schemas::Enum do
       result = validate('waka')
 
       expect(result).not_to be_valid
-      expect(result.error).to be(subschema.error)
+      expect(result.error).to be(subschema.errors.last)
     end
   end
 

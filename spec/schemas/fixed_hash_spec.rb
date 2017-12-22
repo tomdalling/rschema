@@ -1,9 +1,9 @@
 RSpec.describe RSchema::Schemas::FixedHash do
   subject { described_class.new([name_attr, age_attr]) }
   let(:name_attr) { described_class::Attribute.new(:name, name_schema, false) }
-  let(:name_schema) { SchemaStub.new{ |value| value.is_a?(String) } }
+  let(:name_schema) { SchemaStub.that_succeeds_where{ |value| String === value } }
   let(:age_attr) { described_class::Attribute.new(:age, age_schema, true) }
-  let(:age_schema) { SchemaStub.new{ |value| value.is_a?(Integer) && value.positive? } }
+  let(:age_schema) { SchemaStub.that_succeeds_where{ |value| Integer === value && value.positive? } }
 
   it_behaves_like 'a schema'
 
@@ -38,7 +38,7 @@ RSpec.describe RSchema::Schemas::FixedHash do
 
       expect(result).not_to be_valid
       expect(result.error).to have_key(:name)
-      expect(result.error[:name]).to be(name_schema.error)
+      expect(result.error[:name]).to be(name_schema.errors.last)
     end
 
     specify 'due to missing keys' do

@@ -1,7 +1,7 @@
 RSpec.describe RSchema::Schemas::FixedLengthArray do
   subject { described_class.new([first_subschema, last_subschema]) }
-  let(:first_subschema) { SchemaStub.new }
-  let(:last_subschema) { SchemaStub.new }
+  let(:first_subschema) { SchemaStub.for_valid_values(:valid) }
+  let(:last_subschema) { SchemaStub.for_valid_values(:valid) }
 
   it_behaves_like 'a schema'
 
@@ -40,8 +40,8 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
 
       expect(result).not_to be_valid
       expect(result.error).to eq({
-        0 => first_subschema.error,
-        1 => last_subschema.error,
+        0 => first_subschema.errors.last,
+        1 => last_subschema.errors.last,
       })
     end
 
@@ -50,7 +50,7 @@ RSpec.describe RSchema::Schemas::FixedLengthArray do
 
       result = validate([:wrong, :wrong_again], options)
 
-      expect(result.error).to eq({ 0 => first_subschema.error })
+      expect(result.error).to eq({ 0 => first_subschema.errors.last })
     end
   end
 

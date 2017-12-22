@@ -1,6 +1,6 @@
 RSpec.describe RSchema::Schemas::Maybe do
   subject { described_class.new(subschema) }
-  let(:subschema) { SchemaStub.new }
+  let(:subschema) { SchemaStub.for_valid_values(:valid) }
 
   it_behaves_like 'a schema'
 
@@ -18,7 +18,7 @@ RSpec.describe RSchema::Schemas::Maybe do
     result = validate(:wrong)
 
     expect(result).not_to be_valid
-    expect(result.error).to be(subschema.error)
+    expect(result.error).to be(subschema.errors.last)
   end
 
   specify '#with_wrapped_subschemas' do

@@ -1,7 +1,11 @@
 RSpec.describe RSchema::Schemas::Sum do
   subject { described_class.new([even_schema, positive_schema]) }
-  let(:even_schema) { SchemaStub.new(&:even?) }
-  let(:positive_schema) { SchemaStub.new(&:positive?) }
+  let(:even_schema) do
+    SchemaStub.that_succeeds_where { |value| Integer === value && value.even? }
+  end
+  let(:positive_schema) do
+    SchemaStub.that_succeeds_where { |value| Integer === value && value > 0 }
+  end
 
   it_behaves_like 'a schema'
 
@@ -16,8 +20,8 @@ RSpec.describe RSchema::Schemas::Sum do
 
     expect(result).not_to be_valid
     expect(result.error).to eq([
-      even_schema.error,
-      positive_schema.error,
+      even_schema.errors.last,
+      positive_schema.errors.last,
     ])
   end
 

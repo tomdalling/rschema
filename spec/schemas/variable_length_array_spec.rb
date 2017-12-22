@@ -1,6 +1,6 @@
 RSpec.describe RSchema::Schemas::VariableLengthArray do
   subject { described_class.new(subschema) }
-  let(:subschema) { SchemaStub.new }
+  let(:subschema) { SchemaStub.for_valid_values(:valid) }
 
   it_behaves_like 'a schema'
 
@@ -28,8 +28,8 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
 
       expect(result).not_to be_valid
       expect(result.error).to eq({
-        0 => subschema.error,
-        2 => subschema.error,
+        0 => subschema.errors.first,
+        2 => subschema.errors.last,
       })
     end
 
@@ -39,7 +39,7 @@ RSpec.describe RSchema::Schemas::VariableLengthArray do
       result = validate([:valid, :wrong, :wrong], options)
 
       expect(result).not_to be_valid
-      expect(result.error).to eq({ 1 => subschema.error })
+      expect(result.error).to eq({ 1 => subschema.errors.last })
     end
   end
 

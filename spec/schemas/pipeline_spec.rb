@@ -1,43 +1,38 @@
 RSpec.describe RSchema::Schemas::Pipeline do
   subject { described_class.new([first_subschema, last_subschema]) }
-  let(:first_subschema) { double }
-  let(:last_subschema) { double }
-  let(:options) { RSchema::Options.default }
+
+  let(:first_subschema) do
+    SchemaStub.new do |value|
+      if String === value
+        RSchema::Result.success(value + "3")
+      else
+        RSchema::Result.failure
+      end
+    end
+  end
+
+  let(:last_subschema) do |value|
+    SchemaStub.new do |value|
+      begin
+        RSchema::Result.success(Integer(value))
+      rescue
+        RSchema::Result.failure
+      end
+    end
+  end
 
   it_behaves_like 'a schema'
 
-  it 'gives a valid result if _all_ subschemas give a valid result' do
-    expect(first_subschema).to receive(:call).and_return(RSchema::Result.success(nil))
-    expect(last_subschema).to receive(:call).and_return(RSchema::Result.success(nil))
-
-    result = validate(123)
+  it 'passes the result of each schema to the next schema' do
+    result = validate('5')
 
     expect(result).to be_valid
-  end
-
-  it 'passes the results of each subschema to the next subschema' do
-    expect(first_subschema).to receive(:call)
-      .with('larry', options)
-      .and_return(RSchema::Result.success('curly'))
-    expect(last_subschema).to receive(:call)
-      .with('curly' , options)
-      .and_return(RSchema::Result.success('moe'))
-
-    result = validate('larry', options)
-
-    expect(result).to be_valid
-    expect(result.value).to eq('moe')
+    expect(result.value).to eq(53)
   end
 
   it 'gives an invalid result if _any_ subschema gives an invalid result' do
-    error = double
-    expect(first_subschema).to receive(:call).and_return(RSchema::Result.success(nil))
-    expect(last_subschema).to receive(:call).and_return(RSchema::Result.failure(error))
-
-    result = validate(123)
-
-    expect(result).not_to be_valid
-    expect(result.error).to be(error)
+    expect(validate(:not_a_string)).to be_invalid
+    expect(validate('not an integer')).to be_invalid
   end
 
   specify '#with_wrapped_subschemas' do
@@ -49,3 +44,24 @@ RSpec.describe RSchema::Schemas::Pipeline do
   end
 end
 
+class ChainSchemaStub
+  def initialize(inputs_to_outputs)
+    @inputs_to_outputs = inputs_to_outputs
+  end
+
+  def call(value, options)
+    if @inputs_to_outputs.key?(value)
+      RSchema::Result.success(@inputs_to_outputs.fetch(value))
+    else
+      RSchema::Result.failure(RSchema::Error.new(
+        schema: self,
+        value: value,
+        symbolic_name: :unrecognised_input,
+      ))
+    end
+  end
+
+  def with_wrapped_subschemas(wrapper)
+    wrapper.wrap(self)
+  end
+end

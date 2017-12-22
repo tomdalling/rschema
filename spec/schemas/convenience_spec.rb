@@ -1,6 +1,6 @@
 RSpec.describe RSchema::Schemas::Convenience do
   subject { described_class.new(subschema) }
-  let(:subschema) { SchemaStub.new }
+  let(:subschema) { SchemaStub.for_valid_values(:valid) }
 
   specify '#validate' do
     expect(subschema)
@@ -19,7 +19,7 @@ RSpec.describe RSchema::Schemas::Convenience do
     end
 
     it 'is the subschema error when the value is invalid' do
-      expect(subject.error_for('wrong')).to be(subschema.error)
+      expect(subject.error_for('wrong')).to be(subschema.errors.last)
     end
   end
 
@@ -32,7 +32,7 @@ RSpec.describe RSchema::Schemas::Convenience do
     it 'when invalid, raises a RSchema::Invalid containing the error' do
       expect{ subject.validate!('invalid') }.to raise_error do |ex|
         expect(ex).to be_a(RSchema::Invalid)
-        expect(ex.validation_error).to be(subschema.error)
+        expect(ex.validation_error).to be(subschema.errors.last)
       end
     end
   end
