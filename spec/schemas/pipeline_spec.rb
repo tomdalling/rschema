@@ -43,25 +43,3 @@ RSpec.describe RSchema::Schemas::Pipeline do
     expect(wrapped.subschemas.map(&:wrapped_subschema)).to eq([first_subschema, last_subschema])
   end
 end
-
-class ChainSchemaStub
-  def initialize(inputs_to_outputs)
-    @inputs_to_outputs = inputs_to_outputs
-  end
-
-  def call(value, options)
-    if @inputs_to_outputs.key?(value)
-      RSchema::Result.success(@inputs_to_outputs.fetch(value))
-    else
-      RSchema::Result.failure(RSchema::Error.new(
-        schema: self,
-        value: value,
-        symbolic_name: :unrecognised_input,
-      ))
-    end
-  end
-
-  def with_wrapped_subschemas(wrapper)
-    wrapper.wrap(self)
-  end
-end
