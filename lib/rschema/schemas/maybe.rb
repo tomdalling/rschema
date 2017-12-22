@@ -20,7 +20,7 @@ module RSchema
       end
 
       def call(value, options)
-        if value.nil?
+        if nil == value
           Result.success(value)
         else
           @subschema.call(value, options)

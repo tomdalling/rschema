@@ -1,6 +1,8 @@
 RSpec.describe RSchema::Schemas::Predicate do
   subject do
-    described_class.new('bongos', &:even?)
+    described_class.new('bongos') do |value|
+      Integer === value && value.even?
+    end
   end
 
   it_behaves_like 'a schema'

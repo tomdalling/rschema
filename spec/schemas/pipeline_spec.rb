@@ -11,7 +11,7 @@ RSpec.describe RSchema::Schemas::Pipeline do
     end
   end
 
-  let(:last_subschema) do |value|
+  let(:last_subschema) do
     SchemaStub.new do |value|
       begin
         RSchema::Result.success(Integer(value))

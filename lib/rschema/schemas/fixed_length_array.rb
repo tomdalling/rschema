@@ -21,7 +21,7 @@ module RSchema
       end
 
       def call(value, options)
-        return type_failure(value) unless value.is_a?(Array)
+        return type_failure(value) unless ::Array === value
         return size_failure(value) unless value.size == @subschemas.size
 
         accumulate_elements(value, options).to_result

@@ -19,7 +19,7 @@ module RSchema
       end
 
       def call(value, options)
-        return type_failure(value) unless value.is_a?(Array)
+        return type_failure(value) unless Array === value
 
         accumulate_elements(value, options).to_result
       end

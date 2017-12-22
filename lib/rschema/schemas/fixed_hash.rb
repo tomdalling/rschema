@@ -23,7 +23,7 @@ module RSchema
       end
 
       def call(value, options)
-        return not_a_hash_result(value) unless value.is_a?(Hash)
+        return not_a_hash_result(value) unless Hash === value
         return missing_attrs_result(value) if missing_keys(value).any?
         return extraneous_attrs_result(value) if extraneous_keys(value).any?
 

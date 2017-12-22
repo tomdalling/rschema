@@ -20,7 +20,7 @@ module RSchema
       end
 
       def call(value, options)
-        return not_a_hash_result(value) unless value.is_a?(Hash)
+        return not_a_hash_result(value) unless Hash === value
 
         accumulate_elements(value, options).to_result
       end

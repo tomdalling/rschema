@@ -6,7 +6,7 @@ module RSchema
   #
   class Result
     def self.success(value = nil)
-      if value.nil?
+      if nil == value
         NIL_SUCCESS
       else
         new(true, value, nil)

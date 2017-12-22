@@ -21,7 +21,7 @@ module RSchema
       end
 
       def call(value, options)
-        return not_a_set_result(value) unless value.is_a?(::Set)
+        return not_a_set_result(value) unless ::Set === value
 
         accumulate_elements(value, options).to_result
       end

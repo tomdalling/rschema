@@ -26,7 +26,7 @@ module RSchema
       end
 
       def call(value, _options)
-        if value.is_a?(@type)
+        if @type === value
           Result.success(value)
         else
           Result.failure(error(value))
