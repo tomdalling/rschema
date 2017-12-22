@@ -1,9 +1,13 @@
 class SchemaStub
+  attr_reader :received_value
+
   def initialize(&validity_checker)
     @validity_checker = validity_checker
+    @received_value = nil
   end
 
   def call(value, options)
+    @received_value = value
     if valid?(value)
       RSchema::Result.success(value)
     else

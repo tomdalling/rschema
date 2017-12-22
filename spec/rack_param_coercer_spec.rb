@@ -26,7 +26,7 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
 
     specify 'for nil' do
       result = validate(int: nil)
-      expect(result.error[:int].symbolic_name).to eq(:coercion_failure)
+      expect(result.error[:int].symbolic_name).to eq(:wrong_type)
     end
   end
 
@@ -60,7 +60,7 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
 
     it 'rejects all other types' do
       result = validate(symbol: 5)
-      expect(result.error[:symbol].symbolic_name).to eq(:coercion_failure)
+      expect(result.error[:symbol].symbolic_name).to eq(:wrong_type)
     end
   end
 
@@ -81,12 +81,12 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
 
     it 'rejects non-iso8601 strings' do
       result = validate(time: '')
-      expect(result.error[:time].symbolic_name).to eq(:coercion_failure)
+      expect(result.error[:time].symbolic_name).to eq(:wrong_type)
     end
 
     it 'rejects all other types' do
       result = validate(time: 5)
-      expect(result.error[:time].symbolic_name).to eq(:coercion_failure)
+      expect(result.error[:time].symbolic_name).to eq(:wrong_type)
     end
   end
 
@@ -98,12 +98,12 @@ RSpec.describe RSchema::CoercionWrapper::RACK_PARAMS do
 
     it 'rejects non-iso8601 strings' do
       result = validate(date: '2016')
-      expect(result.error[:date].symbolic_name).to eq(:coercion_failure)
+      expect(result.error[:date].symbolic_name).to eq(:wrong_type)
     end
 
     it 'rejects all other types' do
       result = validate(date: 5)
-      expect(result.error[:date].symbolic_name).to eq(:coercion_failure)
+      expect(result.error[:date].symbolic_name).to eq(:wrong_type)
     end
   end
 

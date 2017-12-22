@@ -4,7 +4,7 @@ RSpec.describe RSchema::Schemas::Coercer do
     CoercerStub.new { |value| Integer(value) }
   end
   let(:subschema) do
-    SchemaStub.new { |value| value.odd? }
+    SchemaStub.new { |value| value.is_a?(Integer) && value.odd? }
   end
 
   it_behaves_like 'a schema'
@@ -20,17 +20,15 @@ RSpec.describe RSchema::Schemas::Coercer do
     specify 'due to coercion failure' do
       result = validate('abc')
 
+      expect(subschema.received_value).to eq('abc')
       expect(result).not_to be_valid
-      expect(result.error).to have_attributes(
-        schema: subject,
-        value: 'abc',
-        symbolic_name: :coercion_failure,
-      )
+      expect(result.error).to be(subschema.error)
     end
 
     specify 'due to subschema failure' do
       result = validate('6')
 
+      expect(subschema.received_value).to eq(6)
       expect(result).not_to be_valid
       expect(result.error).to be(subschema.error)
     end

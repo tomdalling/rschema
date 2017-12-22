@@ -18,17 +18,7 @@ module RSchema
       end
 
       def call(value, options)
-        unless coercer.will_affect?(value)
-          # short-circuit the coercer
-          return @subschema.call(value, options)
-        end
-
-        result = coercer.call(value)
-        if result.valid?
-          @subschema.call(result.value, options)
-        else
-          failure(value, result.error)
-        end
+        @subschema.call(coerce_value(value), options)
       end
 
       def with_wrapped_subschemas(wrapper)
@@ -37,15 +27,17 @@ module RSchema
 
       private
 
-      def failure(value, name)
-        Result.failure(
-          Error.new(
-            schema: self,
-            value: value,
-            symbolic_name: name || :coercion_failure,
-          ),
-        )
+      def coerce_value(original_value)
+        if coercer.will_affect?(original_value)
+          result = coercer.call(original_value)
+          if result.valid?
+            return result.value
+          end
+        end
+
+        original_value
       end
+
     end
   end
 end
