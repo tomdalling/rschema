@@ -1,7 +1,8 @@
 require 'benchmark/ips'
 require 'active_model'
 require 'action_controller'
-require 'dry-validation'
+require 'dry-schema'
+require 'dry/schema/version'
 
 require_relative '../sh/env'
 require 'rschema/coercion_wrapper/rack_params'
@@ -28,8 +29,14 @@ end
 
 RSCHEMA = build_rschema
 
-DRY_SCHEMA = Dry::Validation.Schema do
-  required(:name) { str? }
+DRY_SCHEMA_PARAMS = Dry::Schema.Params do
+  required(:name).value(:string)
+  required(:age).maybe(:int?)
+  optional(:password) { str? }
+end
+
+DRY_SCHEMA_JSON = Dry::Schema.JSON do
+  required(:name).value(:string)
   required(:age).maybe(:int?)
   optional(:password) { str? }
 end
@@ -56,41 +63,43 @@ def validate_inputs
   end
 end
 
+def title(str)
+  str.rjust(25)
+end
+
 Benchmark.ips do |x|
-  x.report("RSchema #{RSchema::VERSION}") do
+  x.report(title("RSchema (#{RSchema::VERSION})")) do
     validate_inputs { |input| RSCHEMA.validate(input).valid? }
   end
 
-  x.report('(coerced)') do
+  x.report(title('RSchema, coerced')) do
     validate_inputs { |input| COERCED_RSCHEMA.validate(input).valid? }
   end
 
-  x.report('(built + coerced)') do
+  x.report(title('RSchema, built, coerced')) do
     validate_inputs do |input|
       schema = RSchema::CoercionWrapper::RACK_PARAMS.wrap(build_rschema)
       schema.validate(input).valid?
     end
   end
 
-  x.report("ActiveModel #{ActiveModel::VERSION::STRING}") do
+  x.report(title("ActiveModel #{ActiveModel::VERSION::STRING}")) do
     validate_inputs { |input| ActivePerson.new(input).valid? }
   end
 
-  x.report("Strong Params") do
+  x.report(title("Strong Params")) do
     validate_inputs do |input|
       ActionController::Parameters.new(input)
         .permit(:name, :age, :password)
     end
   end
 
-  x.report("Strong Params (built)") do
-    validate_inputs do |input|
-      ActionController::Parameters.new(input)
-    end
+  x.report(title("dry-schema, Params, #{Dry::Schema::VERSION}")) do
+    validate_inputs { |input| DRY_SCHEMA_PARAMS.call(input).success? }
   end
 
-  x.report("dry-valid. #{Dry::Validation::VERSION}") do
-    validate_inputs { |input| DRY_SCHEMA.call(input).success? }
+  x.report(title("dry-schema, JSON, #{Dry::Schema::VERSION}")) do
+    validate_inputs { |input| DRY_SCHEMA_JSON.call(input).success? }
   end
 
   x.compare!
