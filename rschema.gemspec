@@ -32,6 +32,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rack-test', '~> 0.6.3'
   s.add_development_dependency 'byebug'
   s.add_development_dependency 'pry'
+  # code climate doesn't support v0.18+
+  # see: https://github.com/codeclimate/test-reporter/issues/413
+  s.add_development_dependency 'simplecov', '< 0.18'
 
   # for benchmarking
   s.add_development_dependency 'benchmark-ips'

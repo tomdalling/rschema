@@ -1,18 +1,31 @@
 language: ruby
-cache: bundler
+script: bundle exec rspec && bundle exec rubocop
+
+# test old rubies
 rvm:
-  - 2.3.4
-  - 2.4.1
-  - 2.2.7
+  - 2.4.10
+  - 2.5.8
+  - 2.6.6
+
+# test on latest ruby
+matrix:
+  include:
+    - rvm: 2.7.1
+      env:
+        - LATEST_RUBY=true
+        - CC_TEST_REPORTER_ID=b0a88d8b3f2d8a33a4782fa7a6d829d765c94dc6c9a9e2277abc7aa07fd5672c
+      before_script: # code climate config
+        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        - chmod +x ./cc-test-reporter
+        - ./cc-test-reporter before-build
+      after_script: # code climate config
+        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+
+# Rubygems deployment
 deploy:
   provider: rubygems
   on:
     tags: true
-    rvm: 2.4.1
+    condition: $LATEST_RUBY = true
   api_key:
     secure: JPfhiLx7tDs9u4nXvVpQX041NHgZpTMTCAWqG52Us6pJIpDXl+nNzKaI0U/grucEE+OZQ8wfq/N3MV5uHHel+NzwVIVeJlouz3JiPXJUI60+tPvucLHe63LR/I3jzCWzHRLcwCYRo8mhh6jrq01KztgFRUxHzRTRodDcqFMi+xE=
-addons:
-  code_climate:
-    repo_token: b0a88d8b3f2d8a33a4782fa7a6d829d765c94dc6c9a9e2277abc7aa07fd5672c
-after_success:
-  - bundle exec codeclimate-test-reporter
