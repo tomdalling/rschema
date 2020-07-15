@@ -16,6 +16,17 @@ Gem Release
 TODO
 ----
 
+ - Document creating new schemas based on existing schemas (FixedHash#merge,
+   FixedHash#without)
+
+ - Regular expression matcher for string values
+
+ - Regular expression matcher for array values?
+
+ - Maybe a nicer error message for either/Sum schemas, that is like "was not a
+   String, or an Integer, or a Whatever". Currently the error is just passed
+   back from the subschema.
+
  - Unit tests for CoercionWrapper
 
  - Error translations
