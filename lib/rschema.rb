@@ -50,11 +50,7 @@ module RSchema
       raise ArgumentError, 'Must provide a block for the RSchema DSL'
     end
 
-    Docile::Execution.exec_in_proxy_context(
-      dsl || default_dsl,
-      Docile::FallbackContextProxy,
-      &block
-    )
+    Docile.dsl_eval_with_block_return(dsl || default_dsl, &block)
   end
 
   #

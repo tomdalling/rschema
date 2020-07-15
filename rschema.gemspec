@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.files = Dir['lib/**/*'] + %w{LICENSE.txt README.md}
 
-  s.add_runtime_dependency 'docile', '~> 1.1'
+  s.add_runtime_dependency 'docile', '~> 1.2'
 
   s.add_development_dependency 'gem-release'
   s.add_development_dependency 'yard'
