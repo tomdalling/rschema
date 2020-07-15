@@ -58,7 +58,7 @@ module RSchema
         end
 
         def __rschema_get_options
-          self.ancestors.reverse.reduce(DEFAULT_OPTIONS) do |options, klass|
+          ancestors.reverse.reduce(DEFAULT_OPTIONS) do |options, klass|
             if klass.instance_variable_defined?(:@__rschema_options)
               options.merge(klass.instance_variable_get(:@__rschema_options))
             else

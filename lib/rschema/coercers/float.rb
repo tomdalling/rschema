@@ -15,7 +15,7 @@ module RSchema
       def call(value)
         flt = begin
                 Float(value)
-              rescue
+              rescue StandardError
                 nil
               end
         flt ? Result.success(flt) : Result.failure

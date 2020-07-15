@@ -8,13 +8,38 @@ AllCops:
     - 'benchmarks/**/*'
 
 Style/TrailingCommaInArguments:
-    EnforcedStyleForMultiline: consistent_comma
+  EnforcedStyleForMultiline: consistent_comma
 
-Style/ModuleFunction:
-    Enabled: false
+# disable bad cops
+Style/ModuleFunction: { Enabled: false }
+Style/RaiseArgs: { Enabled: false }
+Style/GuardClause: { Enabled: false }
+Layout/EmptyLineAfterGuardClause: { Enabled: false }
+Layout/ExtraSpacing: { Enabled: false }
+Style/IfUnlessModifier: { Enabled: false }
+Style/WhileUntilModifier: { Enabled: false }
 
-Style/RaiseArgs:
-    Enabled: false
-
-Style/GuardClause:
-    Enabled: false
+# enable pending cops
+Layout/EmptyLinesAroundAttributeAccessor: { Enabled: true }
+Layout/SpaceAroundMethodCallOperator: { Enabled: true }
+Lint/DeprecatedOpenSSLConstant: { Enabled: true }
+Lint/DuplicateElsifCondition: { Enabled: true }
+Lint/MixedRegexpCaptureTypes: { Enabled: true }
+Lint/RaiseException: { Enabled: true }
+Lint/StructNewOverride: { Enabled: true }
+Style/AccessorGrouping: { Enabled: true }
+Style/ArrayCoercion: { Enabled: true }
+Style/BisectedAttrAccessor: { Enabled: true }
+Style/CaseLikeIf: { Enabled: true }
+Style/ExponentialNotation: { Enabled: true }
+Style/HashAsLastArrayItem: { Enabled: true }
+Style/HashEachMethods: { Enabled: true }
+Style/HashLikeCase: { Enabled: true }
+Style/HashTransformKeys: { Enabled: true }
+Style/HashTransformValues: { Enabled: true }
+Style/RedundantAssignment: { Enabled: true }
+Style/RedundantFetchBlock: { Enabled: true }
+Style/RedundantFileExtensionInRequire: { Enabled: true }
+Style/RedundantRegexpCharacterClass: { Enabled: true }
+Style/RedundantRegexpEscape: { Enabled: true }
+Style/SlicingWithRange: { Enabled: true }

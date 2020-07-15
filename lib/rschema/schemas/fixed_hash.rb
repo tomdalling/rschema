@@ -192,14 +192,11 @@ module RSchema
         def failure_error
           @subresults
             .select { |_, result| result.invalid? }
-            .map { |key, result| [key, result.error] }
-            .to_h
+            .transform_values(&:error)
         end
 
         def success_value
-          @subresults
-            .map { |key, attr_result| [key, attr_result.value] }
-            .to_h
+          @subresults.transform_values(&:value)
         end
       end
     end

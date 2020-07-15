@@ -14,7 +14,7 @@ module RSchema
       def call(value)
         int = begin
                 Integer(value)
-              rescue
+              rescue StandardError
                 nil
               end
         int ? Result.success(int) : Result.failure

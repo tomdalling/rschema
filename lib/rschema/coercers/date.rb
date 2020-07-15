@@ -28,7 +28,7 @@ module RSchema
       def coerce_string(str)
         date = begin
                  ::Date.parse(str)
-               rescue
+               rescue StandardError
                  nil
                end
         date ? Result.success(date) : Result.failure

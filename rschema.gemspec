@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'gem-release'
   s.add_development_dependency 'yard'
-  s.add_development_dependency 'rubocop', '~> 0.49.1'
+  s.add_development_dependency 'rubocop', '~> 0.88'
 
   # for testing
   s.add_development_dependency 'rspec', '~> 3.5'

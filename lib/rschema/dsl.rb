@@ -330,7 +330,7 @@ module RSchema
     def method_missing(sym, *args, &block)
       type = sym.to_s
       if type.start_with?('_') && args.empty? && block.nil?
-        constant = Object.const_get(type[1..-1])
+        constant = Object.const_get(type[1..])
         type(constant)
       else
         super

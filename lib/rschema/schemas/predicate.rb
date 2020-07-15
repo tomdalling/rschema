@@ -38,7 +38,7 @@ module RSchema
         Error.new(
           schema: self,
           value: value,
-          symbolic_name: :false,
+          symbolic_name: :false,  # rubocop:disable Lint/BooleanSymbol
           vars: { predicate_name: name },
         )
       end
