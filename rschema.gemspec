@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'docile', '~> 1.1'
 
-  s.add_development_dependency 'gem-release', '~> 0.7'
+  s.add_development_dependency 'gem-release'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'rubocop', '~> 0.49.1'
 
